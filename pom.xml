@@ -1,0 +1,342 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>neptunedreams.com</groupId>
+  <artifactId>job.search</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <!--<modules>-->
+    <!--<module>jobs-derby</module>-->
+  <!--</modules>-->
+  <packaging>jar</packaging>
+
+  <name>JobSearch</name>
+  <url>http://maven.apache.org</url>
+  <developers>
+    <developer>
+      <id>SwingGuy1024</id>
+      <name>Miguel Muñoz</name>
+      <email>SwingGuy1024@yahoo.com</email>
+    </developer>
+  </developers>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!-- These properties will be set by the Maven Dependency plugin -->
+    <!--<annotatedJdk>${org.checkerframework:jdk8:jar}</annotatedJdk>-->
+	  <!--The above line seems to be of the form groupId:artifactId:jar, but it doesn't find anything there-->
+    <annotatedJdk>${user.home}/.m2/repository/org/checkerframework/jdk8/${checkerVersion}/jdk8-3.0.1.jar</annotatedJdk>
+    <!-- Uncomment to use the Type Annotations compiler. -->
+    <!--<typeAnnotationsJavac>${org.checkerframework:compiler:jar}</typeAnnotationsJavac> -->
+	  <jooqVersion>3.11.12</jooqVersion>
+	  <checkerVersion>3.0.1</checkerVersion>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.apache.derby/derby &ndash;&gt;-->
+    <!--<dependency>-->
+      <!--<groupId>org.apache.derby</groupId>-->
+      <!--<artifactId>derby</artifactId>-->
+      <!--<version>10.14.1.0</version>-->
+    <!--</dependency>-->
+
+    <!-- https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc -->
+    <dependency>
+      <groupId>org.xerial</groupId>
+      <artifactId>sqlite-jdbc</artifactId>
+      <version>3.20.1</version>
+    </dependency>
+
+    <!--&lt;!&ndash; https://mvnrepository.com/artifact/javax.persistence/persistence-api &ndash;&gt;-->
+    <!--<dependency>-->
+      <!--<groupId>javax.persistence</groupId>-->
+      <!--<artifactId>persistence-api</artifactId>-->
+      <!--<version>1.0.2</version>-->
+    <!--</dependency>-->
+
+    <!-- https://mvnrepository.com/artifact/org.jetbrains/annotations -->
+    <dependency>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations</artifactId>
+      <version>13.0</version>
+    </dependency>
+
+    <!--Google guava-->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>23.0</version>
+    </dependency>
+    
+    <!--jOOQ-->
+	  <!-- https://mvnrepository.com/artifact/org.jooq/jooq -->
+	  <dependency>
+		  <groupId>org.jooq</groupId>
+		  <artifactId>jooq</artifactId>
+		  <version>${jooqVersion}</version>
+      <!--The following version will have a fix to the derby code-generation bug.-->
+      <!--<version>3.10.2</version>-->
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
+    <!--<dependency>-->
+      <!--<groupId>javax.xml.bind</groupId>-->
+      <!--<artifactId>jaxb-api</artifactId>-->
+      <!--<version>2.3.1</version>-->
+    <!--</dependency>-->
+
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-library</artifactId>
+      <version>1.1</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Annotations from the Checker Framework: nullness, interning, locking, ... -->
+    <dependency>
+      <groupId>org.checkerframework</groupId>
+      <artifactId>checker-qual</artifactId>
+      <!-- Use checker-qual7 if targeting Java 7 -->
+      <!-- <artifactId>checker-qual7</artifactId> -->
+      <version>${checkerVersion}</version>
+	    <scope>compile</scope>
+    </dependency>
+	  <dependency>
+      <groupId>org.checkerframework</groupId>
+      <artifactId>checker</artifactId>
+      <version>${checkerVersion}</version>
+		  <scope>compile</scope>
+    </dependency>
+    <!-- The Type Annotations compiler. Uncomment if using annotations in comments. -->
+    <!-- <dependency>
+      <groupId>org.checkerframework</groupId>
+      <artifactId>compiler</artifactId>
+      <version>${checkerVersion}</version>
+    </dependency> -->
+    <dependency>
+      <groupId>org.checkerframework</groupId>
+      <artifactId>jdk8</artifactId>
+      <version>${checkerVersion}</version>
+	    <scope>compile</scope>
+    </dependency>
+
+  </dependencies>
+  
+  <build>
+    <plugins>
+      <!--This is the standard Maven plugin-->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+          <compilerArguments>
+            <Xmaxerrs>10000</Xmaxerrs>
+            <Xmaxwarns>10000</Xmaxwarns>
+            <AsuppressWarnings>uninitialized</AsuppressWarnings>
+          </compilerArguments>
+          <compilerArgs>
+            <!--<arg>-AprintErrorStack</arg>-->
+            <!--NullChecker needs this turned on-->
+            <arg>-AassumeAssertionsAreEnabled</arg> <!-- -Aassume... is spelled correctly. -->
+            <!-- location of the annotated JDK, which comes from a Maven dependency -->
+            <arg>-Xbootclasspath/p:${annotatedJdk}</arg>
+            <!-- Uncomment the following line to use the type annotations compiler. -->
+             <!--<arg>-J-Xbootclasspath/p:${typeAnnotationsJavac}</arg> -->
+            <!-- Uncomment the following line to turn type-checking warnings into errors. -->
+            <!-- <arg>-Awarns</arg> -->
+	          <arg>-Astubs=checkerframework/stubs</arg> <!-- Suggested by https://github.com/typetools/checker-framework/issues/445 -->
+	          <arg>-AstubWarnIfNotFound</arg>
+          </compilerArgs>
+          <annotationProcessors>
+            <!-- Add all the checkers you want to enable here -->
+
+            <!-- Invoke the NullnessChecker at org.checkerframework.checker.nullness.NullnessChecker -->
+            <!-- There are probably other checkers we should invoke. -->
+            <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
+          </annotationProcessors>
+        </configuration>
+        <version>3.7.0</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.5</version>
+        <configuration>
+          <systemPropertyVariables>
+            <derby.system.home>${user.home}/.jobsearch}</derby.system.home>
+            <buildDirectory>${project.build.directory}</buildDirectory>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+
+      <!--This packs all the classes into a single jar-->
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>com.neptunedreams.jobs.JobSearch</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+          <!--This "appendAssemblyId" tag removes the "with-dependencies" from the name.-->
+	        <!--This is commented out because it overwrites the other jar file.-->
+	        <!--That interferes with the creation of the Mac App Bundle.-->
+          <!--<appendAssemblyId>false</appendAssemblyId>-->
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <!--This is the Maven dependency plugin.-->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+              <goal>properties</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>
+                ${project.build.directory}/libs
+              </outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!--This creates an executable jar file. It should be used with the maven-dependency-plugin-->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.6</version>
+        <configuration>
+          <!--<detail>-->
+            <!--<derby.system.home>${user.home}/.jobs</derby.system.home>-->
+          <!--</detail>-->
+          <archive>
+            <manifest>
+              <mainClass>com.neptunedreams.jobs.JobSearch</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      
+      <!--This one will bundle everything into a Mac Application bundle.-->
+      <plugin>
+        <!-- https://github.com/federkasten/appbundle-maven-plugin -->
+        <groupId>sh.tak.appbundler</groupId>
+        <artifactId>appbundle-maven-plugin</artifactId>
+        <version>1.2.0</version>
+        <configuration>
+          <!--Put your custom Info.plist and Icon.icns under your maven resource paths (src/main/resources on default configuration).-->
+          <mainClass>com.neptunedreams.jobs.JobSearch</mainClass>
+          <!--<dictionaryFile>YourCustomInfo.plist</dictionaryFile>-->
+          <iconFile>binoculars.icns</iconFile>
+          <jrePath>/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk</jrePath>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>bundle</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!--This is the jooq code generation plugin-->
+      <plugin>
+
+        <!-- Specify the maven code generator plugin -->
+        <!-- Use org.jooq            for the Open Source Edition
+								 org.jooq.pro        for commercial editions, 
+								 org.jooq.pro-java-6 for commercial editions with Java 6 support,
+								 org.jooq.trial      for the free trial edition 
+							 
+						 Note: Only the Open Source Edition is hosted on Maven Central. 
+									 Import the others manually from your distribution -->
+        <groupId>org.jooq</groupId>
+        <artifactId>jooq-codegen-maven</artifactId>
+        <version>${jooqVersion}</version>
+
+        <!-- The plugin should hook into the generate goal -->
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+          </execution>
+        </executions>
+
+        <!-- Manage the plugin's dependency. -->
+        <dependencies>
+          <dependency>
+            <!--<groupId>org.apache.derby</groupId>-->
+            <!--<artifactId>derby</artifactId>-->
+            <!--<version>10.14.1.0</version>-->
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.20.1</version>
+          </dependency>
+          <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
+          <!--<dependency>-->
+            <!--<groupId>javax.xml.bind</groupId>-->
+            <!--<artifactId>jaxb-api</artifactId>-->
+            <!--<version>2.3.1</version>-->
+          <!--</dependency>-->
+        </dependencies>
+
+        <!-- Specify the plugin configuration.
+						 The configuration format is the same as for the standalone code generator -->
+        <configuration>
+
+          <!-- JDBC connection parameters -->
+          <jdbc>
+            <!--<driver>org.apache.derby.jdbc.EmbeddedDriver</driver>-->
+            <!--<url>jdbc:derby:jobs;create=true;collation=TERRITORY_BASED:PRIMARY</url>-->
+            <driver>org.sqlite.JDBC</driver>
+            <url>jdbc:sqlite:src/main/resources/sql/generateFromJobs.db</url>
+            <!--<user>postgres</user>-->
+            <!--<password>test</password>-->
+          </jdbc>
+
+          <!-- Generator parameters -->
+          <generator>
+            <database>
+              <!--<name>org.jooq.util.derby.DerbyDatabase</name>-->
+              <name>org.jooq.meta.sqlite.SQLiteDatabase</name>
+              <includes>.*</includes>
+              <!--<excludes></excludes>-->
+              <!-- In case your database supports catalogs, e.g. SQL Server:
+							<inputCatalog>public</inputCatalog>
+								-->
+              <!--<inputSchema>jobs</inputSchema>-->
+              <!--<inputSchema>public</inputSchema>-->
+            </database>
+            <target>
+              <packageName>com.neptunedreams.jobs.gen</packageName>
+              <directory>src/main/java</directory>
+            </target>
+          </generator>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </build>
+</project>
