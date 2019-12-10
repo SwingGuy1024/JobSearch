@@ -2,5 +2,5 @@
 .DS_Store
 src/main/java/com/neptunedreams/jobs/gen/
 ReleaseHistory/
-.iml
+*.iml
 target/
