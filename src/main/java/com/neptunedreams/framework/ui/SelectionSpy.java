@@ -27,7 +27,7 @@ public enum SelectionSpy implements CaretListener {
   @SuppressWarnings("NonFinalFieldInEnum")
   private String selectedText = "";
   
-  private final List<BooleanListener> booleanListeners = new LinkedList<>();
+  private final List<SelectionExistsListener> selectionExistsListeners = new LinkedList<>();
 
   SelectionSpy() {
     focusManager.addPropertyChangeListener("focusOwner", new PListener());
@@ -50,17 +50,17 @@ public enum SelectionSpy implements CaretListener {
   }
   
   private void fireListeners(boolean value) {
-    for (BooleanListener listener : booleanListeners) {
+    for (SelectionExistsListener listener : selectionExistsListeners) {
       listener.respond(value);
     }
   }
-  
-  public void addBooleanListener(BooleanListener listener) {
-    booleanListeners.add(listener);
+
+  public void addSelectionExistsListener(SelectionExistsListener listener) {
+    selectionExistsListeners.add(listener);
   }
   
-  public void removeBooleanListener(BooleanListener listener) {
-    booleanListeners.remove(listener);
+  public void removeBooleanListener(SelectionExistsListener listener) {
+    selectionExistsListeners.remove(listener);
   }
 
   public String getSelectedText() {
@@ -68,8 +68,8 @@ public enum SelectionSpy implements CaretListener {
   }
   
   @FunctionalInterface
-  public interface BooleanListener {
-    void respond(boolean value);
+  public interface SelectionExistsListener {
+    void respond(boolean exists);
   }
   
   private @Nullable JTextComponent getFocusedComponent() { return focusedComponent; }

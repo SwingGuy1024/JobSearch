@@ -4,3 +4,4 @@ src/main/java/com/neptunedreams/jobs/gen/
 ReleaseHistory/
 *.iml
 target/
+gen/

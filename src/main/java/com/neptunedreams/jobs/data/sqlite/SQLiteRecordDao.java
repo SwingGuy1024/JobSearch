@@ -217,8 +217,7 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer> {
    * @param orderBy The orderBy field
    * @return A Field{@literal <String>} to pass to the orderBy() method to support case insensitive ordering.
    */
-//  @SuppressWarnings("unchecked")
-  private @NonNull TableField<LeadRecord, ?> getField(final @Nullable LeadField orderBy) {
+  private @NonNull TableField<LeadRecord, ?> getField(final LeadField orderBy) {
     return Objects.requireNonNull(fieldMap.get(orderBy));
   }
 

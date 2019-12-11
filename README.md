@@ -10,19 +10,23 @@ Maven must run under Java 8. Running under Java 9 or later doesn't work. (I have
 
 The project is written to be built in JDK 1.8. It has not been tested with any later versions.
 
-After ensuring the maven runner is using Java 8, run 
+After ensuring the maven runner is using Java 8, run the code generator like this:
 
-`mvn jooq-codegen:generate clean install`
+    mvn jooq-codegen:generate clean install
 
-Generated code goes into the `com.neptunedreams.jobs.gen` package.
+(`mvn clean` does not remove the generated code.)
 
-Once the code has been generated, it need not be generated again unless the schema changes. So at this point, you can build by just typing
+Generated code goes into the `com.neptunedreams.jobs.gen` package, in the `src/gen/java` folder.
+
+Once the code has been generated, it need not be generated again unless the schema changes. So at this point, you can build the Mac application by just typing
 
 `mvn clean install`
 
-This does not build the OSX executable. For that, you should run
+This builds the OSX executable. 
 
-`mvn clean assembly:assembly`
+For other platforms, you may now assemble an executable jar file from the compiled classes:
+
+    mvn clean assembly:assembly
 
 ## Why?
 

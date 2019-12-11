@@ -6,6 +6,7 @@ import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -26,8 +27,11 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.MatteBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import com.google.common.eventbus.Subscribe;
 import com.neptunedreams.framework.ui.FieldBinding;
@@ -53,7 +57,7 @@ import static com.neptunedreams.framework.ui.SwingUtils.*;
  *
  * @author Miguel Mu\u00f1oz
  */
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "HardCodedStringLiteral"})
 public final class RecordView<R> extends JPanel implements RecordSelectionModel<R> {
   private static final int TEXT_COLUMNS = 20;
   private static final int TEXT_ROWS = 15;
@@ -63,7 +67,6 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   private JPanel checkBoxPanel = new JPanel(new GridLayout(0, 1));
   private ButtonGroup buttonGroup = new ButtonGroup();
 
-  @SuppressWarnings("HardCodedStringLiteral")
   private R currentRecord; // = new Record("D", "D", "D", "D");
   
   @NotOnlyInitialized
@@ -75,7 +78,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   private final JTextComponent dicePosnField;
   private final JTextComponent diceIdField;
 
-  @SuppressWarnings({"initialization.fields.uninitialized", "argument.type.incompatible", "method.invocation.invalid", "HardCodedStringLiteral"})
+  @SuppressWarnings({"initialization.fields.uninitialized", "argument.type.incompatible", "method.invocation.invalid"})
   private RecordView(R record,
                      LeadField initialSort,
                      Dao<R, Integer> dao,
@@ -102,12 +105,12 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
     final JTextComponent contactNameField = (JTextComponent) addField("Contact Name", true, LeadField.ContactName, initialSort);
     dicePosnField = (JTextComponent) addField("Dice Position", true, LeadField.DicePosn, initialSort, makeScanButton());
     diceIdField = (JTextComponent) addField("Dice ID", true, LeadField.DiceID, initialSort);
-    final JTextComponent eMailField = (JTextComponent) addField("EMail", true, LeadField.EMail, initialSort);
-    final JTextComponent phone1Field = (JTextComponent) addField("Phone 1", true, LeadField.Phone1, initialSort);
-    final JTextComponent phone2Field = (JTextComponent) addField("Phone 2", true, LeadField.Phone2, initialSort);
-    final JTextComponent faxField = (JTextComponent) addField("Fax", true, LeadField.Fax, initialSort);
-    final JTextComponent webSiteField = (JTextComponent) addField("Web Site", true, LeadField.WebSite, initialSort);
-    final JTextComponent skypeField = (JTextComponent) addField("Skype", true, LeadField.Skype, initialSort);
+    final JTextComponent eMailField = (JTextComponent) addFieldWithCopy("EMail", LeadField.EMail, initialSort);
+    final JTextComponent phone1Field = (JTextComponent) addFieldWithCopy("Phone 1", LeadField.Phone1, initialSort);
+    final JTextComponent phone2Field = (JTextComponent) addFieldWithCopy("Phone 2", LeadField.Phone2, initialSort);
+    final JTextComponent faxField = (JTextComponent) addFieldWithCopy("Fax", LeadField.Fax, initialSort);
+    final JTextComponent webSiteField = (JTextComponent) addFieldWithCopy("Web Site", LeadField.WebSite, initialSort);
+    final JTextComponent skypeField = (JTextComponent) addFieldWithCopy("Skype", LeadField.Skype, initialSort);
     descriptionField = addDescriptionField();
     historyField = new JTextArea(TEXT_ROWS, HISTORY_COLUMNS);
     assert getIdFunction != null : "Null id getter";
@@ -158,7 +161,6 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
     } catch (UnsupportedFlavorException | IOException ignored) {}
   }
 
-  @SuppressWarnings("HardCodedStringLiteral")
   private boolean scanForDiceInfo(final String description) {
     String posnHead = "Position Id :";
     String idHead = "Dice Id :";
@@ -266,6 +268,28 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   }
 
   @RequiresNonNull({"labelPanel", "fieldPanel", "buttonGroup", "checkBoxPanel", "controller"})
+  private JComponent addFieldWithCopy(@UnderInitialization RecordView<R>this, final String labelText, final LeadField orderField, LeadField initialSort) {
+    JButton copyButton = new JButton(Resource.getCopy());
+    // For any field with a copy button, editable will be true
+    JTextField field = (JTextField) addField(labelText, true, orderField, initialSort, copyButton);
+    copyButton.addActionListener(e -> copyFrom(field));
+    Document doc = field.getDocument();
+    DocumentListener docListener = new DocumentListener() {
+      @Override public void insertUpdate(final DocumentEvent e) { work();}
+      @Override public void removeUpdate(final DocumentEvent e) { work();}
+      @Override public void changedUpdate(final DocumentEvent e) { work();}
+      
+      private void work() {
+        copyButton.setEnabled(doc.getLength() > 0);
+      }
+    };
+    doc.addDocumentListener(docListener);
+    copyButton.setEnabled(false);
+    copyButton.setToolTipText(String.format("Copy %s", labelText));
+    return field;
+  }
+
+  @RequiresNonNull({"labelPanel", "fieldPanel", "buttonGroup", "checkBoxPanel", "controller"})
   private JComponent addField(@UnderInitialization RecordView<R>this, final String labelText, final boolean editable, final LeadField orderField, LeadField initialSort, @Nullable JComponent extraComponent) {
     //noinspection StringConcatenation,MagicCharacter
     JLabel label = new JLabel(labelText + ':');
@@ -276,7 +300,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
     } else {
       field = new JLabel();
     }
-    JComponent comp = wrapField(field);
+    JComponent comp = wrapField(field, labelText);
     if (extraComponent != null) {
       JPanel wrapPanel = new JPanel(new BorderLayout());
       wrapPanel.add(comp, BorderLayout.CENTER);
@@ -304,6 +328,18 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
     }
   }
 
+  /**
+   * Copies the text of the field, regardless of if it's selected. (We can't just use field.copy() because that only
+   * copies selected text.)
+   * 
+   * @param field The field
+   */
+  private void copyFrom(@UnderInitialization RecordView<R> this, JTextField field) {
+    String txt = field.getText();
+    StringSelection stringSelection = new StringSelection(txt);
+    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, stringSelection);
+  }
+
   @SuppressWarnings("method.invocation.invalid")
   private JTextComponent addDescriptionField(@UnderInitialization RecordView<R> this) {
     final JTextArea wrappedField = new JTextArea(TEXT_ROWS, TEXT_COLUMNS);
@@ -312,11 +348,12 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
     return wrappedField;
   }
   
-  JComponent wrapField(@UnderInitialization RecordView<R> this, JComponent component) {
+  JComponent wrapField(@UnderInitialization RecordView<R> this, JComponent component, String label) {
     if (!(component instanceof JTextField)) {
       return component;
     }
     JButton button = new JButton(Resource.getFwdChevron());
+    button.setToolTipText(String.format("Copy selected text to %s", label));
     button.setFocusable(false);
     JPanel panel = new JPanel(new BorderLayout());
     panel.add(button, BorderLayout.LINE_START);
@@ -324,7 +361,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
     JTextField field = (JTextField) component;
     button.addActionListener(e -> field.setText(SelectionSpy.spy.getSelectedText()));
     SelectionSpy.spy
-        .addBooleanListener((selectionExists) -> button.setEnabled(selectionExists && field.getText().isEmpty()));
+        .addSelectionExistsListener((selectionExists) -> button.setEnabled(selectionExists && field.getText().isEmpty()));
     return panel;
   }
 

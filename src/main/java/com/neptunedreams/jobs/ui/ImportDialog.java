@@ -34,7 +34,7 @@ final class ImportDialog extends JDialog {
     return importDialog;
   }
 
-  private void build(ImportDialog this) {
+  private void build() {
     //noinspection MagicNumber
     JTextArea importArea = new JTextArea(40, 60);
     JScrollPane scrollPane = new JScrollPane(importArea, 
@@ -51,6 +51,8 @@ final class ImportDialog extends JDialog {
     load.addActionListener((e -> doLoad(importArea.getText())));
   }
   
+  // IntelliJ's null checking knows that (record != null) isn't necessary, but the NullCheckerFramework didn't figure that out.
+  @SuppressWarnings("ConstantConditions")
   private void doLoad(String text) {
     try (BufferedReader reader = new BufferedReader(new StringReader(text))) {
       int fieldNumber=0;
@@ -62,13 +64,17 @@ final class ImportDialog extends JDialog {
           if (record != null) {
             recordDao.update(record);
           }
-          record = new Record(); // Always creates a record the first time through. So record is never null afterwards.
-        } else {
+          if (record != null) {
+            record = new Record(); // Always creates a record the first time through. So record is never null afterwards.
+          }
+        } else if (record != null) {
           putLine(line.trim(), fieldNumber++, record);
         }
         line = reader.readLine();
       }
-      recordDao.update(record);
+      if (record != null) {
+        recordDao.update(record);
+      }
     } catch (IOException | SQLException e) {
       e.printStackTrace();
     }
