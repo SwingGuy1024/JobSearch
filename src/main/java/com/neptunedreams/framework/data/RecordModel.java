@@ -1,4 +1,4 @@
-package com.neptunedreams.jobs.ui;
+package com.neptunedreams.framework.data;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ public class RecordModel<R> implements Serializable {
   private final transient Function<Void, R> constructor;
   
   @SuppressWarnings("JavaDoc")
-  RecordModel(Function<Void, R> theConstructor) {
+  public RecordModel(Function<Void, R> theConstructor) {
     constructor = theConstructor;
   }
 

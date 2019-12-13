@@ -1,4 +1,4 @@
-package com.neptunedreams.jobs.ui;
+package com.neptunedreams.framework.ui;
 
 /**
  * Used by the clients of the SwipeView class to specify the direction of the swipe animation.

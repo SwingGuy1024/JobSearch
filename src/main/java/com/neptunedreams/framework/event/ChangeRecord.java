@@ -1,4 +1,4 @@
-package com.neptunedreams.jobs.event;
+package com.neptunedreams.framework.event;
 
 /**
  * We wrap the CurrentRecord in this event class rather than passing it directly because it's a generic type, 

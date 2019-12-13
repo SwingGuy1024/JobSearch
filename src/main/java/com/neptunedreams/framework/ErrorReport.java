@@ -1,4 +1,4 @@
-package com;
+package com.neptunedreams.framework;
 
 import javax.swing.JOptionPane;
 

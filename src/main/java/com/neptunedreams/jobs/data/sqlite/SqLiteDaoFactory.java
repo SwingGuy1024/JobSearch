@@ -1,7 +1,7 @@
 package com.neptunedreams.jobs.data.sqlite;
 
-import com.neptunedreams.jobs.data.AbstractDaoFactory;
-import com.neptunedreams.jobs.data.ConnectionSource;
+import com.neptunedreams.framework.data.AbstractDaoFactory;
+import com.neptunedreams.framework.data.ConnectionSource;
 import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
 
 /**

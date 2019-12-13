@@ -1,4 +1,4 @@
-package com.neptunedreams.jobs.data;
+package com.neptunedreams.framework.data;
 
 import java.sql.Array;
 import java.sql.Blob;

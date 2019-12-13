@@ -1,7 +1,8 @@
-package com.neptunedreams.jobs.data;
+package com.neptunedreams.framework.data;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import com.neptunedreams.jobs.data.LeadField;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 

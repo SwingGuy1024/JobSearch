@@ -1,4 +1,4 @@
-package com.neptunedreams.jobs.data;
+package com.neptunedreams.framework.data;
 
 import java.io.File;
 import java.sql.Connection;

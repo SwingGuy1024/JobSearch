@@ -1,4 +1,4 @@
-package com.neptunedreams.jobs;
+package com.neptunedreams.framework.data;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;

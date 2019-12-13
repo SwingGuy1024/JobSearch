@@ -1,4 +1,4 @@
-package com.neptunedreams.jobs.event;
+package com.neptunedreams.framework.event;
 
 import com.google.common.eventbus.DeadEvent;
 import com.google.common.eventbus.EventBus;

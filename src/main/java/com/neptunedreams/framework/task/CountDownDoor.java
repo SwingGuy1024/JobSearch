@@ -1,4 +1,4 @@
-package com.neptunedreams.jobs.task;
+package com.neptunedreams.framework.task;
 
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;

@@ -5,10 +5,14 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
 import java.util.function.Function;
-import com.ErrorReport;
-import com.neptunedreams.jobs.data.Dao;
+import com.neptunedreams.framework.ErrorReport;
+import com.neptunedreams.framework.data.Dao;
+import com.neptunedreams.framework.data.RecordModel;
+import com.neptunedreams.framework.data.RecordModelListener;
+import com.neptunedreams.framework.data.RecordSelectionModel;
+import com.neptunedreams.framework.data.SearchOption;
+import com.neptunedreams.framework.event.MasterEventBus;
 import com.neptunedreams.jobs.data.LeadField;
-import com.neptunedreams.jobs.event.MasterEventBus;
 import org.checkerframework.checker.initialization.qual.NotOnlyInitialized;
 import org.checkerframework.checker.nullness.qual.NonNull;
 

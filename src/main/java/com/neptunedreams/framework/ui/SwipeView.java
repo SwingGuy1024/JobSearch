@@ -1,4 +1,4 @@
-package com.neptunedreams.jobs.ui;
+package com.neptunedreams.framework.ui;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;

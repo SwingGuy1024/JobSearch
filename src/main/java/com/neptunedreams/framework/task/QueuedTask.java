@@ -1,4 +1,4 @@
-package com.neptunedreams.jobs.task;
+package com.neptunedreams.framework.task;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;

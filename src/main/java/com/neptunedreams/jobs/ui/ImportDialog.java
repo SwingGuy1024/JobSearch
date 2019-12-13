@@ -10,7 +10,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import com.neptunedreams.jobs.data.Dao;
+import com.neptunedreams.framework.data.Dao;
 import com.neptunedreams.jobs.data.Record;
 
 /**

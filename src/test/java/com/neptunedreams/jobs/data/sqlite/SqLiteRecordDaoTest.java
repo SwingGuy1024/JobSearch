@@ -9,8 +9,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import com.neptunedreams.jobs.data.ConnectionSource;
-import com.neptunedreams.jobs.data.DatabaseInfo;
+import com.neptunedreams.framework.data.ConnectionSource;
+import com.neptunedreams.framework.data.DatabaseInfo;
 import com.neptunedreams.jobs.data.LeadField;
 import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -57,7 +57,7 @@ public class SqLiteRecordDaoTest {
     }
   }
 
-  private void doTestDao(SQLiteRecordDao dao, ConnectionSource connectionSource) throws IOException, SQLException {
+  private void doTestDao(SQLiteRecordDao dao, ConnectionSource connectionSource) throws SQLException {
     assertNotNull(connectionSource);
 //    ensureHomeExists(info.getHomeDir());
     assertNotNull(dao);

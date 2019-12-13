@@ -1,4 +1,4 @@
-package com.neptunedreams.jobs.ui;
+package com.neptunedreams.framework.ui;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;

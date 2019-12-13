@@ -1,4 +1,4 @@
-package com.neptunedreams.jobs.ui;
+package com.neptunedreams.framework.data;
 
 import com.neptunedreams.framework.ui.DisplayEnum;
 

@@ -1,4 +1,4 @@
-package com.neptunedreams.jobs.task;
+package com.neptunedreams.framework.task;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -13,7 +13,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public abstract class ParameterizedCallable<I, R> {
   private @Nullable I inputData;
-  public ParameterizedCallable(@Nullable I initialValue) {
+  protected ParameterizedCallable(@Nullable I initialValue) {
     inputData = initialValue;
   }
 

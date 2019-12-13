@@ -4,9 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Objects;
-import com.neptunedreams.jobs.data.AbstractDatabaseInfo;
-import com.neptunedreams.jobs.data.ConnectionSource;
-import com.neptunedreams.jobs.data.Dao;
+import com.neptunedreams.framework.data.AbstractDatabaseInfo;
+import com.neptunedreams.framework.data.ConnectionSource;
+import com.neptunedreams.framework.data.Dao;
 import com.neptunedreams.jobs.gen.DefaultSchema;
 import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
 import org.jooq.DSLContext;
@@ -35,7 +35,7 @@ public class SQLiteInfo extends AbstractDatabaseInfo {
   }
 
   @SuppressWarnings("JavaDoc")
-  public SQLiteInfo(String homeDir) {
+  SQLiteInfo(String homeDir) {
     super(homeDir);
 //    init();
   }

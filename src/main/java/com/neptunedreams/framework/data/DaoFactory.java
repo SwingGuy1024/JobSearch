@@ -1,4 +1,4 @@
-package com.neptunedreams.jobs.data;
+package com.neptunedreams.framework.data;
 
 /**
  * <p>Created by IntelliJ IDEA.
