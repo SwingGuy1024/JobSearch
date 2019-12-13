@@ -34,6 +34,11 @@
   </properties>
 
   <dependencies>
+	  <dependency>
+		  <groupId>com.neptunedreams</groupId>
+		  <artifactId>tango</artifactId>
+		  <version>1.0-SNAPSHOT</version>
+	  </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -69,13 +74,6 @@
       <version>13.0</version>
     </dependency>
 
-    <!--Google guava-->
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>23.0</version>
-    </dependency>
-    
     <!--jOOQ-->
 	  <!-- https://mvnrepository.com/artifact/org.jooq/jooq -->
 	  <dependency>
@@ -157,7 +155,14 @@
 	          <arg>-Astubs=checkerframework/stubs</arg> <!-- Suggested by https://github.com/typetools/checker-framework/issues/445 -->
 	          <arg>-AstubWarnIfNotFound</arg>
           </compilerArgs>
-          <annotationProcessors>
+	        <annotationProcessorPaths>
+		        <path>
+			        <groupId>org.checkerframework</groupId>
+			        <artifactId>checker</artifactId>
+			        <version>3.0.1</version>
+		        </path>
+	        </annotationProcessorPaths>
+	        <annotationProcessors>
             <!-- Add all the checkers you want to enable here -->
 
             <!-- Invoke the NullnessChecker at org.checkerframework.checker.nullness.NullnessChecker -->

@@ -106,7 +106,7 @@ public final class JobSearch extends JPanel
   //    org.jooq.util.JavaGenerator generator;
   private static JFrame frame = new JFrame("Job Hunt");
   private final @NonNull DatabaseInfo info;
-  private final @NonNull RecordController<LeadRecord, Integer> controller;
+  private final @NonNull RecordController<LeadRecord, Integer, LeadField> controller;
   //  private RecordController<>
 
   @SuppressWarnings({"OverlyBroadThrowsClause", "JavaDoc"})
@@ -158,7 +158,8 @@ public final class JobSearch extends JPanel
     try {
       info.init();
       final ConnectionSource connectionSource = info.getConnectionSource();
-      Dao<LeadRecord, Integer> dao = info.getDao(LeadRecord.class, connectionSource);
+      @SuppressWarnings("unchecked")
+      Dao<LeadRecord, Integer, LeadField> dao = info.getDao(LeadRecord.class, connectionSource);
       LeadRecord dummyRecord = new LeadRecord(0, "", "", "", "", "", "", "", "", "", "", "", "");
       final RecordView<LeadRecord> view = new RecordView.Builder<>(dummyRecord, LeadField.Company)
           .company  (LeadRecord::getCompany,   LeadRecord::setCompany)
@@ -222,8 +223,8 @@ public final class JobSearch extends JPanel
 
   @SuppressWarnings("OverlyBroadThrowsClause")
   private static void importFromFile(
-      final Dao<LeadRecord, Integer> dao, 
-      RecordController<LeadRecord, Integer> controller)
+      final Dao<LeadRecord, Integer, LeadField> dao, 
+      RecordController<LeadRecord, Integer, LeadField> controller)
       throws SQLException, IOException, ClassNotFoundException {
     //noinspection StringConcatenation,StringConcatenationMissingWhitespace
     String exportPath = System.getProperty("user.home") + EXPORT_FILE;

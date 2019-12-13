@@ -14,6 +14,7 @@ import com.neptunedreams.jobs.gen.tables.Lead;
 import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
@@ -48,7 +49,7 @@ import static org.jooq.impl.DSL.*;
  * @author Miguel Mu\u00f1oz
  */
 @SuppressWarnings({"StringConcatenation", "SqlResolve", "StringConcatenationMissingWhitespace", "HardCodedStringLiteral"})
-public final class SQLiteRecordDao implements Dao<LeadRecord, Integer> {
+public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField> {
 
   private static final Map<LeadField, @NonNull TableField<LeadRecord, ?>> fieldMap = makeFieldMap();
   private final ConnectionSource connectionSource;
@@ -94,7 +95,7 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer> {
           "  website        VARCHAR(512) NOT NULL collate noCase,\n" +
           "  skype          VARCHAR(512) NOT NULL collate noCase,\n" +
           "  description    VARCHAR      NOT NULL collate noCase,\n" +
-          "  history        VARCHAR      NOT NULL collate nocase)";
+          "  history        VARCHAR      NOT NULL collate noCase)";
   private static final char WC = '%';
   private DSLContext getDslContext() throws SQLException {
     assert connection != null;
@@ -163,6 +164,7 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer> {
     return true;
   }
 
+  @NotNull
   @Override
   public Collection<LeadRecord> getAll(final @Nullable LeadField orderBy) throws SQLException {
 
@@ -182,8 +184,9 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer> {
     }
   }
 
+  @NotNull
   @Override
-  public Collection<LeadRecord> find(final String text, final @Nullable LeadField orderBy) throws SQLException {
+  public Collection<LeadRecord> find(@NotNull final String text, final @Nullable LeadField orderBy) throws SQLException {
     final String wildCardText = wrapWithWildCards(text);
 
     DSLContext dslContext = getDslContext();
@@ -225,6 +228,7 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer> {
     return WC + text + WC;
   }
 
+  @NotNull
   @Override
   public Collection<LeadRecord> findAny(final @Nullable LeadField orderBy, final String... text) throws SQLException {
 
@@ -253,6 +257,7 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer> {
     }
   }
 
+  @NotNull
   @Override
   public Collection<LeadRecord> findAll(final @Nullable LeadField orderBy, final String... text) throws SQLException {
 
@@ -279,10 +284,11 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer> {
     }
   }
 
+  @NotNull
   @Override
   public Collection<LeadRecord> findInField(
-      final String text, 
-      final @NonNull LeadField findBy, 
+      @NotNull final String text,
+      final @NonNull LeadField findBy,
       final @Nullable LeadField orderBy
   ) throws SQLException {
     String wildCardText = wrapWithWildCards(text);
@@ -302,6 +308,7 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer> {
     }
   }
 
+  @NotNull
   @Override
   public Collection<LeadRecord> findAnyInField(final @NonNull LeadField findBy, final @Nullable LeadField orderBy, final String... text) throws SQLException {
     DSLContext dslContext = getDslContext();
@@ -317,6 +324,7 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer> {
     }
   }
 
+  @NotNull
   @Override
   public Collection<LeadRecord> findAllInField(final @NonNull LeadField findBy, final @Nullable LeadField orderBy, final String... text) throws SQLException {
 

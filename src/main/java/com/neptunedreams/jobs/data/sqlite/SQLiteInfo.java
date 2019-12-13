@@ -6,9 +6,14 @@ import java.sql.SQLException;
 import java.util.Objects;
 import com.neptunedreams.framework.data.AbstractDatabaseInfo;
 import com.neptunedreams.framework.data.ConnectionSource;
+import com.neptunedreams.framework.data.DBField;
 import com.neptunedreams.framework.data.Dao;
 import com.neptunedreams.jobs.gen.DefaultSchema;
 import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
+import org.checkerframework.checker.initialization.qual.Initialized;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
+import org.jetbrains.annotations.NotNull;
 import org.jooq.DSLContext;
 import org.jooq.Query;
 import org.jooq.exception.DataAccessException;
@@ -39,6 +44,7 @@ public class SQLiteInfo extends AbstractDatabaseInfo {
     super(homeDir);
 //    init();
   }
+  @NotNull
   @Override
   public String getUrl() {
     //noinspection StringConcatenationMissingWhitespace
@@ -46,15 +52,16 @@ public class SQLiteInfo extends AbstractDatabaseInfo {
   }
 
   @Override
-  public <T, PK> Dao<T, PK> getDao(final Class<T> entityClass, final ConnectionSource source) {
+  public @UnknownKeyFor @NonNull @Initialized <T, PK, F extends DBField> Dao<T, PK, F> getDao(final @UnknownKeyFor @NonNull @Initialized Class<T> entityClass, final @UnknownKeyFor @NonNull @Initialized ConnectionSource source) {
     //noinspection EqualityOperatorComparesObjects
     if (entityClass == RECORD_RECORD_CLASS) {
       //noinspection unchecked
-      return (Dao<T, PK>) SQLiteRecordDao.create(source);
+      return (Dao<T, PK, F>) SQLiteRecordDao.create(source);
     }
     throw new IllegalArgumentException(String.valueOf(entityClass));
   }
 
+  @NotNull
   @Override
   public Class<?> getRecordClass() {
     return RECORD_RECORD_CLASS;

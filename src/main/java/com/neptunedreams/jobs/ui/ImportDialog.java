@@ -21,14 +21,14 @@ import com.neptunedreams.jobs.data.Record;
  * @author Miguel Mu\u00f1oz
  */
 final class ImportDialog extends JDialog {
-  private final Dao<Record, ?> recordDao;
-  private ImportDialog(Window parent, Dao<Record, ?> dao) {
+  private final Dao<Record, ?, ?> recordDao;
+  private ImportDialog(Window parent, Dao<Record, ?, ?> dao) {
     super(parent, ModalityType.DOCUMENT_MODAL);
     recordDao = dao;
 //    build();
   }
   
-  static ImportDialog build(Window parent, Dao<Record, ?> dao) {
+  static ImportDialog build(Window parent, Dao<Record, ?, ?> dao) {
     ImportDialog importDialog = new ImportDialog(parent, dao);
     importDialog.build();
     return importDialog;

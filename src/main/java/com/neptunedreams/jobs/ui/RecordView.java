@@ -26,6 +26,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.border.Border;
 import javax.swing.border.MatteBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -43,6 +44,7 @@ import com.neptunedreams.framework.event.ChangeRecord;
 import com.neptunedreams.framework.event.MasterEventBus;
 import org.checkerframework.checker.initialization.qual.NotOnlyInitialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
@@ -71,7 +73,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   private R currentRecord; // = new Record("D", "D", "D", "D");
   
   @NotOnlyInitialized
-  private RecordController<R, Integer> controller;
+  private RecordController<R, Integer, LeadField> controller;
   private final List<? extends FieldBinding<R, ? extends Serializable, ? extends JComponent>> allBindings;
   private final JTextComponent companyField;
   private final JTextArea historyField;
@@ -79,10 +81,13 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   private final JTextComponent dicePosnField;
   private final JTextComponent diceIdField;
 
+  @SuppressWarnings({"assignment.type.incompatible", "ConstantConditions"})
+  private @NonNull Border noBorder = null;
+
   @SuppressWarnings({"initialization.fields.uninitialized", "argument.type.incompatible", "method.invocation.invalid"})
   private RecordView(R record,
                      LeadField initialSort,
-                     Dao<R, Integer> dao,
+                     Dao<R, Integer, LeadField> dao,
                      Function<Void, R> recordConstructor,
                      Function<R, Integer> getIdFunction, BiConsumer<R, Integer> setIdFunction,
                      Function<R, String> getCompanyFunction, BiConsumer<R, String> setCompanyFunction,
@@ -201,7 +206,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   }
 
   @SuppressWarnings("method.invocation.invalid")
-  private RecordController<R, Integer> makeController(final LeadField initialSort, final Dao<R, Integer> dao, final Function<Void, R> recordConstructor) {
+  private RecordController<R, Integer, LeadField> makeController(final LeadField initialSort, final Dao<R, Integer, LeadField> dao, final Function<Void, R> recordConstructor) {
     return new RecordController<>(
         dao,
         this,
@@ -239,7 +244,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
     return topPanel;
   }
 
-  public RecordController<R, Integer> getController() { return controller; }
+  public RecordController<R, Integer, LeadField> getController() { return controller; }
 
   /**
    * On the Mac, the AquaCaret will get installed. This caret has an annoying feature of selecting all the text on a
@@ -271,6 +276,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   @RequiresNonNull({"labelPanel", "fieldPanel", "buttonGroup", "checkBoxPanel", "controller"})
   private JComponent addFieldWithCopy(@UnderInitialization RecordView<R>this, final String labelText, final LeadField orderField, LeadField initialSort) {
     JButton copyButton = new JButton(Resource.getCopy());
+    copyButton.setBorder(noBorder);
     // For any field with a copy button, editable will be true
     JTextField field = (JTextField) addField(labelText, true, orderField, initialSort, copyButton);
     copyButton.addActionListener(e -> copyFrom(field));
@@ -354,6 +360,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
       return component;
     }
     JButton button = new JButton(Resource.getFwdChevron());
+    button.setBorder(noBorder);
     button.setToolTipText(String.format("Copy selected text to %s", label));
     button.setFocusable(false);
     JPanel panel = new JPanel(new BorderLayout());
@@ -467,7 +474,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
       private BiConsumer<RR, String> setDescription;
       private Function<RR, String> getHistory;
       private BiConsumer<RR, String> setHistory;
-      private Dao<RR, Integer> dao;
+      private Dao<RR, Integer, LeadField> dao;
       private Function<Void, RR> recordConstructor;
       public Builder(RR record, LeadField initialSort) {
         this.record = record;
@@ -552,7 +559,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
         return this;
       }
 
-      public Builder<RR> withDao(Dao<RR, Integer> dao) {
+      public Builder<RR> withDao(Dao<RR, Integer, LeadField> dao) {
         this.dao = dao;
         return this;
     }

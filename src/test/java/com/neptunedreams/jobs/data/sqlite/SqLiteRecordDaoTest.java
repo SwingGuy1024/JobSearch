@@ -44,7 +44,7 @@ public class SqLiteRecordDaoTest {
     final DatabaseInfo info = new SQLiteInfo("/.sqlite.jobHuntTest");
     info.init();
     connectionSource = info.getConnectionSource();
-    dao = (SQLiteRecordDao) info.<LeadRecord, Integer>getDao(LeadRecord.class, connectionSource);
+    dao = (SQLiteRecordDao) info.<LeadRecord, Integer, LeadField>getDao(LeadRecord.class, connectionSource);
   }
   
   @After

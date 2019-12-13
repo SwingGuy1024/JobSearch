@@ -87,7 +87,7 @@ public class RecordUI<R> extends JPanel implements RecordModelListener {
 
   // We set the initial text to a space, so we can fire the initial search by setting the text to the empty String.
   private JTextField findField = new JTextField(" ",10);
-  private final RecordController<R, Integer> controller;
+  private final RecordController<R, Integer, LeadField> controller;
   private EnumComboBox<LeadField> searchFieldCombo = new EnumComboBox<>(LeadField.values());
   //  private EnumGroup<LeadField> searchFieldGroup = new EnumGroup<>();
   private final @NonNull RecordModel<R> recordModel;
@@ -129,7 +129,7 @@ public class RecordUI<R> extends JPanel implements RecordModelListener {
 
   @SuppressWarnings({"method.invocation.invalid", "argument.type.incompatible", "JavaDoc"})
   // add(), setBorder(), etc not properly annotated in JDK.
-  public RecordUI(@NonNull RecordModel<R> model, RecordView<R> theView, RecordController<R, Integer> theController) {
+  public RecordUI(@NonNull RecordModel<R> model, RecordView<R> theView, RecordController<R, Integer, LeadField> theController) {
     super(new BorderLayout());
     recordModel = model;
     recordView = theView;
@@ -395,6 +395,7 @@ public class RecordUI<R> extends JPanel implements RecordModelListener {
     }
   }
 
+  @SuppressWarnings("NullableProblems")
   @Override
   public void modelListChanged(final int newSize) {
     boolean pnEnabled = newSize > 1;
@@ -454,6 +455,7 @@ public class RecordUI<R> extends JPanel implements RecordModelListener {
     return records -> SwingUtilities.invokeLater(() -> controller.setFoundRecords(records));
   }
 
+  @SuppressWarnings("NullableProblems")
   @Override
   public void indexChanged(final int index, int prior) {
     loadInfoLine();

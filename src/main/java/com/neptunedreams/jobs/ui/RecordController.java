@@ -6,13 +6,13 @@ import java.util.LinkedList;
 import java.util.StringTokenizer;
 import java.util.function.Function;
 import com.neptunedreams.framework.ErrorReport;
+import com.neptunedreams.framework.data.DBField;
 import com.neptunedreams.framework.data.Dao;
 import com.neptunedreams.framework.data.RecordModel;
 import com.neptunedreams.framework.data.RecordModelListener;
 import com.neptunedreams.framework.data.RecordSelectionModel;
 import com.neptunedreams.framework.data.SearchOption;
 import com.neptunedreams.framework.event.MasterEventBus;
-import com.neptunedreams.jobs.data.LeadField;
 import org.checkerframework.checker.initialization.qual.NotOnlyInitialized;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -24,21 +24,21 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  * @author Miguel Mu\u00f1oz
  */
 @SuppressWarnings({"UseOfSystemOutOrSystemErr", "WeakerAccess", "HardCodedStringLiteral"})
-public class RecordController<R, PK> implements RecordModelListener {
+public class RecordController<R, PK, F extends DBField> implements RecordModelListener {
   private static final Integer ZERO = 0;
   // For DerbyRecordDao, E was Record.FIELD
 //  private E order = Record.FIELD.SOURCE;
-  private LeadField order;
-  private final Dao<R, PK> dao;
+  private F order;
+  private final Dao<R, PK, F> dao;
   private final RecordSelectionModel<R> recordSelectionModel;
   @NotOnlyInitialized
   private final RecordModel<R> model;
 
   @SuppressWarnings({"argument.type.incompatible", "JavaDoc"})
   public RecordController(
-      Dao<R, PK> theDao, 
+      Dao<R, PK, F> theDao, 
       RecordSelectionModel<R> recordSelectionModel, 
-      LeadField initialOrder,
+      F initialOrder,
       Function<Void, R> recordConstructor
   ) {
     dao = theDao;
@@ -52,14 +52,14 @@ public class RecordController<R, PK> implements RecordModelListener {
     return model;
   }
   
-  public Dao<R, PK> getDao() { return dao; }
+  public Dao<R, PK, F> getDao() { return dao; }
 
   @SuppressWarnings("JavaDoc")
-  public void specifyOrder(LeadField theOrder) {
+  public void specifyOrder(F theOrder) {
     order = theOrder;
   }
 
-  public LeadField getOrder() {
+  public F getOrder() {
     return order;
   }
 
@@ -108,7 +108,7 @@ public class RecordController<R, PK> implements RecordModelListener {
   }
 
   @SuppressWarnings("JavaDoc")
-  public void findTextInField(String dirtyText, final LeadField field, SearchOption searchOption) {
+  public void findTextInField(String dirtyText, final F field, SearchOption searchOption) {
     //noinspection TooBroadScope
     String text = dirtyText.trim();
     try {
@@ -121,7 +121,7 @@ public class RecordController<R, PK> implements RecordModelListener {
   }
 
   @SuppressWarnings("JavaDoc")
-  Collection<R> findRecordsInField(final String text, final LeadField field, SearchOption searchOption) throws SQLException {
+  Collection<R> findRecordsInField(final String text, final F field, SearchOption searchOption) throws SQLException {
     if (text.trim().isEmpty()) {
       return dao.getAll(getOrder());
     } else {
@@ -187,12 +187,12 @@ public class RecordController<R, PK> implements RecordModelListener {
   }
 
   @Override
-  public void modelListChanged(final int newSize) {
+  public void modelListChanged(@SuppressWarnings("NullableProblems") final int newSize) {
     
   }
 
   @SuppressWarnings("JavaDoc")
-  public Collection<R> retrieveNow(final LeadField searchField, final SearchOption searchOption, final String searchText) {
+  public Collection<R> retrieveNow(final F searchField, final SearchOption searchOption, final String searchText) {
     try {
       if (searchField.isField()) {
         return findRecordsInField(searchText, searchField, searchOption);
@@ -206,7 +206,7 @@ public class RecordController<R, PK> implements RecordModelListener {
   }
 
   @Override
-  public void indexChanged(final int index, int prior) {
+  public void indexChanged(@SuppressWarnings("NullableProblems") final int index, @SuppressWarnings("NullableProblems") int prior) {
     loadNewRecord(model.getFoundRecord());
   }
 

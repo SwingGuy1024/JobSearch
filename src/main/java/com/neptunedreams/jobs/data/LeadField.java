@@ -1,7 +1,9 @@
 package com.neptunedreams.jobs.data;
 
+import com.neptunedreams.framework.data.DBField;
 import com.neptunedreams.framework.ui.DisplayEnum;
 import org.checkerframework.checker.nullness.qual.KeyFor;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * <p>Created by IntelliJ IDEA.
@@ -11,7 +13,7 @@ import org.checkerframework.checker.nullness.qual.KeyFor;
  * @author Miguel Mu\u00f1oz
  */
 //@SuppressWarnings("assignment.type.incompatible") // Not sure if this makes @KeyFor pointless
-public enum LeadField implements DisplayEnum {
+public enum LeadField implements DisplayEnum, DBField {
 //  @KeyFor("com.neptunedreams.jobs.data.sqlite.SQLiteRecordDao.fieldMap") All(false),
 //  @KeyFor("com.neptunedreams.jobs.data.sqlite.SQLiteRecordDao.fieldMap") ID,
 //  @KeyFor("com.neptunedreams.jobs.data.sqlite.SQLiteRecordDao.fieldMap") Company,
@@ -51,10 +53,12 @@ public enum LeadField implements DisplayEnum {
     isField = field;
   }
 
+  @Override
   public boolean isField() {
     return isField;
   }
 
+  @NotNull
   @Override
   public String getDisplay() {
     return toString();
