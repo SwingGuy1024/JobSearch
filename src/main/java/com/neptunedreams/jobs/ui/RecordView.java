@@ -360,7 +360,10 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
     panel.add(button, BorderLayout.LINE_START);
     panel.add(component, BorderLayout.CENTER);
     JTextField field = (JTextField) component;
-    button.addActionListener(e -> field.setText(SelectionSpy.spy.getSelectedText()));
+    button.addActionListener(e -> {
+      field.setText(SelectionSpy.spy.getSelectedText());
+      button.setEnabled(false);
+    });
     SelectionSpy.spy
         .addSelectionExistsListener((selectionExists) -> button.setEnabled(selectionExists && field.getText().isEmpty()));
     return panel;

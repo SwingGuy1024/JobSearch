@@ -30,8 +30,6 @@ public class RecordController<R, PK> implements RecordModelListener {
 //  private E order = Record.FIELD.SOURCE;
   private LeadField order;
   private final Dao<R, PK> dao;
-  // TODO:  RecordController and RecordView have references to each other. Replace this with a listener system
-  // todo   This shouldn't be too hard. There are very few calls made to the RecordView.
   private final RecordSelectionModel<R> recordSelectionModel;
   @NotOnlyInitialized
   private final RecordModel<R> model;

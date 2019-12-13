@@ -35,6 +35,7 @@ public enum SelectionSpy implements CaretListener {
   
   @Override
   public void caretUpdate(final CaretEvent e) {
+    //noinspection HardCodedStringLiteral,UseOfSystemOutOrSystemErr
     boolean priorSelectionExists = !selectedText.isEmpty();
     if (e.getDot() == e.getMark()) {
       selectedText = "";
