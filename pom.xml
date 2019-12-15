@@ -5,9 +5,6 @@
   <groupId>neptunedreams.com</groupId>
   <artifactId>job.search</artifactId>
   <version>0.1.0-SNAPSHOT</version>
-  <!--<modules>-->
-    <!--<module>jobs-derby</module>-->
-  <!--</modules>-->
   <packaging>jar</packaging>
 
   <name>JobSearch</name>
@@ -19,6 +16,13 @@
       <email>SwingGuy1024@yahoo.com</email>
     </developer>
   </developers>
+	
+	<!--
+	Note: The checker framework documentation says to include some references to a google library called "errorProne."
+	It should be a dependency, have a property set to refer to it, and should have a compiler argument set.
+	However, if I do this, I break the build. The solution is to remove the compiler argument. That argument is this:
+	<arg>-J-Xbootclasspath/p:${errorProneJavac}</arg>
+	-->
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -26,6 +30,7 @@
     <!-- These properties will be set by the Maven Dependency plugin -->
     <!--<annotatedJdk>${org.checkerframework:jdk8:jar}</annotatedJdk>-->
 	  <!--The above line seems to be of the form groupId:artifactId:jar, but it doesn't find anything there-->
+	  <!--This line works-->
     <annotatedJdk>${user.home}/.m2/repository/org/checkerframework/jdk8/${checkerVersion}/jdk8-3.0.1.jar</annotatedJdk>
     <!-- Uncomment to use the Type Annotations compiler. -->
     <!--<typeAnnotationsJavac>${org.checkerframework:compiler:jar}</typeAnnotationsJavac> -->
@@ -46,12 +51,6 @@
       <scope>test</scope>
     </dependency>
 
-    <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.apache.derby/derby &ndash;&gt;-->
-    <!--<dependency>-->
-      <!--<groupId>org.apache.derby</groupId>-->
-      <!--<artifactId>derby</artifactId>-->
-      <!--<version>10.14.1.0</version>-->
-    <!--</dependency>-->
 
     <!-- https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc -->
     <dependency>
@@ -59,13 +58,6 @@
       <artifactId>sqlite-jdbc</artifactId>
       <version>3.20.1</version>
     </dependency>
-
-    <!--&lt;!&ndash; https://mvnrepository.com/artifact/javax.persistence/persistence-api &ndash;&gt;-->
-    <!--<dependency>-->
-      <!--<groupId>javax.persistence</groupId>-->
-      <!--<artifactId>persistence-api</artifactId>-->
-      <!--<version>1.0.2</version>-->
-    <!--</dependency>-->
 
     <!-- https://mvnrepository.com/artifact/org.jetbrains/annotations -->
     <dependency>
@@ -80,16 +72,7 @@
 		  <groupId>org.jooq</groupId>
 		  <artifactId>jooq</artifactId>
 		  <version>${jooqVersion}</version>
-      <!--The following version will have a fix to the derby code-generation bug.-->
-      <!--<version>3.10.2</version>-->
     </dependency>
-
-    <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
-    <!--<dependency>-->
-      <!--<groupId>javax.xml.bind</groupId>-->
-      <!--<artifactId>jaxb-api</artifactId>-->
-      <!--<version>2.3.1</version>-->
-    <!--</dependency>-->
 
     <dependency>
       <groupId>org.hamcrest</groupId>
@@ -105,13 +88,11 @@
       <!-- Use checker-qual7 if targeting Java 7 -->
       <!-- <artifactId>checker-qual7</artifactId> -->
       <version>${checkerVersion}</version>
-	    <scope>compile</scope>
     </dependency>
 	  <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker</artifactId>
       <version>${checkerVersion}</version>
-		  <scope>compile</scope>
     </dependency>
     <!-- The Type Annotations compiler. Uncomment if using annotations in comments. -->
     <!-- <dependency>

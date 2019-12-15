@@ -26,7 +26,6 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.border.Border;
 import javax.swing.border.MatteBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -35,16 +34,15 @@ import javax.swing.text.DefaultCaret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import com.google.common.eventbus.Subscribe;
-import com.neptunedreams.framework.data.RecordSelectionModel;
-import com.neptunedreams.framework.ui.FieldBinding;
-import com.neptunedreams.framework.ui.SelectionSpy;
 import com.neptunedreams.framework.data.Dao;
-import com.neptunedreams.jobs.data.LeadField;
+import com.neptunedreams.framework.data.RecordSelectionModel;
 import com.neptunedreams.framework.event.ChangeRecord;
 import com.neptunedreams.framework.event.MasterEventBus;
+import com.neptunedreams.framework.ui.FieldBinding;
+import com.neptunedreams.framework.ui.SelectionSpy;
+import com.neptunedreams.jobs.data.LeadField;
 import org.checkerframework.checker.initialization.qual.NotOnlyInitialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
@@ -80,9 +78,6 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   private final JTextComponent descriptionField;
   private final JTextComponent dicePosnField;
   private final JTextComponent diceIdField;
-
-  @SuppressWarnings({"assignment.type.incompatible", "ConstantConditions"})
-  private @NonNull Border noBorder = null;
 
   @SuppressWarnings({"initialization.fields.uninitialized", "argument.type.incompatible", "method.invocation.invalid"})
   private RecordView(R record,
@@ -276,7 +271,8 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   @RequiresNonNull({"labelPanel", "fieldPanel", "buttonGroup", "checkBoxPanel", "controller"})
   private JComponent addFieldWithCopy(@UnderInitialization RecordView<R>this, final String labelText, final LeadField orderField, LeadField initialSort) {
     JButton copyButton = new JButton(Resource.getCopy());
-    copyButton.setBorder(noBorder);
+    
+    setNoBorder(copyButton);
     // For any field with a copy button, editable will be true
     JTextField field = (JTextField) addField(labelText, true, orderField, initialSort, copyButton);
     copyButton.addActionListener(e -> copyFrom(field));
@@ -360,7 +356,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
       return component;
     }
     JButton button = new JButton(Resource.getFwdChevron());
-    button.setBorder(noBorder);
+    setNoBorder(button);
     button.setToolTipText(String.format("Copy selected text to %s", label));
     button.setFocusable(false);
     JPanel panel = new JPanel(new BorderLayout());
