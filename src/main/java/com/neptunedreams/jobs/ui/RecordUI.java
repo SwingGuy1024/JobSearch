@@ -35,11 +35,14 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import com.neptunedreams.framework.ErrorReport;
 import com.google.common.eventbus.Subscribe;
+import com.neptunedreams.framework.ErrorReport;
 import com.neptunedreams.framework.data.RecordModel;
 import com.neptunedreams.framework.data.RecordModelListener;
 import com.neptunedreams.framework.data.SearchOption;
+import com.neptunedreams.framework.event.MasterEventBus;
+import com.neptunedreams.framework.task.ParameterizedCallable;
+import com.neptunedreams.framework.task.QueuedTask;
 import com.neptunedreams.framework.ui.EnumComboBox;
 import com.neptunedreams.framework.ui.EnumGroup;
 import com.neptunedreams.framework.ui.HidingPanel;
@@ -47,9 +50,6 @@ import com.neptunedreams.framework.ui.SwingUtils;
 import com.neptunedreams.framework.ui.SwipeDirection;
 import com.neptunedreams.framework.ui.SwipeView;
 import com.neptunedreams.jobs.data.LeadField;
-import com.neptunedreams.framework.event.MasterEventBus;
-import com.neptunedreams.framework.task.ParameterizedCallable;
-import com.neptunedreams.framework.task.QueuedTask;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -343,7 +343,8 @@ public class RecordUI<R> extends JPanel implements RecordModelListener {
   }
 
 //  private void doImport() {
-//    ImportDialog importDialog = new ImportDialog((Window) getRootPane().getParent(), controller.getDao());
+//    //noinspection unchecked
+//    ImportDialog importDialog = ImportDialog.build((Window) getRootPane().getParent(), (Dao<LeadRecord, ?, ?>) controller.getDao());
 //    importDialog.setVisible(true);
 //  }
 

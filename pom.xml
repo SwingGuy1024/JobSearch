@@ -132,7 +132,7 @@
             <!-- Uncomment the following line to use the type annotations compiler. -->
              <!--<arg>-J-Xbootclasspath/p:${typeAnnotationsJavac}</arg> -->
             <!-- Uncomment the following line to turn type-checking warnings into errors. -->
-            <!-- <arg>-Awarns</arg> -->
+             <arg>-Awarns</arg> 
 	          <arg>-Astubs=checkerframework/stubs</arg> <!-- Suggested by https://github.com/typetools/checker-framework/issues/445 -->
 	          <arg>-AstubWarnIfNotFound</arg>
           </compilerArgs>

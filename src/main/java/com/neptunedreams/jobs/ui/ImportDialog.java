@@ -8,10 +8,11 @@ import java.io.StringReader;
 import java.sql.SQLException;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import com.neptunedreams.framework.data.Dao;
-import com.neptunedreams.jobs.data.Record;
+import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
 
 /**
  * <p>Created by IntelliJ IDEA.
@@ -20,15 +21,16 @@ import com.neptunedreams.jobs.data.Record;
  *
  * @author Miguel Mu\u00f1oz
  */
+@SuppressWarnings({"HardCodedStringLiteral", "MagicCharacter", "HardcodedLineSeparator"})
 final class ImportDialog extends JDialog {
-  private final Dao<Record, ?, ?> recordDao;
-  private ImportDialog(Window parent, Dao<Record, ?, ?> dao) {
+  private final Dao<LeadRecord, ?, ?> recordDao;
+  private ImportDialog(Window parent, Dao<LeadRecord, ?, ?> dao) {
     super(parent, ModalityType.DOCUMENT_MODAL);
     recordDao = dao;
 //    build();
   }
   
-  static ImportDialog build(Window parent, Dao<Record, ?, ?> dao) {
+  static ImportDialog build(Window parent, Dao<LeadRecord, ?, ?> dao) {
     ImportDialog importDialog = new ImportDialog(parent, dao);
     importDialog.build();
     return importDialog;
@@ -55,50 +57,80 @@ final class ImportDialog extends JDialog {
   @SuppressWarnings("ConstantConditions")
   private void doLoad(String text) {
     try (BufferedReader reader = new BufferedReader(new StringReader(text))) {
-      int fieldNumber=0;
-      Record record = null;
+      LeadRecord record = null;
       String line = "";
+      int count = 0;
+      boolean active = false;
       while (line != null) {
         if (line.trim().isEmpty()) {
-          fieldNumber = 0;
           if (record != null) {
-            recordDao.update(record);
+            count++;
+            recordDao.insert(record);
           }
-          if (record != null) {
-            record = new Record(); // Always creates a record the first time through. So record is never null afterwards.
-          }
-        } else if (record != null) {
-          putLine(line.trim(), fieldNumber++, record);
+          record = new LeadRecord(); // Always creates a record the first time through. So record is never null afterwards.
+          active = false;
+        } else {
+          active = true;
+          putLine(line, record);
         }
         line = reader.readLine();
       }
-      if (record != null) {
-        recordDao.update(record);
+      if ((record != null) && active) {
+        recordDao.insert(record);
       }
+      JOptionPane.showMessageDialog(this, String.format("Imported %d records", count));
     } catch (IOException | SQLException e) {
       e.printStackTrace();
     }
   }
-  
-  private void putLine(String text, int fieldNumber, Record record) {
-    switch (fieldNumber) {
-      case 0:
-        record.setSource(text);
+
+  private void putLine(String text, LeadRecord record) {
+    int eqSpot = text.indexOf('=');
+    String fieldName = text.substring(0, eqSpot);
+    String fieldValue = text.substring(eqSpot+1);
+    fieldValue = fieldValue.replaceAll("\\\\n", "\n");
+    switch (fieldName) {
+      case "company":
+        record.setCompany(fieldValue);
         break;
-      case 1:
-        record.setUserName(text);
+      case "Contact Name":
+        record.setContactName(fieldValue);
         break;
-      case 2:
-        record.setPassword(text);
+      case "Dice Position":
+        record.setDicePosn(fieldValue);
+        break;
+      case "Dice ID":
+        record.setDiceId(fieldValue);
+        break;
+      case "Email":
+        record.setEmail(fieldValue);
+        break;
+      case "Phone1":
+        record.setPhone1(fieldValue);
+        break;
+      case "Phone2":
+        record.setPhone2(fieldValue);
+        break;
+      case "Fax":
+        record.setFax(fieldValue);
+        break;
+      case "WebSite":
+        record.setWebsite(fieldValue);
+        break;
+      case "skype":
+        record.setSkype(fieldValue);
+        break;
+      case "Description":
+        record.setDescription(fieldValue);
+        break;
+      case "History":
+        record.setHistory(fieldValue);
+        break;
+      case "hourly":
+      case "yearly":
         break;
       default:
-        //noinspection StringConcatenation,MagicCharacter,HardcodedLineSeparator
-        String notes = record.getNotes() + '\n' + text;
-        //noinspection HardcodedLineSeparator
-        while (notes.startsWith("\n")) {
-          notes = notes.substring(1);
-        }
-        record.setNotes(notes);
+        throw new IllegalArgumentException(text);
     }
   }
 }

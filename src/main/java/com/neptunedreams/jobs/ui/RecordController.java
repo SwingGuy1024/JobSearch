@@ -187,7 +187,7 @@ public class RecordController<R, PK, F extends DBField> implements RecordModelLi
   }
 
   @Override
-  public void modelListChanged(@SuppressWarnings("NullableProblems") final int newSize) {
+  public void modelListChanged(final int newSize) {
     
   }
 
@@ -206,7 +206,7 @@ public class RecordController<R, PK, F extends DBField> implements RecordModelLi
   }
 
   @Override
-  public void indexChanged(@SuppressWarnings("NullableProblems") final int index, @SuppressWarnings("NullableProblems") int prior) {
+  public void indexChanged(final int index, int prior) {
     loadNewRecord(model.getFoundRecord());
   }
 
