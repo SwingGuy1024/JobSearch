@@ -2,6 +2,8 @@ package com.neptunedreams.jobs.data.sqlite;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -13,13 +15,12 @@ import com.neptunedreams.framework.data.ConnectionSource;
 import com.neptunedreams.framework.data.DatabaseInfo;
 import com.neptunedreams.jobs.data.LeadField;
 import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 //import com.neptunedreams.jobs.data.Record;
@@ -34,8 +35,10 @@ import static org.junit.Assert.*;
 @SuppressWarnings({"HardCodedStringLiteral", "HardcodedLineSeparator", "MagicNumber"})
 public class SqLiteRecordDaoTest {
 
-  private static @MonotonicNonNull ConnectionSource connectionSource;
-  private static @MonotonicNonNull SQLiteRecordDao dao;
+  @SuppressWarnings("initialization.static.fields.uninitialized")
+  private static ConnectionSource connectionSource;
+  @SuppressWarnings("initialization.static.fields.uninitialized")
+  private static SQLiteRecordDao dao;
 
   @BeforeClass
   public static void setup() throws SQLException, IOException {
@@ -66,9 +69,9 @@ public class SqLiteRecordDaoTest {
 //    if (info.isCreateSchemaAllowed()) {
 //      info.createSchema();
 //    }
-    LeadRecord record1 = new LeadRecord(0,"TestLeadAlpha", "testName", "testPw", "testDiceID\nNote line 2\nNoteLine 3", "", "", "", "", "", "", "", "");
+    LeadRecord record1 = new LeadRecord(0,"TestLeadAlpha", "testName", "testPw", "testDiceID\nNote line 2\nNoteLine 3", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()));
 //    LeadRecord record1 = createRecord("TestLeadAlpha", "testName", "testPw", "testDiceID\nNote line 2\nNoteLine 3");
-    //noinspection recompany
+    //noinspection recompany,resource
     assertFalse(connectionSource.getConnection().isClosed());
 
     Collection<LeadRecord> allRecords = showAllRecords(dao, 0);
@@ -80,7 +83,7 @@ public class SqLiteRecordDaoTest {
     assertEquals(1, allRecords.size());
     assertEquals(allRecords.iterator().next().getId(), r1Id);
 
-    LeadRecord record2 = new LeadRecord(0, "t2Lead", "t2User", "t2Pw", "t2Note", "", "", "", "", "", "", "", "");
+    LeadRecord record2 = new LeadRecord(0, "t2Lead", "t2User", "t2Pw", "t2Note", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()));
 //    LeadRecord record2 = createRecord("t2Lead", "t2User", "t2Pw", "t2Note");
     dao.insert(record2);
     Integer r2Id = record2.getId();
@@ -170,7 +173,7 @@ public class SqLiteRecordDaoTest {
     System.err.println("testFindAny()");
     assert connectionSource != null;
     assert dao != null;
-    //noinspection recompany
+    //noinspection recompany,resource
     assertFalse(connectionSource.getConnection().isClosed());
     Collection<LeadRecord> allRecords = showAllRecords(dao, 0);
     assertEquals(0, allRecords.size());
@@ -294,24 +297,24 @@ public class SqLiteRecordDaoTest {
   
   private void setupFindTests() throws SQLException {
     LeadRecord[] records = {
-        new LeadRecord(1, "mBravoCompany", "xCharlieName", "pw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(2, "EBravoCompany", "xDeltaName", "pw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(3, "kBravoCompany", "dummy", "xCharliePw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(4, "BBravoCompany", "name", "xDeltaPw", "xCharlieDiceID", "", "", "", "", "", "", "", ""),
-        new LeadRecord(5, "pCharlieCompany", "xCharlieName", "pw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(6, "HDeltaCompany", "xCharlieName", "xDeltaPw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(7, "aDeltaCompany", "xDeltaName", "pw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(8, "lCompany", "xCharlieName", "pw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(9, "dCompany", "name", "pw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(10, "NDeltaCompany", "name", "pw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(11, "fCompany", "xDeltaName", "pw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(12, "cCompany", "xName", "xDeltaPw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(13, "iBravoCompany", "xEchoName", "pw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(14, "GDeltaCompany", "xEchoName", "pw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(15, "jCompany", "xName", "xpw", "xDeltaZ", "", "", "", "", "", "", "", ""),
-        new LeadRecord(16, "OBravoCompany", "name", "pw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(17, "RBravoCompany", "xDelta", "pw", "xCharlieDiceID", "", "", "", "", "", "", "", ""),
-        new LeadRecord(18, "qCharlieCompany", "xDeltaName", "pw", "zBravoDiceID", "", "", "", "", "", "", "", ""),
+        new LeadRecord(1, "mBravoCompany", "xCharlieName", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(2, "EBravoCompany", "xDeltaName", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(3, "kBravoCompany", "dummy", "xCharliePw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(4, "BBravoCompany", "name", "xDeltaPw", "xCharlieDiceID", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(5, "pCharlieCompany", "xCharlieName", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(6, "HDeltaCompany", "xCharlieName", "xDeltaPw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(7, "aDeltaCompany", "xDeltaName", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(8, "lCompany", "xCharlieName", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(9, "dCompany", "name", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(10, "NDeltaCompany", "name", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(11, "fCompany", "xDeltaName", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(12, "cCompany", "xName", "xDeltaPw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(13, "iBravoCompany", "xEchoName", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(14, "GDeltaCompany", "xEchoName", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(15, "jCompany", "xName", "xpw", "xDeltaZ", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(16, "OBravoCompany", "name", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(17, "RBravoCompany", "xDelta", "pw", "xCharlieDiceID", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(18, "qCharlieCompany", "xDeltaName", "pw", "zBravoDiceID", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
     };
     assert dao != null;
     for (LeadRecord r: records) {
@@ -321,24 +324,24 @@ public class SqLiteRecordDaoTest {
   
   private void setUpFindAllTests() throws SQLException {
     LeadRecord[] records = {
-        new LeadRecord(1, "mBravoCompany CharlieX", "xCharlieName", "pw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(2, "NBravoCompany DeltaX", "xDeltaName", "aBravo bEchoX cCharlieZ", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(3, "KBravoCompany EchoX", "dummy", "xCharliePw bBravoX aDeltaZ", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(4, "bBravoCompany CharlieX Delta Force", "name", "xDeltaPw", "xCharlieDiceID", "", "", "", "", "", "", "", ""),
-        new LeadRecord(5, "pCharlieCompany", "xCharlieName yBravo", "pw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(6, "HDeltaCompany", "xCharlieNameX yDeltaX", "xDeltaPw", "xDeltaNameX PBravoNameX ZCharlieX", "", "", "", "", "", "", "", ""),
-        new LeadRecord(7, "aDeltaCompany", "xDeltaNameX PBravoNameX ZCharlieX", "pw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(8, "LCompany", "xCharlieName", "pw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(9, "dCompany", "name", "CharlieXpw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(10, "eDeltaCompany", "name", "CharlieX BravoPw XDeltaZ", "XBravoZ aCharlieZ", "", "", "", "", "", "", "", ""),
-        new LeadRecord(11, "JCompany", "xDeltaName zCharlieX bBravoZ", "pw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(12, "CCompany", "xName", "xDeltaPw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(13, "qBravoCompany dDeltaX aCharlieB", "xEchoName", "ABravoZ BDeltaX bCharlieX pw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(14, "GDeltaCompany", "xEchoName", "pw", "xBravo bCharlie ZDeltaX", "", "", "", "", "", "", "", ""),
-        new LeadRecord(15, "fCompany", "xName", "xpw", "xDeltaNameX PBravoNameX ZCharlieX", "", "", "", "", "", "", "", ""),
-        new LeadRecord(16, "OBravoCompany", "name", "pw", "", "", "", "", "", "", "", "", ""),
-        new LeadRecord(17, "rBravoCompany", "xDelta", "pw", "xCharlieDiceID", "", "", "", "", "", "", "", ""),
-        new LeadRecord(18, "ICharlieCompany aDeltaX bBravoX", "xDeltaName aBravoX bCharlieZ", "bEcho", "zBravoDiceID", "", "", "", "", "", "", "", ""),
+        new LeadRecord(1, "mBravoCompany CharlieX", "xCharlieName", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(2, "NBravoCompany DeltaX", "xDeltaName", "aBravo bEchoX cCharlieZ", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(3, "KBravoCompany EchoX", "dummy", "xCharliePw bBravoX aDeltaZ", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(4, "bBravoCompany CharlieX Delta Force", "name", "xDeltaPw", "xCharlieDiceID", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(5, "pCharlieCompany", "xCharlieName yBravo", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(6, "HDeltaCompany", "xCharlieNameX yDeltaX", "xDeltaPw", "xDeltaNameX PBravoNameX ZCharlieX", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(7, "aDeltaCompany", "xDeltaNameX PBravoNameX ZCharlieX", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(8, "LCompany", "xCharlieName", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(9, "dCompany", "name", "CharlieXpw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(10, "eDeltaCompany", "name", "CharlieX BravoPw XDeltaZ", "XBravoZ aCharlieZ", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(11, "JCompany", "xDeltaName zCharlieX bBravoZ", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(12, "CCompany", "xName", "xDeltaPw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(13, "qBravoCompany dDeltaX aCharlieB", "xEchoName", "ABravoZ BDeltaX bCharlieX pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(14, "GDeltaCompany", "xEchoName", "pw", "xBravo bCharlie ZDeltaX", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(15, "fCompany", "xName", "xpw", "xDeltaNameX PBravoNameX ZCharlieX", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(16, "OBravoCompany", "name", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(17, "rBravoCompany", "xDelta", "pw", "xCharlieDiceID", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(18, "ICharlieCompany aDeltaX bBravoX", "xDeltaName aBravoX bCharlieZ", "bEcho", "zBravoDiceID", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
     };
     assert dao != null;
     for (LeadRecord r : records) {
@@ -413,12 +416,11 @@ public class SqLiteRecordDaoTest {
 
 
   @Test
-  @SuppressWarnings({"HardCodedStringLiteral", "unused", "HardcodedLineSeparator"})
-  public void testDao() throws SQLException, IOException {
+  @SuppressWarnings({"HardCodedStringLiteral", "unused"})
+  public void testDao() throws SQLException {
     System.err.println("testDao");
     assert dao != null;
     assert connectionSource != null;
-    //noinspection HardcodedFileSeparator
     try {
       doTestDao(dao, connectionSource);
     } finally {

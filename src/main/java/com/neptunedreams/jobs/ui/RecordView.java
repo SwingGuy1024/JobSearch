@@ -13,11 +13,13 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -55,6 +57,8 @@ import static com.neptunedreams.framework.ui.SwingUtils.*;
  * <p>Created by IntelliJ IDEA.
  * <p>Date: 10/29/17
  * <p>Time: 10:54 AM
+ * <p>The panel to show the value of each retrieved record. This is mostly display components and subsidiary ui
+ * components, but not the main ui controls. It sits inside the RecordUI.
  *
  * @author Miguel Mu\u00f1oz
  */
@@ -69,7 +73,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   private ButtonGroup buttonGroup = new ButtonGroup();
 
   private R currentRecord; // = new Record("D", "D", "D", "D");
-  
+
   @NotOnlyInitialized
   private RecordController<R, Integer, LeadField> controller;
   private final List<? extends FieldBinding<R, ? extends Serializable, ? extends JComponent>> allBindings;
@@ -83,7 +87,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   private RecordView(R record,
                      LeadField initialSort,
                      Dao<R, Integer, LeadField> dao,
-                     Function<Void, R> recordConstructor,
+                     Supplier<R> recordConstructor,
                      Function<R, Integer> getIdFunction, BiConsumer<R, Integer> setIdFunction,
                      Function<R, String> getCompanyFunction, BiConsumer<R, String> setCompanyFunction,
                      Function<R, String> getContactNameFunction, BiConsumer<R, String> setContactNameFunction,
@@ -96,8 +100,9 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
                      Function<R, String> getWebSiteFunction, BiConsumer<R, String> setWebSiteFunction,
                      Function<R, String> getSkypeFunction, BiConsumer<R, String> setSkypeFunction,
                      Function<R, String> getDescriptionFunction, BiConsumer<R, String> setDescriptionFunction,
-                     Function<R, String> getHistoryFunction, BiConsumer<R, String> setHistoryFunction
-   ) {
+                     Function<R, String> getHistoryFunction, BiConsumer<R, String> setHistoryFunction,
+                     Function<R, String> getCreatedOnFunction
+  ) {
     super(new BorderLayout());
     currentRecord = record;
     controller = makeController(initialSort, dao, recordConstructor);
@@ -112,11 +117,12 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
     final JTextComponent faxField = (JTextComponent) addFieldWithCopy("Fax", LeadField.Fax, initialSort);
     final JTextComponent webSiteField = (JTextComponent) addFieldWithCopy("Web Site", LeadField.WebSite, initialSort);
     final JTextComponent skypeField = (JTextComponent) addFieldWithCopy("Skype", LeadField.Skype, initialSort);
+    final JLabel createdOnField = (JLabel) addField("", false, LeadField.CreatedOn, initialSort);
     descriptionField = addDescriptionField();
     historyField = new JTextArea(TEXT_ROWS, HISTORY_COLUMNS);
     assert getIdFunction != null : "Null id getter";
     assert setIdFunction != null : "Null id Setter";
-    final FieldBinding.IntegerBinding<R> idBinding = FieldBinding.bindInteger(getIdFunction, setIdFunction, idField);
+    final FieldBinding.IntegerBinding<R> idBinding = FieldBinding.bindInteger(getIdFunction, idField);
     final FieldBinding.StringEditableBinding<R> sourceBinding = FieldBinding.bindEditableString(getCompanyFunction, setCompanyFunction, companyField);
     final FieldBinding.StringEditableBinding<R> userNameBinding = FieldBinding.bindEditableString(getContactNameFunction, setContactNameFunction, contactNameField);
     final FieldBinding.StringEditableBinding<R> dicePosnBinding = FieldBinding.bindEditableString(getDicePosnFunction, setDicePosnFunction, dicePosnField);
@@ -129,19 +135,18 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
     final FieldBinding.StringEditableBinding<R> skypeBinding = FieldBinding.bindEditableString(getSkypeFunction, setSkypeFunction, skypeField);
     final FieldBinding.StringEditableBinding<R> descriptionBinding = FieldBinding.bindEditableString(getDescriptionFunction, setDescriptionFunction, descriptionField);
     final FieldBinding.StringEditableBinding<R> historyBinding = FieldBinding.bindEditableString(getHistoryFunction, setHistoryFunction, historyField);
-    allBindings = Arrays.asList(idBinding, sourceBinding, userNameBinding, dicePosnBinding, diceIdBinding, eMailBinding, phone1Binding, phone2Binding, 
-        faxBinding, webSiteBinding, skypeBinding, descriptionBinding, historyBinding);
-    
+    final FieldBinding.StringBinding<R> createdOnBinding = FieldBinding.bindConstantString(getCreatedOnFunction, createdOnField);
+    allBindings = Arrays.asList(idBinding, sourceBinding, userNameBinding, dicePosnBinding, diceIdBinding, eMailBinding, phone1Binding, phone2Binding,
+        faxBinding, webSiteBinding, skypeBinding, descriptionBinding, historyBinding, createdOnBinding);
+
     // currentRecord has null values for lots of non-null fields. This should clean those fields up.
     for (FieldBinding<R, ?, ?> b : allBindings) {
       cleanValue(b, record); // somehow, Nullness Checker doesn't recognize currentRecord as non-null, but record is ok
     }
-    idBinding.setValue(record, 0); // same here. TODO: Ask StackOverflow about this
-
     add(makeFieldAndHistoryPanel(makeFieldPanel(), historyField), BorderLayout.PAGE_START);
 //    makeFieldPanel();
 
-    installStandardCaret(companyField, contactNameField, dicePosnField, diceIdField, eMailField, phone1Field, 
+    installStandardCaret(companyField, contactNameField, dicePosnField, diceIdField, eMailField, phone1Field,
         phone2Field, faxField, webSiteField, skypeField, descriptionField, historyField);
   }
 
@@ -151,7 +156,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
     button.setFocusable(false);
     return button;
   }
-  
+
   private void scanForDiceInfo() {
     String description = descriptionField.getText();
     if (scanForDiceInfo(description)) { return; }
@@ -201,7 +206,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   }
 
   @SuppressWarnings("method.invocation.invalid")
-  private RecordController<R, Integer, LeadField> makeController(final LeadField initialSort, final Dao<R, Integer, LeadField> dao, final Function<Void, R> recordConstructor) {
+  private RecordController<R, Integer, LeadField> makeController(final LeadField initialSort, final Dao<R, Integer, LeadField> dao, final Supplier<R> recordConstructor) {
     return new RecordController<>(
         dao,
         this,
@@ -215,20 +220,29 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   }
 
   /**
-   * Clean the value during initialization. This needs to be a separate method because there's no way to infer the 
-   * type of T if I put this code in the original loop. Without T, there's no way for the compiler to know that the 
+   * Clean the value during initialization. This needs to be a separate method because there's no way to infer the
+   * type of T if I put this code in the original loop. Without T, there's no way for the compiler to know that the
    * value returned by binding.getValue() is the same type as the one we need to pass to setValue().
+   * 
+   * TODO ReExamine this. This may be unnecessary I think it was to prevent null values from being written to the 
+   * fields, and it may only be needed before loading the database. In that case, this should be done by the field
+   * binding itself. This removed the troublesome test of editable, as well as calling a setter that may not exist.
+   * It would also remove 2 cast warnings.
+   *
    * @param binding The FieldBinding
-   * @param record The record to clean
-   * @param <T> The type of the record.
+   * @param record  The record to clean
+   * @param <T>     The type of the record.
    */
-  private <T> void cleanValue(@UnderInitialization RecordView<R> this, FieldBinding<R, T, ?> binding, R record) {
-    binding.setValue(record, binding.getValue(record));
+  private <T> void cleanValue(@UnderInitialization RecordView<R>this, FieldBinding<R, T, ?> binding, R record) {
+    if (binding instanceof FieldBinding.EditableFieldBinding) {
+      //noinspection unchecked,rawtypes
+      ((FieldBinding.EditableFieldBinding)binding).setValue(record, binding.getValue(record));
+    }
   }
 
   @SuppressWarnings("method.invocation.invalid")
   @RequiresNonNull({"labelPanel", "fieldPanel", "checkBoxPanel"})
-  private JPanel makeFieldPanel(@UnderInitialization RecordView<R> this) {
+  private JPanel makeFieldPanel(@UnderInitialization RecordView<R>this) {
     JPanel topPanel = new JPanel(new BorderLayout());
     topPanel.add(labelPanel, BorderLayout.LINE_START);
     topPanel.add(fieldPanel, BorderLayout.CENTER);
@@ -243,9 +257,10 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
 
   /**
    * On the Mac, the AquaCaret will get installed. This caret has an annoying feature of selecting all the text on a
-   * focus-gained event. If this isn't bad enough, it also fails to check temporary vs permanent focus gain, so it 
-   * gets triggered on a focused JTextComponent whenever a menu is released! This method removes the Aqua Caret and 
+   * focus-gained event. If this isn't bad enough, it also fails to check temporary vs permanent focus gain, so it
+   * gets triggered on a focused JTextComponent whenever a menu is released! This method removes the Aqua Caret and
    * installs a standard caret. It's only needed on the Mac, but it's safe to use on any platform.
+   *
    * @param components The components to repair. This is usually a JTextField or JTextArea.
    */
   public static void installStandardCaret(JTextComponent... components) {
@@ -271,7 +286,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   @RequiresNonNull({"labelPanel", "fieldPanel", "buttonGroup", "checkBoxPanel", "controller"})
   private JComponent addFieldWithCopy(@UnderInitialization RecordView<R>this, final String labelText, final LeadField orderField, LeadField initialSort) {
     JButton copyButton = new JButton(Resource.getCopy());
-    
+
     setNoBorder(copyButton);
     // For any field with a copy button, editable will be true
     JTextField field = (JTextField) addField(labelText, true, orderField, initialSort, copyButton);
@@ -318,7 +333,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
     }
     checkBoxPanel.add(orderBy);
     @SuppressWarnings("method.invocation.invalid") // We are under initialization when we create this, not when calling
-    ItemListener checkBoxListener = (itemEvent) -> itemStateChanged(orderField, itemEvent);
+        ItemListener checkBoxListener = (itemEvent) -> itemStateChanged(orderField, itemEvent);
     orderBy.addItemListener(checkBoxListener);
     return field;
   }
@@ -334,7 +349,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   /**
    * Copies the text of the field, regardless of if it's selected. (We can't just use field.copy() because that only
    * copies selected text.)
-   * 
+   *
    * @param field The field
    */
   private void copyFrom(@UnderInitialization RecordView<R> this, JTextField field) {
@@ -350,7 +365,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
     add(BorderLayout.CENTER, scrollPane);
     return wrappedField;
   }
-  
+
   JComponent wrapField(@UnderInitialization RecordView<R> this, JComponent component, String label) {
     if (!(component instanceof JTextField)) {
       return component;
@@ -381,7 +396,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
       binding.prepareEditor(newRecord);
     }
   }
-  
+
   @Override
   public boolean recordHasChanged() {
     for (FieldBinding<R, ?, ?> binding: allBindings) {
@@ -391,7 +406,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
     }
     return false;
   }
-  
+
   public boolean saveOnExit() {// throws SQLException {
     // Test four cases:
     // 1. New Record with data
@@ -423,13 +438,15 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
 
   private void loadUserEdits() {
     for (FieldBinding<R, ?, ?> binding : allBindings) {
-      if (binding.isEditable()) {
-        binding.saveEdit(currentRecord);
+      if (binding instanceof FieldBinding.EditableFieldBinding) {
+        //noinspection rawtypes,unchecked
+        ((FieldBinding.EditableFieldBinding)binding).saveEdit(currentRecord);
       }
     }
   }
 
-  @Subscribe void userRequestedNewRecord(MasterEventBus.UserRequestedNewRecordEvent event) {
+  @Subscribe
+  void userRequestedNewRecord(MasterEventBus.UserRequestedNewRecordEvent event) {
     companyField.requestFocus();
   }
 
@@ -441,42 +458,44 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   }
 
   @SuppressWarnings("initialization.fields.uninitialized")
-    public static class Builder<RR> {
-      private RR record;
-      private LeadField initialSort;
-      private Function<RR, Integer> getId;
-      private BiConsumer<RR, Integer> setId;
-      private Function<RR, String> getCompany;
-      private BiConsumer<RR, String> setCompany;
-      private Function<RR, String> getContactName;
-      private BiConsumer<RR, String> setContactName;
-      private Function<RR, String> getDicePosn;
-      private BiConsumer<RR, String> setDicePosn;
-      private Function<RR, String> getDiceId;
-      private BiConsumer<RR, String> setDiceId;
-      private Function<RR, String> getEMail;
-      private BiConsumer<RR, String> setEMail;
-      private Function<RR, String> getPhone1;
-      private BiConsumer<RR, String> setPhone1;
-      private Function<RR, String> getPhone2;
-      private BiConsumer<RR, String> setPhone2;
-      private Function<RR, String> getFax;
-      private BiConsumer<RR, String> setFax;
-      private Function<RR, String> getWebSite;
-      private BiConsumer<RR, String> setWebSite;
-      private Function<RR, String> getSkype;
-      private BiConsumer<RR, String> setSkype;
-      private Function<RR, String> getDescription;
-      private BiConsumer<RR, String> setDescription;
-      private Function<RR, String> getHistory;
-      private BiConsumer<RR, String> setHistory;
-      private Dao<RR, Integer, LeadField> dao;
-      private Function<Void, RR> recordConstructor;
-      public Builder(RR record, LeadField initialSort) {
-        this.record = record;
-        this.initialSort = initialSort;
-      }
-  
+  public static class Builder<RR> {
+    private RR record;
+    private LeadField initialSort;
+    private Function<RR, Integer> getId;
+    private BiConsumer<RR, Integer> setId;
+    private Function<RR, String> getCompany;
+    private BiConsumer<RR, String> setCompany;
+    private Function<RR, String> getContactName;
+    private BiConsumer<RR, String> setContactName;
+    private Function<RR, String> getDicePosn;
+    private BiConsumer<RR, String> setDicePosn;
+    private Function<RR, String> getDiceId;
+    private BiConsumer<RR, String> setDiceId;
+    private Function<RR, String> getEMail;
+    private BiConsumer<RR, String> setEMail;
+    private Function<RR, String> getPhone1;
+    private BiConsumer<RR, String> setPhone1;
+    private Function<RR, String> getPhone2;
+    private BiConsumer<RR, String> setPhone2;
+    private Function<RR, String> getFax;
+    private BiConsumer<RR, String> setFax;
+    private Function<RR, String> getWebSite;
+    private BiConsumer<RR, String> setWebSite;
+    private Function<RR, String> getSkype;
+    private BiConsumer<RR, String> setSkype;
+    private Function<RR, String> getDescription;
+    private BiConsumer<RR, String> setDescription;
+    private Function<RR, String> getHistory;
+    private BiConsumer<RR, String> setHistory;
+    private Function<RR, String> getCreatedOn;
+    private Dao<RR, Integer, LeadField> dao;
+    private Supplier<RR> recordConstructor;
+
+    public Builder(RR record, LeadField initialSort) {
+      this.record = record;
+      this.initialSort = initialSort;
+    }
+
     public Builder<RR> id(Function<RR, Integer> getter, BiConsumer<RR, Integer> setter) {
       getId = getter;
       setId = setter;
@@ -489,82 +508,87 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
       return this;
     }
 
-      public Builder<RR> contactName(Function<RR, String> getter, BiConsumer<RR, String> setter) {
-        getContactName = getter;
-        setContactName = setter;
-        return this;
-      }
+    public Builder<RR> contactName(Function<RR, String> getter, BiConsumer<RR, String> setter) {
+      getContactName = getter;
+      setContactName = setter;
+      return this;
+    }
 
-      public Builder<RR> dicePosn(Function<RR, String> getter, BiConsumer<RR, String> setter) {
-        getDicePosn = getter;
-        setDicePosn = setter;
-        return this;
-      }
+    public Builder<RR> dicePosn(Function<RR, String> getter, BiConsumer<RR, String> setter) {
+      getDicePosn = getter;
+      setDicePosn = setter;
+      return this;
+    }
 
-      public Builder<RR> diceId(Function<RR, String> getter, BiConsumer<RR, String> setter) {
-        getDiceId = getter;
-        setDiceId = setter;
-        return this;
-      }
+    public Builder<RR> diceId(Function<RR, String> getter, BiConsumer<RR, String> setter) {
+      getDiceId = getter;
+      setDiceId = setter;
+      return this;
+    }
 
-      public Builder<RR> email(Function<RR, String> getter, BiConsumer<RR, String> setter) {
-        getEMail = getter;
-        setEMail = setter;
-        return this;
-      }
+    public Builder<RR> email(Function<RR, String> getter, BiConsumer<RR, String> setter) {
+      getEMail = getter;
+      setEMail = setter;
+      return this;
+    }
 
-      public Builder<RR> phone1(Function<RR, String> getter, BiConsumer<RR, String> setter) {
-        getPhone1 = getter;
-        setPhone1 = setter;
-        return this;
-      }
+    public Builder<RR> phone1(Function<RR, String> getter, BiConsumer<RR, String> setter) {
+      getPhone1 = getter;
+      setPhone1 = setter;
+      return this;
+    }
 
-      public Builder<RR> phone2(Function<RR, String> getter, BiConsumer<RR, String> setter) {
-        getPhone2 = getter;
-        setPhone2 = setter;
-        return this;
-      }
+    public Builder<RR> phone2(Function<RR, String> getter, BiConsumer<RR, String> setter) {
+      getPhone2 = getter;
+      setPhone2 = setter;
+      return this;
+    }
 
-      public Builder<RR> fax(Function<RR, String> getter, BiConsumer<RR, String> setter) {
-        getFax = getter;
-        setFax = setter;
-        return this;
-      }
+    public Builder<RR> fax(Function<RR, String> getter, BiConsumer<RR, String> setter) {
+      getFax = getter;
+      setFax = setter;
+      return this;
+    }
 
-      public Builder<RR> website(Function<RR, String> getter, BiConsumer<RR, String> setter) {
-        getWebSite = getter;
-        setWebSite = setter;
-        return this;
-      }
+    public Builder<RR> website(Function<RR, String> getter, BiConsumer<RR, String> setter) {
+      getWebSite = getter;
+      setWebSite = setter;
+      return this;
+    }
 
-      public Builder<RR> skype(Function<RR, String> getter, BiConsumer<RR, String> setter) {
-        getSkype = getter;
-        setSkype = setter;
-        return this;
-      }
+    public Builder<RR> skype(Function<RR, String> getter, BiConsumer<RR, String> setter) {
+      getSkype = getter;
+      setSkype = setter;
+      return this;
+    }
 
-      public Builder<RR> description(Function<RR, String> getter, BiConsumer<RR, String> setter) {
-        getDescription = getter;
-        setDescription = setter;
-        return this;
-      }
+    public Builder<RR> description(Function<RR, String> getter, BiConsumer<RR, String> setter) {
+      getDescription = getter;
+      setDescription = setter;
+      return this;
+    }
 
-      public Builder<RR> history(Function<RR, String> getter, BiConsumer<RR, String> setter) {
-        getHistory = getter;
-        setHistory = setter;
-        return this;
-      }
-
-      public Builder<RR> withDao(Dao<RR, Integer, LeadField> dao) {
-        this.dao = dao;
-        return this;
+    public Builder<RR> history(Function<RR, String> getter, BiConsumer<RR, String> setter) {
+      getHistory = getter;
+      setHistory = setter;
+      return this;
     }
     
-    public Builder<RR> withConstructor(Function<Void, RR> constructor) {
-        recordConstructor = constructor;
-        return this;
+    public Builder<RR> createdOn(Function<RR, Timestamp> getter) {
+      getCreatedOn = (d) -> getter.apply(d).toString();
+      return this;
     }
-    
+
+    public Builder<RR> withDao(Dao<RR, Integer, LeadField> dao) {
+      this.dao = dao;
+      return this;
+    }
+
+    public Builder<RR> withConstructor(Supplier<RR> constructor) {
+      recordConstructor = constructor;
+      return this;
+    }
+
     public RecordView<RR> build() {
       final RecordView<RR> view = new RecordView<>(
           record,
@@ -583,7 +607,8 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
           getWebSite, setWebSite,
           getSkype, setSkype,
           getDescription, setDescription,
-          getHistory, setHistory
+          getHistory, setHistory,
+          getCreatedOn
       );
       view.register();
       return view;

@@ -34,12 +34,21 @@ import static org.jooq.impl.DSL.*;
 /**
  * Create statement: 
  * 
- * CREATE TABLE IF NOT EXISTS site (
- *    id          INTEGER        NOT NULL PRIMARY KEY,
- *    source      VARCHAR (256)  NOT NULL collate noCase,
- *    username    VARCHAR (256)  NOT NULL collate noCase,
- *    password    VARCHAR (256)  NOT NULL collate noCase,
- *    notes       LONG VARCHAR   NOT NULL collate noCase
+ * CREATE TABLE IF NOT EXISTS lead (
+ *   id             INTEGER      NOT NULL PRIMARY KEY AUTOINCREMENT,
+ *   company        VARCHAR(512) NOT NULL collate noCase,
+ *   contact_name   VARCHAR(512) NOT NULL collate noCase,
+ *   dice_posn      VARCHAR(512) NOT NULL collate noCase,
+ *   dice_id        VARCHAR(512) NOT NULL collate noCase,
+ *   email          VARCHAR(512) NOT NULL collate noCase,
+ *   phone1         VARCHAR(512) NOT NULL collate noCase,
+ *   phone2         VARCHAR(512) NOT NULL collate noCase,
+ *   fax            VARCHAR(512) NOT NULL collate noCase,
+ *   website        VARCHAR(512) NOT NULL collate noCase,
+ *   skype          VARCHAR(512) NOT NULL collate noCase,
+ *   description    VARCHAR      NOT NULL collate noCase,
+ *   history        VARCHAR      NOT NULL collate noCase,
+ *   createdOn      DATETIME     NOT NULL DEFAULT (DATETIME('now'))
  * );
  * 
  * <p>Created by IntelliJ IDEA.
@@ -48,7 +57,7 @@ import static org.jooq.impl.DSL.*;
  *
  * @author Miguel Mu\u00f1oz
  */
-@SuppressWarnings({"StringConcatenation", "SqlResolve", "StringConcatenationMissingWhitespace", "HardCodedStringLiteral"})
+@SuppressWarnings("StringConcatenation")
 public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField> {
 
   private static final Map<LeadField, @NonNull TableField<LeadRecord, ?>> fieldMap = makeFieldMap();
@@ -70,6 +79,7 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
     fieldMap.put(LeadField.Skype, Lead.LEAD.SKYPE);
     fieldMap.put(LeadField.Description, Lead.LEAD.DESCRIPTION);
     fieldMap.put(LeadField.History, Lead.LEAD.HISTORY);
+    fieldMap.put(LeadField.CreatedOn, Lead.LEAD.CREATEDON);
     return fieldMap;
   }
 
@@ -83,7 +93,7 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
   @SuppressWarnings("HardcodedLineSeparator")
   private static final String CREATE_TABLE = 
       "CREATE TABLE IF NOT EXISTS lead (\n" +
-          "  id             INTEGER      NOT NULL PRIMARY KEY,\n" +
+          "  id             INTEGER      NOT NULL PRIMARY KEY AUTOINCREMENT,\n" +
           "  company        VARCHAR(512) NOT NULL collate noCase,\n" +
           "  contact_name   VARCHAR(512) NOT NULL collate noCase,\n" +
           "  dice_posn      VARCHAR(512) NOT NULL collate noCase,\n" +
@@ -95,7 +105,9 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
           "  website        VARCHAR(512) NOT NULL collate noCase,\n" +
           "  skype          VARCHAR(512) NOT NULL collate noCase,\n" +
           "  description    VARCHAR      NOT NULL collate noCase,\n" +
-          "  history        VARCHAR      NOT NULL collate noCase)";
+          "  history        VARCHAR      NOT NULL collate noCase,\n" +
+          "  createdOn      DATETIME     NOT NULL DEFAULT (DATETIME('now'))\n" +
+          ");";
   private static final char WC = '%';
   private DSLContext getDslContext() throws SQLException {
     assert connection != null;
@@ -120,7 +132,6 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
     return this;
   }
 
-  @SuppressWarnings("JavaDoc")
   static SQLiteRecordDao create(ConnectionSource source) {
     return new SQLiteRecordDao(source).launch();
   }

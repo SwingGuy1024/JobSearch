@@ -27,6 +27,8 @@ This builds the OSX executable.
 For other platforms, you may now assemble an executable jar file from the compiled classes:
 
     mvn clean assembly:assembly
+    
+The location of the database is determined by the `SQLiteInfo` class.
 
 ## Why?
 

@@ -5,9 +5,9 @@
   <groupId>neptunedreams.com</groupId>
   <artifactId>job.search</artifactId>
   <version>0.1.0-SNAPSHOT</version>
+  <name>Job Search</name>
   <packaging>jar</packaging>
 
-  <name>JobSearch</name>
   <url>http://maven.apache.org</url>
   <developers>
     <developer>
@@ -28,14 +28,14 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- These properties will be set by the Maven Dependency plugin -->
-    <!--<annotatedJdk>${org.checkerframework:jdk8:jar}</annotatedJdk>-->
-	  <!--The above line seems to be of the form groupId:artifactId:jar, but it doesn't find anything there-->
-	  <!--This line works-->
-    <annotatedJdk>${user.home}/.m2/repository/org/checkerframework/jdk8/${checkerVersion}/jdk8-3.0.1.jar</annotatedJdk>
+    <!--suppress UnresolvedMavenProperty -->
+    <annotatedJdk>${org.checkerframework:jdk8:jar}</annotatedJdk>
+    <!--suppress UnresolvedMavenProperty -->
+    <errorProneJavac>${com.google.errorprone:javac:jar}</errorProneJavac>
     <!-- Uncomment to use the Type Annotations compiler. -->
     <!--<typeAnnotationsJavac>${org.checkerframework:compiler:jar}</typeAnnotationsJavac> -->
-	  <jooqVersion>3.11.12</jooqVersion>
-	  <checkerVersion>3.0.1</checkerVersion>
+    <jooqVersion>3.12.3</jooqVersion>
+<!--	  <checkerVersion>3.0.1</checkerVersion>-->
   </properties>
 
   <dependencies>
@@ -85,26 +85,18 @@
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker-qual</artifactId>
-      <!-- Use checker-qual7 if targeting Java 7 -->
-      <!-- <artifactId>checker-qual7</artifactId> -->
-      <version>${checkerVersion}</version>
+      <version>3.1.0</version>
     </dependency>
-	  <dependency>
-      <groupId>org.checkerframework</groupId>
-      <artifactId>checker</artifactId>
-      <version>${checkerVersion}</version>
-    </dependency>
-    <!-- The Type Annotations compiler. Uncomment if using annotations in comments. -->
-    <!-- <dependency>
-      <groupId>org.checkerframework</groupId>
-      <artifactId>compiler</artifactId>
-      <version>${checkerVersion}</version>
-    </dependency> -->
+    <!-- If using JDK 8, add the following additional dependencies -->
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>jdk8</artifactId>
-      <version>${checkerVersion}</version>
-	    <scope>compile</scope>
+      <version>3.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.errorprone</groupId>
+      <artifactId>javac</artifactId>
+      <version>9+181-r4173-1</version>
     </dependency>
 
   </dependencies>
@@ -116,42 +108,44 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
+          <fork>true</fork>
           <source>1.8</source>
           <target>1.8</target>
           <compilerArguments>
             <Xmaxerrs>10000</Xmaxerrs>
             <Xmaxwarns>10000</Xmaxwarns>
-            <AsuppressWarnings>uninitialized</AsuppressWarnings>
+            <!--<AsuppressWarnings>uninitialized</AsuppressWarnings>-->
           </compilerArguments>
-          <compilerArgs>
-            <!--<arg>-AprintErrorStack</arg>-->
-            <!--NullChecker needs this turned on-->
-            <arg>-AassumeAssertionsAreEnabled</arg> <!-- -Aassume... is spelled correctly. -->
-            <!-- location of the annotated JDK, which comes from a Maven dependency -->
-            <arg>-Xbootclasspath/p:${annotatedJdk}</arg>
-            <!-- Uncomment the following line to use the type annotations compiler. -->
-             <!--<arg>-J-Xbootclasspath/p:${typeAnnotationsJavac}</arg> -->
-            <!-- Uncomment the following line to turn type-checking warnings into errors. -->
-             <arg>-Awarns</arg> 
-	          <arg>-Astubs=checkerframework/stubs</arg> <!-- Suggested by https://github.com/typetools/checker-framework/issues/445 -->
-	          <arg>-AstubWarnIfNotFound</arg>
-          </compilerArgs>
-	        <annotationProcessorPaths>
-		        <path>
-			        <groupId>org.checkerframework</groupId>
-			        <artifactId>checker</artifactId>
-			        <version>3.0.1</version>
-		        </path>
-	        </annotationProcessorPaths>
-	        <annotationProcessors>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.checkerframework</groupId>
+              <artifactId>checker</artifactId>
+              <version>3.1.0</version>
+            </path>
+          </annotationProcessorPaths>
+          <annotationProcessors>
             <!-- Add all the checkers you want to enable here -->
 
             <!-- Invoke the NullnessChecker at org.checkerframework.checker.nullness.NullnessChecker -->
             <!-- There are probably other checkers we should invoke. -->
             <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
           </annotationProcessors>
+          <compilerArgs>
+            <!-- If using JDK 8, use only the two arguments immediately below. -->
+            <arg>-J-Xbootclasspath/p:${errorProneJavac}</arg>
+            <arg>-Xbootclasspath/p:${annotatedJdk}</arg>
+            <!-- If using JDK 11, remove the two arguments above, remove the
+								 space in the one below, and uncomment it. -->
+            <!-- <arg>-J- -add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg> -->
+
+            <!-- Optionally, -Awarns turns type-checking errors into warnings. -->
+<!--            <arg>-Awarns</arg>-->
+
+            <!--<arg>-Astubs=checkerframework/stubs</arg> &lt;!&ndash; Suggested by https://github.com/typetools/checker-framework/issues/445 &ndash;&gt;-->
+            <!--<arg>-AstubWarnIfNotFound</arg>-->
+          </compilerArgs>
         </configuration>
-        <version>3.7.0</version>
+        <version>3.8.1</version>
       </plugin>
 
       <plugin>
@@ -195,13 +189,17 @@
             <phase>prepare-package</phase>
             <goals>
               <goal>copy-dependencies</goal>
-              <goal>properties</goal>
             </goals>
             <configuration>
               <outputDirectory>
                 ${project.build.directory}/libs
               </outputDirectory>
             </configuration>
+          </execution>
+          <execution>
+            <goals>
+              <goal>properties</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>
@@ -234,7 +232,8 @@
           <mainClass>com.neptunedreams.jobs.JobSearch</mainClass>
           <!--<dictionaryFile>YourCustomInfo.plist</dictionaryFile>-->
           <iconFile>binoculars.icns</iconFile>
-          <jrePath>/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk</jrePath>
+          <!--suppress UnresolvedMavenProperty -->
+          <jrePath>${env.JAVA_HOME}/../../</jrePath>
         </configuration>
         <executions>
           <execution>

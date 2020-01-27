@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Objects;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -73,6 +75,14 @@ public final class JobSearch extends JPanel
   // done  2. Dim instead of hide search options. (I had forgotten all about them!)
   // todo  3. Put search field options in a new sidebar. Allow show/hide.
   // todo  4. Add column header to sort buttons.
+  // TODO: BUG: Find All doesn't find everything. It may fail to search in the Description field. Search for
+  // todo  North Hollywood. Find all finds it on id 4 and 33. Find Exact finds it on 4, 33, and 82. 
+  // TODO: Highlight found text after a find. Add a next button that highlights the next example on the current card, 
+  // todo  or goes to the next card if there aren't any more. (This will be tricky.)
+  // TODO: BUG Delete fails in certain circumstances. If I type some search text, then create a card (presumably not
+  // todo  a part of the search text), the delete-card button will throw an exception: Detached Exception: Cannot
+  // todo  execute query. No Connection Configured. (It may be because the card hasn't been inserted yet. But it's
+  // todo  a strange message.)
   
   // https://db.apache.org/ojb/docu/howtos/howto-use-db-sequences.html
   // https://db.apache.org/derby/docs/10.8/ref/rrefsqljcreatesequence.html 
@@ -109,7 +119,6 @@ public final class JobSearch extends JPanel
   private final @NonNull RecordController<LeadRecord, Integer, LeadField> controller;
   //  private RecordController<>
 
-  @SuppressWarnings({"OverlyBroadThrowsClause", "JavaDoc"})
   public static void main(String[] args) throws IOException, ClassNotFoundException {
     boolean doImport = (args.length > 0) && Objects.equals(args[0], "-import");
     frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -130,13 +139,12 @@ public final class JobSearch extends JPanel
       try {
         // There has to be a delay, because there's a 1-second delay built into the launchInitialSearch() method,
         // and this needs to take place after that finishes, or we won't see any records. 
-        //noinspection MagicNumber
         Thread.sleep(1000); // Yeah, this is kludgy, but it's only for the export, which is only done in development.
       } catch (InterruptedException ignored) { }
 
       SwingUtilities.invokeLater(() -> {
         RecordModel<LeadRecord> model = jobSearch.controller.getModel();
-        //noinspection StringConcatenation,StringConcatenationMissingWhitespace
+        // noinspection StringConcatenation
         String exportPath = System.getProperty("user.home") + EXPORT_FILE;
         System.err.printf("Exporting %d records to %s%n", model.getSize(), exportPath); // NON-NLS
         //noinspection OverlyBroadCatchBlock
@@ -150,7 +158,6 @@ public final class JobSearch extends JPanel
     }
   }
 
-  @SuppressWarnings("OverlyBroadThrowsClause")
   private JobSearch(boolean doImport) throws IOException, ClassNotFoundException {
     super();
 
@@ -158,10 +165,9 @@ public final class JobSearch extends JPanel
     try {
       info.init();
       final ConnectionSource connectionSource = info.getConnectionSource();
-      @SuppressWarnings("unchecked")
       Dao<LeadRecord, Integer, LeadField> dao = info.getDao(LeadRecord.class, connectionSource);
-      LeadRecord dummyRecord = new LeadRecord(0, "", "", "", "", "", "", "", "", "", "", "", "");
-      final RecordView<LeadRecord> view = new RecordView.Builder<>(dummyRecord, LeadField.Company)
+      LeadRecord dummyRecord = new LeadRecord(0, "", "", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()));
+      final RecordView<LeadRecord> view = new RecordView.Builder<>(dummyRecord, LeadField.CreatedOn)
           .company  (LeadRecord::getCompany,   LeadRecord::setCompany)
           .id      (LeadRecord::getId,       LeadRecord::setId)
           .contactName(LeadRecord::getContactName, LeadRecord::setContactName)
@@ -175,6 +181,7 @@ public final class JobSearch extends JPanel
           .skype(LeadRecord::getSkype, LeadRecord::setSkype)
           .description(LeadRecord::getDescription, LeadRecord::setDescription)
           .history(LeadRecord::getHistory, LeadRecord::setHistory)
+          .createdOn(LeadRecord::getCreatedon)
           .withDao(dao)
           .withConstructor(this::recordConstructor)
           .build();
@@ -216,21 +223,21 @@ public final class JobSearch extends JPanel
 //      }
     } catch (SQLException e) {
       e.printStackTrace();
-      shutDownDatabase();
+      shutDownDatabase(info);
       throw new IOException(e); // don't even open the window!
     }
   }
 
   @SuppressWarnings("OverlyBroadThrowsClause")
   private static void importFromFile(
-      final Dao<LeadRecord, Integer, LeadField> dao, 
-      RecordController<LeadRecord, Integer, LeadField> controller)
+      final Dao<@NonNull LeadRecord, Integer, LeadField> dao, 
+      RecordController<@NonNull LeadRecord, Integer, LeadField> controller)
       throws SQLException, IOException, ClassNotFoundException {
-    //noinspection StringConcatenation,StringConcatenationMissingWhitespace
+    // noinspection StringConcatenation
     String exportPath = System.getProperty("user.home") + EXPORT_FILE;
     try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(exportPath))) {
       @SuppressWarnings("unchecked")
-      RecordModel<LeadRecord> model = (RecordModel<LeadRecord>) objectInputStream.readObject();
+      RecordModel<@NonNull LeadRecord> model = (RecordModel<@NonNull LeadRecord>) objectInputStream.readObject();
       for (int ii=0; ii<model.getSize(); ++ii) {
         dao.insert(model.getRecordAt(ii));
       }
@@ -239,9 +246,8 @@ public final class JobSearch extends JPanel
   }
 
   @SuppressWarnings("unused")
-  private LeadRecord recordConstructor(@UnderInitialization JobSearch this, Void ignored) {
-    //noinspection ConstantConditions
-    return new LeadRecord(0, "", "", "", "", "", "", "", "", "", "", "", "");
+  private LeadRecord recordConstructor(@UnderInitialization JobSearch this) {
+    return new LeadRecord(0, "", "", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()));
   }
   
   private JPanel getPanel() { return mainPanel; }
@@ -274,14 +280,13 @@ public final class JobSearch extends JPanel
     return new WindowAdapter() {
       @Override
       public void windowClosed(final WindowEvent e) {
-        shutDownDatabase();
+        shutDownDatabase(info);
       }
     };
   }
 
-  private void shutDownDatabase(@UnknownInitialization JobSearch this) {
-    assert info != null;
-    info.shutdown();
+  private void shutDownDatabase(@UnknownInitialization JobSearch this, DatabaseInfo dInfo) {
+    dInfo.shutdown();
   }
 }
 

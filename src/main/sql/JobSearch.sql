@@ -4,7 +4,7 @@
 -- 2. Open sqlite3
 -- 3. Open the generating database file in sqlite3. This is at src/main/resources/sql/generateFromJobs.db
 -- 4. Run this script, which will create the table in generateFromJobs.db.
--- 5. Paste this script into the SQLiteRecordDao class, replacing the "create table" script that's already there.
+-- 5. Paste the create statement from this script into the SQLiteRecordDao class, replacing the "create table" script that's already there.
 -- 6. Run the generator: mvn jooq-codegen:generate
 --
 -- The code generator generates classes from the gen table. The gen table remains empty, and is only for development.
@@ -25,7 +25,8 @@ CREATE TABLE IF NOT EXISTS lead (
   website        VARCHAR(512) NOT NULL collate noCase,
   skype          VARCHAR(512) NOT NULL collate noCase,
   description    VARCHAR      NOT NULL collate noCase,
-  history        VARCHAR      NOT NULL collate nocase
+  history        VARCHAR      NOT NULL collate noCase,
+  createdOn      DATETIME     NOT NULL DEFAULT (DATETIME('now'))
 );
 
 -- FOREIGN KEY CONSTRAINTS SHOULD BE TURNED ON when making a database connection, using

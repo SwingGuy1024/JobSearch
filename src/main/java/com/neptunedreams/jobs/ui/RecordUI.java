@@ -57,6 +57,9 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 //import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 
 /**
+ * The RecordUI is the main global UI component. This is what gets added to the main window. It consists of a 
+ * RecordView, along with a control panel at the top and a trash panel at the bottom.
+ * <p>
  * Functions
  * Next, Previous
  * Find all
@@ -105,12 +108,12 @@ public class RecordUI<R> extends JPanel implements RecordModelListener {
   private RecordView<R> recordView;
 
   // recordConsumer is how the QueuedTask communicates with the application code.
-  private final Consumer<Collection<R>> recordConsumer = createRecordConsumer();
-  private @NonNull QueuedTask<String, Collection<R>> queuedTask;
+  private final Consumer<Collection<@NonNull R>> recordConsumer = createRecordConsumer();
+  private @NonNull QueuedTask<String, Collection<@NonNull R>> queuedTask;
 
   @SuppressWarnings({"methodref.inference.unimplemented", "methodref.receiver.bound.invalid"})
   private HidingPanel makeSearchOptionsPanel(@UnderInitialization RecordUI<R> this, EnumGroup<SearchOption> optionsGroup) {
-    JPanel optionsPanel = new JPanel(new GridLayout(1, 0));
+    JPanel optionsPanel = new JPanel(new GridLayout(0, 1));
     JRadioButton findExact = optionsGroup.add(SearchOption.findWhole);
     JRadioButton findAll = optionsGroup.add(SearchOption.findAll);
     JRadioButton findAny = optionsGroup.add(SearchOption.findAny);
@@ -127,7 +130,7 @@ public class RecordUI<R> extends JPanel implements RecordModelListener {
     return hidingPanel;
   }
 
-  @SuppressWarnings({"method.invocation.invalid", "argument.type.incompatible", "JavaDoc"})
+  @SuppressWarnings({"method.invocation.invalid", "argument.type.incompatible"})
   // add(), setBorder(), etc not properly annotated in JDK.
   public RecordUI(@NonNull RecordModel<R> model, RecordView<R> theView, RecordController<R, Integer, LeadField> theController) {
     super(new BorderLayout());
@@ -206,7 +209,6 @@ public class RecordUI<R> extends JPanel implements RecordModelListener {
     return swipeView.getLayer();
   }
   
-  @SuppressWarnings("JavaDoc")
   public void launchInitialSearch() {
     SwingUtilities.invokeLater(() -> {
       findField.setText(""); // This fires the initial search in queuedTask.
@@ -235,8 +237,9 @@ public class RecordUI<R> extends JPanel implements RecordModelListener {
   private JPanel createControlPanel() {
     JPanel buttonPanel = new JPanel(new BorderLayout());
     buttonPanel.add(getSearchField(), BorderLayout.PAGE_START);
-    buttonPanel.add(SwingUtils.wrapWest(searchOptionsPanel), BorderLayout.CENTER);
-    buttonPanel.add(getButtons(), BorderLayout.PAGE_END);
+    buttonPanel.add(BorderLayout.LINE_START, searchOptionsPanel);
+    buttonPanel.add(BorderLayout.CENTER, SwingUtils.wrapCenter(getButtons()));
+    buttonPanel.add(BorderLayout.LINE_END, makeTimePanel());
     return buttonPanel;
   }
 
@@ -294,12 +297,16 @@ public class RecordUI<R> extends JPanel implements RecordModelListener {
 //    importBtn.addActionListener((e) -> doImport());
     JPanel buttonPanel = new JPanel(new BorderLayout());
     buttonPanel.add(buttons, BorderLayout.LINE_START);
-    
-    JButton timeButton = makeTimeButton();
-    buttonPanel.add(SwingUtils.wrapSouth(timeButton), BorderLayout.LINE_END);
     setupActions(sView);
 
     return buttonPanel;
+  }
+  
+  private JPanel makeTimePanel() {
+    JButton timeButton = makeTimeButton();
+    JPanel timePanel = new JPanel(new BorderLayout());
+    timePanel.add(SwingUtils.wrapSouth(timeButton), BorderLayout.LINE_END);
+    return timePanel;
   }
 
   private JButton makeTimeButton() {
@@ -345,7 +352,7 @@ public class RecordUI<R> extends JPanel implements RecordModelListener {
 //  private void doImport() {
 //    //noinspection unchecked
 //    ImportDialog importDialog = ImportDialog.build((Window) getRootPane().getParent(), (Dao<LeadRecord, ?, ?>) controller.getDao());
-//    importDialog.setVisible(true);
+//    importDialog.setVisible(true); 
 //  }
 
   @SuppressWarnings("method.invocation.invalid")
@@ -396,7 +403,6 @@ public class RecordUI<R> extends JPanel implements RecordModelListener {
     }
   }
 
-  @SuppressWarnings("NullableProblems")
   @Override
   public void modelListChanged(final int newSize) {
     boolean pnEnabled = newSize > 1;
@@ -418,29 +424,28 @@ public class RecordUI<R> extends JPanel implements RecordModelListener {
     construction completes, so it works fine. Very annoying that I need to do this, but it's a relatively clean
     solution.  
    */
-  private ParameterizedCallable<String, Collection<R>> createCallable() {
-    return new ParameterizedCallable<String, Collection<R>>(null) {
+  private ParameterizedCallable<String, Collection<@NonNull R>> createCallable() {
+    return new ParameterizedCallable<String, Collection<@NonNull R>>(null) {
       @Override
-      public Collection<R> call(String inputData) {
+      public Collection<@NonNull R> call(String inputData) {
         return retrieveNow(inputData);
       }
     };
   }
   
-  private Collection<R> retrieveNow(String text) {
+  private Collection<@NonNull R> retrieveNow(String text) {
     assert controller != null;
     assert searchFieldCombo != null;
     return controller.retrieveNow(searchFieldCombo.getSelected(), getSearchOption(), text);
   }
   
-  @SuppressWarnings("JavaDoc")
   @Subscribe
   public void doSearchNow(MasterEventBus.SearchNowEvent searchNowEvent) {
     searchNow();
   }
 
   // This is public because I expect other classes to use it in the future. 
-  @SuppressWarnings({"WeakerAccess", "JavaDoc"})
+  @SuppressWarnings("WeakerAccess")
   public void searchNow() {
     assert SwingUtilities.isEventDispatchThread();
     assert findField != null;
@@ -452,11 +457,10 @@ public class RecordUI<R> extends JPanel implements RecordModelListener {
   }
 
   @SuppressWarnings("dereference.of.nullable") // controller is null when we call this, but not when we call the lambda.
-  private Consumer<Collection<R>> createRecordConsumer(@UnderInitialization RecordUI<R>this) {
+  private Consumer<Collection<@NonNull R>> createRecordConsumer(@UnderInitialization RecordUI<R>this) {
     return records -> SwingUtilities.invokeLater(() -> controller.setFoundRecords(records));
   }
 
-  @SuppressWarnings("NullableProblems")
   @Override
   public void indexChanged(final int index, int prior) {
     loadInfoLine();

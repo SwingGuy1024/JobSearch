@@ -6,6 +6,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.Date;
+import java.util.Objects;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -21,7 +28,7 @@ import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
  *
  * @author Miguel Mu\u00f1oz
  */
-@SuppressWarnings({"HardCodedStringLiteral", "MagicCharacter", "HardcodedLineSeparator"})
+@SuppressWarnings({"HardCodedStringLiteral", "MagicCharacter", "HardcodedLineSeparator", "unused"})
 final class ImportDialog extends JDialog {
   private final Dao<LeadRecord, ?, ?> recordDao;
   private ImportDialog(Window parent, Dao<LeadRecord, ?, ?> dao) {
@@ -71,7 +78,8 @@ final class ImportDialog extends JDialog {
           active = false;
         } else {
           active = true;
-          putLine(line, record);
+          assert record != null;
+          putLine(line, Objects.requireNonNull(record));
         }
         line = reader.readLine();
       }
@@ -129,8 +137,45 @@ final class ImportDialog extends JDialog {
       case "hourly":
       case "yearly":
         break;
+      case "createdOn":
+        Timestamp timestamp = loadTime(fieldValue);
+        record.setCreatedon(timestamp);
+        break;
       default:
         throw new IllegalArgumentException(text);
     }
+  }
+  
+  @SuppressWarnings("UseOfSystemOutOrSystemErr")
+  private static Timestamp loadTime(String value) {
+    DateFormat formatOne = SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.SHORT, SimpleDateFormat.SHORT);
+
+    SimpleDateFormat formatTwo = (SimpleDateFormat) SimpleDateFormat.getDateTimeInstance();
+    formatTwo.applyPattern("EEE, MMM d, yyyy h:mm aa");
+    
+    SimpleDateFormat formatThree = (SimpleDateFormat) SimpleDateFormat.getDateTimeInstance();
+    formatThree.applyPattern("EEE, MMM d, yyyy");
+    
+    SimpleDateFormat formatFour = (SimpleDateFormat) SimpleDateFormat.getDateInstance();
+    formatFour.applyPattern("MMM d, yyyy");
+    
+    Date theDate = multiParse(value, formatOne, formatTwo, formatThree, formatFour);
+    
+    Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(theDate.getTime()));
+    System.out.printf("**** **** **** **** **** %s -> %s (%s)%n", value, timestamp, formatTwo.format(theDate));
+    return timestamp;
+  }
+  
+  private static Timestamp multiParse(String text, DateFormat... formats) {
+    ParseException pe = null;
+    for (DateFormat format: formats) {
+      try {
+        Date theDate = format.parse(text);
+        return Timestamp.from(Instant.ofEpochMilli(theDate.getTime()));
+      } catch (ParseException e) {
+        pe = e;
+      }
+    }
+    throw new IllegalArgumentException(text, pe);
   }
 }
