@@ -46,6 +46,7 @@ import com.neptunedreams.framework.task.QueuedTask;
 import com.neptunedreams.framework.ui.EnumComboBox;
 import com.neptunedreams.framework.ui.EnumGroup;
 import com.neptunedreams.framework.ui.HidingPanel;
+import com.neptunedreams.framework.ui.RecordController;
 import com.neptunedreams.framework.ui.SwingUtils;
 import com.neptunedreams.framework.ui.SwipeDirection;
 import com.neptunedreams.framework.ui.SwipeView;

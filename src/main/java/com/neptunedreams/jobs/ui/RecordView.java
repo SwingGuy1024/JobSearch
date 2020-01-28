@@ -41,10 +41,12 @@ import com.neptunedreams.framework.data.RecordSelectionModel;
 import com.neptunedreams.framework.event.ChangeRecord;
 import com.neptunedreams.framework.event.MasterEventBus;
 import com.neptunedreams.framework.ui.FieldBinding;
+import com.neptunedreams.framework.ui.RecordController;
 import com.neptunedreams.framework.ui.SelectionSpy;
 import com.neptunedreams.jobs.data.LeadField;
 import org.checkerframework.checker.initialization.qual.NotOnlyInitialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
@@ -105,7 +107,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   ) {
     super(new BorderLayout());
     currentRecord = record;
-    controller = makeController(initialSort, dao, recordConstructor);
+    controller = makeController(initialSort, dao, recordConstructor, getIdFunction);
     final JLabel idField = (JLabel) addField("ID", false, LeadField.ID, initialSort);
     companyField = (JTextComponent) addField("Company", true, LeadField.Company, initialSort);
     final JTextComponent contactNameField = (JTextComponent) addField("Contact Name", true, LeadField.ContactName, initialSort);
@@ -139,12 +141,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
     allBindings = Arrays.asList(idBinding, sourceBinding, userNameBinding, dicePosnBinding, diceIdBinding, eMailBinding, phone1Binding, phone2Binding,
         faxBinding, webSiteBinding, skypeBinding, descriptionBinding, historyBinding, createdOnBinding);
 
-    // currentRecord has null values for lots of non-null fields. This should clean those fields up.
-    for (FieldBinding<R, ?, ?> b : allBindings) {
-      cleanValue(b, record); // somehow, Nullness Checker doesn't recognize currentRecord as non-null, but record is ok
-    }
     add(makeFieldAndHistoryPanel(makeFieldPanel(), historyField), BorderLayout.PAGE_START);
-//    makeFieldPanel();
 
     installStandardCaret(companyField, contactNameField, dicePosnField, diceIdField, eMailField, phone1Field,
         phone2Field, faxField, webSiteField, skypeField, descriptionField, historyField);
@@ -206,38 +203,23 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   }
 
   @SuppressWarnings("method.invocation.invalid")
-  private RecordController<R, Integer, LeadField> makeController(final LeadField initialSort, final Dao<R, Integer, LeadField> dao, final Supplier<R> recordConstructor) {
+  private RecordController<R, Integer, LeadField> makeController(
+      final LeadField initialSort, 
+      final Dao<R, Integer, LeadField> dao, 
+      final Supplier<@NonNull R> recordConstructor,
+      final Function<R, Integer> getIdFunction
+  ) {
     return new RecordController<>(
         dao,
         this,
         initialSort,
-        recordConstructor
+        recordConstructor,
+        getIdFunction
     );
   }
 
   private void register() {
     MasterEventBus.registerMasterEventHandler(this);
-  }
-
-  /**
-   * Clean the value during initialization. This needs to be a separate method because there's no way to infer the
-   * type of T if I put this code in the original loop. Without T, there's no way for the compiler to know that the
-   * value returned by binding.getValue() is the same type as the one we need to pass to setValue().
-   * 
-   * TODO ReExamine this. This may be unnecessary I think it was to prevent null values from being written to the 
-   * fields, and it may only be needed before loading the database. In that case, this should be done by the field
-   * binding itself. This removed the troublesome test of editable, as well as calling a setter that may not exist.
-   * It would also remove 2 cast warnings.
-   *
-   * @param binding The FieldBinding
-   * @param record  The record to clean
-   * @param <T>     The type of the record.
-   */
-  private <T> void cleanValue(@UnderInitialization RecordView<R>this, FieldBinding<R, T, ?> binding, R record) {
-    if (binding instanceof FieldBinding.EditableFieldBinding) {
-      //noinspection unchecked,rawtypes
-      ((FieldBinding.EditableFieldBinding)binding).setValue(record, binding.getValue(record));
-    }
   }
 
   @SuppressWarnings("method.invocation.invalid")
@@ -438,9 +420,8 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
 
   private void loadUserEdits() {
     for (FieldBinding<R, ?, ?> binding : allBindings) {
-      if (binding instanceof FieldBinding.EditableFieldBinding) {
-        //noinspection rawtypes,unchecked
-        ((FieldBinding.EditableFieldBinding)binding).saveEdit(currentRecord);
+      if (binding.isEditable()) {
+        binding.getEditableBinding().saveEdit(currentRecord);
       }
     }
   }

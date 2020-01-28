@@ -20,10 +20,10 @@ import com.neptunedreams.framework.ErrorReport;
 import com.neptunedreams.framework.data.ConnectionSource;
 import com.neptunedreams.framework.data.Dao;
 import com.neptunedreams.framework.data.DatabaseInfo;
+import com.neptunedreams.framework.ui.RecordController;
 import com.neptunedreams.jobs.data.LeadField;
 import com.neptunedreams.jobs.data.sqlite.SQLiteInfo;
 import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
-import com.neptunedreams.jobs.ui.RecordController;
 import com.neptunedreams.framework.data.RecordModel;
 import com.neptunedreams.jobs.ui.RecordUI;
 import com.neptunedreams.jobs.ui.RecordView;
@@ -117,7 +117,6 @@ public final class JobSearch extends JPanel
   private static JFrame frame = new JFrame("Job Hunt");
   private final @NonNull DatabaseInfo info;
   private final @NonNull RecordController<LeadRecord, Integer, LeadField> controller;
-  //  private RecordController<>
 
   public static void main(String[] args) throws IOException, ClassNotFoundException {
     boolean doImport = (args.length > 0) && Objects.equals(args[0], "-import");
@@ -168,8 +167,8 @@ public final class JobSearch extends JPanel
       Dao<LeadRecord, Integer, LeadField> dao = info.getDao(LeadRecord.class, connectionSource);
       LeadRecord dummyRecord = new LeadRecord(0, "", "", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()));
       final RecordView<LeadRecord> view = new RecordView.Builder<>(dummyRecord, LeadField.CreatedOn)
-          .company  (LeadRecord::getCompany,   LeadRecord::setCompany)
           .id      (LeadRecord::getId,       LeadRecord::setId)
+          .company  (LeadRecord::getCompany,   LeadRecord::setCompany)
           .contactName(LeadRecord::getContactName, LeadRecord::setContactName)
           .dicePosn(LeadRecord::getDicePosn, LeadRecord::setDicePosn)
           .diceId(LeadRecord::getDiceId, LeadRecord::setDiceId)
