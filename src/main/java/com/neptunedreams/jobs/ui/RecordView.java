@@ -432,7 +432,12 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   }
 
   public void addHistoryEvent(final String timeText) {
-    historyField.setText(historyField.getText().trim());
+    String historyText = historyField.getText().trim();
+    historyField.setText(historyText);
+    if (!historyText.isEmpty()) {
+      //noinspection HardcodedLineSeparator
+      historyField.append("\n\n");
+    }
     historyField.append(timeText);
     historyField.setSelectionStart(historyField.getText().length());
     historyField.requestFocus();

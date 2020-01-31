@@ -111,6 +111,7 @@ public class RecordUI<R> extends JPanel implements RecordModelListener {
   // recordConsumer is how the QueuedTask communicates with the application code.
   private final Consumer<Collection<@NonNull R>> recordConsumer = createRecordConsumer();
   private @NonNull QueuedTask<String, Collection<@NonNull R>> queuedTask;
+  private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT);
 
   @SuppressWarnings({"methodref.inference.unimplemented", "methodref.receiver.bound.invalid"})
   private HidingPanel makeSearchOptionsPanel(@UnderInitialization RecordUI<R> this, EnumGroup<SearchOption> optionsGroup) {
@@ -316,12 +317,10 @@ public class RecordUI<R> extends JPanel implements RecordModelListener {
     SwingWorker<String, String> timeWorker = new SwingWorker<String, String>() {
       @Override
       protected String doInBackground() throws InterruptedException {
-        DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT);
         long time = System.currentTimeMillis();
         //noinspection InfiniteLoopStatement
         while (true) {
-          ZonedDateTime now = ZonedDateTime.now();
-          String nowText = now.format(formatter);
+          String nowText = formattedTime();
           publish(nowText);
           long elapsedMinute = time % ONE_MINUTE_MILLIS;
           long remainingInMinute = ONE_MINUTE_MILLIS - elapsedMinute;
@@ -339,8 +338,12 @@ public class RecordUI<R> extends JPanel implements RecordModelListener {
     return timeButton;
   }
 
+  private String formattedTime() {
+    return ZonedDateTime.now().format(FORMATTER);
+  }
+
   private void newHistoryEvent(String time) {
-    String timeText = String.format("%n%n• %s%n", time);
+    String timeText = String.format("• %s%n", time);
     recordView.addHistoryEvent(timeText);
   }
 
@@ -348,6 +351,7 @@ public class RecordUI<R> extends JPanel implements RecordModelListener {
     controller.addBlankRecord();
     MasterEventBus.postUserRequestedNewRecordEvent();
     loadInfoLine();
+    newHistoryEvent(formattedTime());
   }
 
 //  private void doImport() {
