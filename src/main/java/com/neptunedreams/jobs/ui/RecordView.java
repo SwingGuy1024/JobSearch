@@ -85,7 +85,6 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   private final JTextComponent dicePosnField;
   private final JTextComponent diceIdField;
 
-  @SuppressWarnings({"initialization.fields.uninitialized", "argument.type.incompatible", "method.invocation.invalid"})
   private RecordView(R record,
                      LeadField initialSort,
                      Dao<R, Integer, LeadField> dao,
