@@ -443,7 +443,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   }
 
   @SuppressWarnings("initialization.fields.uninitialized")
-  public static class Builder<RR> {
+  public static class Builder<@NonNull RR> {
     private RR record;
     private LeadField initialSort;
     private Function<RR, Integer> getId;
