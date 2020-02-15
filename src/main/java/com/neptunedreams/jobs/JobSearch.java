@@ -208,7 +208,7 @@ public final class JobSearch extends JPanel
         }
       });
 
-//      // Import from Derby
+      //      // Import from Derby
 //      ObjectMapper objectMapper = new ObjectMapper();
 //      final File file = new File(System.getProperty("user.home"), "jobHuntRecords.json");
 //      

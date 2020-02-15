@@ -2,6 +2,8 @@ package com.neptunedreams.jobs.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -21,6 +23,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.swing.ButtonGroup;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -43,7 +46,9 @@ import com.neptunedreams.framework.event.MasterEventBus;
 import com.neptunedreams.framework.ui.FieldBinding;
 import com.neptunedreams.framework.ui.RecordController;
 import com.neptunedreams.framework.ui.SelectionSpy;
+import com.neptunedreams.framework.ui.SwingUtils;
 import com.neptunedreams.jobs.data.LeadField;
+import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.NotOnlyInitialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -65,7 +70,7 @@ import static com.neptunedreams.framework.ui.SwingUtils.*;
  * @author Miguel Mu\u00f1oz
  */
 @SuppressWarnings({"WeakerAccess", "HardCodedStringLiteral"})
-public final class RecordView<R> extends JPanel implements RecordSelectionModel<R> {
+public final class RecordView<R extends @NonNull Object> extends JPanel implements RecordSelectionModel<R> {
   private static final int TEXT_COLUMNS = 20;
   private static final int TEXT_ROWS = 15;
   private static final int HISTORY_COLUMNS = 40;
@@ -76,7 +81,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
 
   private R currentRecord; // = new Record("D", "D", "D", "D");
 
-  @NotOnlyInitialized
+//  @NotOnlyInitialized
   private RecordController<R, Integer, LeadField> controller;
   private final List<? extends FieldBinding<R, ? extends Serializable, ? extends JComponent>> allBindings;
   private final JTextComponent companyField;
@@ -120,7 +125,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
     final JTextComponent skypeField = (JTextComponent) addFieldWithCopy("Skype", LeadField.Skype, initialSort);
     final JLabel createdOnField = (JLabel) addField("", false, LeadField.CreatedOn, initialSort);
     descriptionField = addDescriptionField();
-    historyField = new JTextArea(TEXT_ROWS, HISTORY_COLUMNS);
+    historyField = SwingUtils.createClipboardCleaningTextArea(TEXT_ROWS, HISTORY_COLUMNS);
     assert getIdFunction != null : "Null id getter";
     assert setIdFunction != null : "Null id Setter";
     final FieldBinding.IntegerBinding<R> idBinding = FieldBinding.bindInteger(getIdFunction, idField);
@@ -140,21 +145,34 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
     allBindings = Arrays.asList(idBinding, sourceBinding, userNameBinding, dicePosnBinding, diceIdBinding, eMailBinding, phone1Binding, phone2Binding,
         faxBinding, webSiteBinding, skypeBinding, descriptionBinding, historyBinding, createdOnBinding);
 
-    add(makeFieldAndHistoryPanel(makeFieldPanel(), historyField), BorderLayout.PAGE_START);
+    JPanel tempFieldPanel = makeFieldPanel();
+    @NonNull JPanel historyPanel = makeFieldAndHistoryPanel(tempFieldPanel, historyField);
+    addHistoryPanel(historyPanel);
 
     installStandardCaret(companyField, contactNameField, dicePosnField, diceIdField, eMailField, phone1Field,
         phone2Field, faxField, webSiteField, skypeField, descriptionField, historyField);
   }
 
-  private JComponent makeScanButton() {
+  // I'm not sure why I shouldn't say @UnderInitialization RecordView<R> this here, but it may be because the nullness
+  // checker recognizes that no more members are set, so it changes the type of this to Initialized part way through
+  // the constructor. 
+  @SuppressWarnings("method.invocation.invalid")
+  private void addHistoryPanel(JComponent panel) {
+    // this is pulled out as a separate method because I can't annotate the add() method directory.
+    add(panel, BorderLayout.PAGE_START);
+  }
+
+  @SuppressWarnings("method.invocation.invalid")
+  private JComponent makeScanButton(@UnderInitialization RecordView<R>this) {
     JButton button = new JButton(Resource.getLeftChevron());
     button.addActionListener(e -> scanForDiceInfo());
     button.setFocusable(false);
     return button;
   }
 
-  private void scanForDiceInfo() {
-    String description = descriptionField.getText();
+  private void scanForDiceInfo(@Initialized RecordView<R>this) {
+    // description is never null, but the test is here to satisfy the Nullness Checker 
+    String description = (descriptionField == null) ? "" : notNull(descriptionField.getText());
     if (scanForDiceInfo(description)) { return; }
     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
     try {
@@ -163,7 +181,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
     } catch (UnsupportedFlavorException | IOException ignored) {}
   }
 
-  private boolean scanForDiceInfo(final String description) {
+  private boolean scanForDiceInfo(@Initialized RecordView<R> this, final String description) {
     String posnHead = "Position Id :";
     String idHead = "Dice Id :";
     String position = getNextWord(description, posnHead);
@@ -173,6 +191,10 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
       return true;
     }
     return false;
+  }
+  
+  public static String notNull(@Nullable String nullableString) {
+    return (nullableString == null) ? "" : nullableString;
   }
 
   private void loadPositionAndId(final String position, final String id) {
@@ -193,19 +215,19 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
     return null;
   }
 
-  @SuppressWarnings("method.invocation.invalid")
-  private JPanel makeFieldAndHistoryPanel(JPanel fieldPanel, JTextArea historyField) {
+  private static JPanel makeFieldAndHistoryPanel(JPanel fieldPanel, JTextArea historyField) {
     JPanel fieldAndHistoryPanel = new JPanel(new BorderLayout());
     fieldAndHistoryPanel.add(fieldPanel, BorderLayout.LINE_START);
     fieldAndHistoryPanel.add(scrollArea(historyField), BorderLayout.CENTER);
     return fieldAndHistoryPanel;
   }
 
-  @SuppressWarnings("method.invocation.invalid")
-  private RecordController<R, Integer, LeadField> makeController(
+  @SuppressWarnings({"return.type.incompatible", "argument.type.incompatible"})
+  private @NonNull RecordController<R, Integer, LeadField> makeController(
+      @UnderInitialization RecordView<R> this,
       final LeadField initialSort, 
       final Dao<R, Integer, LeadField> dao, 
-      final Supplier<@NonNull R> recordConstructor,
+      final Supplier<R> recordConstructor,
       final Function<R, Integer> getIdFunction
   ) {
     return new RecordController<>(
@@ -221,9 +243,12 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
     MasterEventBus.registerMasterEventHandler(this);
   }
 
+  // I'm not sure why I shouldn't say @UnderInitialization RecordView<R> this here, but it may be because the nullness
+  // checker recognizes that no more members are set, so it changes the type of this to Initialized part way through
+  // the constructor. 
   @SuppressWarnings("method.invocation.invalid")
   @RequiresNonNull({"labelPanel", "fieldPanel", "checkBoxPanel"})
-  private JPanel makeFieldPanel(@UnderInitialization RecordView<R>this) {
+  private JPanel makeFieldPanel() {
     JPanel topPanel = new JPanel(new BorderLayout());
     topPanel.add(labelPanel, BorderLayout.LINE_START);
     topPanel.add(fieldPanel, BorderLayout.CENTER);
@@ -341,7 +366,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
 
   @SuppressWarnings("method.invocation.invalid")
   private JTextComponent addDescriptionField(@UnderInitialization RecordView<R> this) {
-    final JTextArea wrappedField = new JTextArea(TEXT_ROWS, TEXT_COLUMNS);
+    final JTextArea wrappedField = SwingUtils.createClipboardCleaningTextArea(TEXT_ROWS, TEXT_COLUMNS);
     JComponent scrollPane = scrollArea(wrappedField);
     add(BorderLayout.CENTER, scrollPane);
     return wrappedField;
@@ -349,7 +374,11 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
 
   JComponent wrapField(@UnderInitialization RecordView<R> this, JComponent component, String label) {
     if (!(component instanceof JTextField)) {
-      return component;
+      Icon blankIcon = makeBlankIcon(Resource.getFwdChevron());
+      JPanel panel = new JPanel(new BorderLayout());
+      panel.add(new JLabel(blankIcon), BorderLayout.LINE_START);
+      panel.add(component, BorderLayout.CENTER);
+      return panel;
     }
     JButton button = new JButton(Resource.getFwdChevron());
     setNoBorder(button);
@@ -366,6 +395,24 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
     SelectionSpy.spy
         .addSelectionExistsListener((selectionExists) -> button.setEnabled(selectionExists && field.getText().isEmpty()));
     return panel;
+  }
+  
+  private static Icon makeBlankIcon(final Icon template) {
+    // Make a blank icon the same size as the template
+    return new Icon() {
+      @Override
+      public void paintIcon(final Component c, final Graphics g, final int x, final int y) { }
+
+      @Override
+      public int getIconWidth() { 
+        return template.getIconWidth();
+      }
+
+      @Override
+      public int getIconHeight() {
+        return template.getIconHeight();
+      }
+    };
   }
 
   @Subscribe
@@ -443,7 +490,7 @@ public final class RecordView<R> extends JPanel implements RecordSelectionModel<
   }
 
   @SuppressWarnings("initialization.fields.uninitialized")
-  public static class Builder<@NonNull RR> {
+  public static class Builder<RR extends @NonNull Object> {
     private RR record;
     private LeadField initialSort;
     private Function<RR, Integer> getId;

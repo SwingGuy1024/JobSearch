@@ -73,7 +73,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  * @author Miguel Mu\u00f1oz
  */
 @SuppressWarnings("HardCodedStringLiteral")
-public class RecordUI<R> extends JPanel implements RecordModelListener {
+public class RecordUI<R extends @NonNull Object> extends JPanel implements RecordModelListener {
 
   // TODO:  The QueuedTask is terrific, but it doesn't belong in this class. It belongs in the Controller. That way,
   // todo   it can be accessed by other UI classes like RecordView. To do this, I also need to move the SearchOption
