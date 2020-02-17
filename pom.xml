@@ -323,6 +323,16 @@
         </configuration>
       </plugin>
 
+      <!-- Allows user to launch from maven: mvn exec:java -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.4.0</version>
+        <configuration>
+          <mainClass>com.neptunedreams.jobs.JobSearch</mainClass>
+        </configuration>
+      </plugin>
+
     </plugins>
   </build>
 </project>

@@ -73,7 +73,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  * @author Miguel Mu\u00f1oz
  */
 @SuppressWarnings("HardCodedStringLiteral")
-public class RecordUI<R extends @NonNull Object> extends JPanel implements RecordModelListener {
+public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener {
 
   // TODO:  The QueuedTask is terrific, but it doesn't belong in this class. It belongs in the Controller. That way,
   // todo   it can be accessed by other UI classes like RecordView. To do this, I also need to move the SearchOption
@@ -125,7 +125,7 @@ public class RecordUI<R extends @NonNull Object> extends JPanel implements Recor
     optionsGroup.setSelected(SearchOption.findAny);
 
 //    optionsGroup.addButtonGroupListener(selectedButtonModel -> selectionChanged(selectedButtonModel));
-    optionsGroup.addButtonGroupListener(this::selectionChanged); // Using a lambda is an error. This is a warning. 
+    optionsGroup.addButtonGroupListener(this::searchOptionChanged); // Using a lambda is an error. This is a warning. 
 
     final HidingPanel hidingPanel = HidingPanel.create(optionsPanel);
     hidingPanel.setDisableInsteadOfHide(true);
@@ -461,6 +461,7 @@ public class RecordUI<R extends @NonNull Object> extends JPanel implements Recor
     return searchOptionsPanel.isContentVisible() ? optionsGroup.getSelected() : SearchOption.findWhole;
   }
 
+  // This needs to be a separate object so we can pass it to the QueuedTask.
   @SuppressWarnings("dereference.of.nullable") // controller is null when we call this, but not when we call the lambda.
   private Consumer<Collection<@NonNull R>> createRecordConsumer(@UnderInitialization RecordUI<R>this) {
     return records -> SwingUtilities.invokeLater(() -> controller.setFoundRecords(records));
@@ -471,5 +472,5 @@ public class RecordUI<R extends @NonNull Object> extends JPanel implements Recor
     loadInfoLine();
   }
 
-  private void selectionChanged(@SuppressWarnings("unused") ButtonModel selectedButtonModel) { searchNow(); }
+  private void searchOptionChanged(@SuppressWarnings("unused") ButtonModel selectedButtonModel) { searchNow(); }
 }

@@ -49,13 +49,13 @@ import com.neptunedreams.framework.ui.SelectionSpy;
 import com.neptunedreams.framework.ui.SwingUtils;
 import com.neptunedreams.jobs.data.LeadField;
 import org.checkerframework.checker.initialization.qual.Initialized;
-import org.checkerframework.checker.initialization.qual.NotOnlyInitialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
 import static com.neptunedreams.framework.ui.SwingUtils.*;
+import static com.neptunedreams.util.StringStuff.*;
 
 //import org.checkerframework.checker.initialization.qual.Initialized;
 //import org.checkerframework.checker.nullness.qual.NonNull;
@@ -70,7 +70,7 @@ import static com.neptunedreams.framework.ui.SwingUtils.*;
  * @author Miguel Mu\u00f1oz
  */
 @SuppressWarnings({"WeakerAccess", "HardCodedStringLiteral"})
-public final class RecordView<R extends @NonNull Object> extends JPanel implements RecordSelectionModel<R> {
+public final class RecordView<@NonNull R> extends JPanel implements RecordSelectionModel<R> {
   private static final int TEXT_COLUMNS = 20;
   private static final int TEXT_ROWS = 15;
   private static final int HISTORY_COLUMNS = 40;
@@ -172,7 +172,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
 
   private void scanForDiceInfo(@Initialized RecordView<R>this) {
     // description is never null, but the test is here to satisfy the Nullness Checker 
-    String description = (descriptionField == null) ? "" : notNull(descriptionField.getText());
+    String description = (descriptionField == null) ? "" : emptyIfNull(descriptionField.getText());
     if (scanForDiceInfo(description)) { return; }
     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
     try {
@@ -193,10 +193,6 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
     return false;
   }
   
-  public static String notNull(@Nullable String nullableString) {
-    return (nullableString == null) ? "" : nullableString;
-  }
-
   private void loadPositionAndId(final String position, final String id) {
     diceIdField.setText(id);
     dicePosnField.setText(position);
@@ -426,7 +422,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
   }
 
   @Override
-  public boolean recordHasChanged() {
+  public boolean isRecordDataModified() {
     for (FieldBinding<R, ?, ?> binding: allBindings) {
       if (binding.isEditable() && binding.propertyHasChanged(currentRecord)) {
         return true;
@@ -441,7 +437,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
     // 2. New Record with no data
     // 3. Existing record with changes
     // 4. Existing record with no changes
-    final boolean hasChanged = recordHasChanged();
+    final boolean hasChanged = isRecordDataModified();
     if (hasChanged) {
       loadUserEdits();
       return true;
@@ -490,7 +486,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
   }
 
   @SuppressWarnings("initialization.fields.uninitialized")
-  public static class Builder<RR extends @NonNull Object> {
+  public static class Builder<@NonNull RR> {
     private RR record;
     private LeadField initialSort;
     private Function<RR, Integer> getId;
