@@ -46,7 +46,7 @@ final class ImportDialog extends JDialog {
 
   private void build() {
     //noinspection MagicNumber
-    JTextArea importArea = SwingUtils.createClipboardCleaningTextArea(40, 60);
+    JTextArea importArea = new JTextArea(40, 60);
     JScrollPane scrollPane = new JScrollPane(importArea, 
         JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
     getContentPane().setLayout(new BorderLayout());

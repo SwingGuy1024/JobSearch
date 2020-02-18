@@ -125,7 +125,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     final JTextComponent skypeField = (JTextComponent) addFieldWithCopy("Skype", LeadField.Skype, initialSort);
     final JLabel createdOnField = (JLabel) addField("", false, LeadField.CreatedOn, initialSort);
     descriptionField = addDescriptionField();
-    historyField = SwingUtils.createClipboardCleaningTextArea(TEXT_ROWS, HISTORY_COLUMNS);
+    historyField = new JTextArea(TEXT_ROWS, HISTORY_COLUMNS);
     assert getIdFunction != null : "Null id getter";
     assert setIdFunction != null : "Null id Setter";
     final FieldBinding.IntegerBinding<R> idBinding = FieldBinding.bindInteger(getIdFunction, idField);
@@ -362,7 +362,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
 
   @SuppressWarnings("method.invocation.invalid")
   private JTextComponent addDescriptionField(@UnderInitialization RecordView<R> this) {
-    final JTextArea wrappedField = SwingUtils.createClipboardCleaningTextArea(TEXT_ROWS, TEXT_COLUMNS);
+    final JTextArea wrappedField = new JTextArea(TEXT_ROWS, TEXT_COLUMNS);
     JComponent scrollPane = scrollArea(wrappedField);
     add(BorderLayout.CENTER, scrollPane);
     return wrappedField;

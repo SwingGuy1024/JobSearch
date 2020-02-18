@@ -6,6 +6,9 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 import java.sql.SQLException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -16,10 +19,13 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonModel;
 import javax.swing.FocusManager;
 import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JLayer;
 import javax.swing.JOptionPane;
@@ -43,17 +49,21 @@ import com.neptunedreams.framework.data.SearchOption;
 import com.neptunedreams.framework.event.MasterEventBus;
 import com.neptunedreams.framework.task.ParameterizedCallable;
 import com.neptunedreams.framework.task.QueuedTask;
+import com.neptunedreams.framework.ui.ClipFix;
 import com.neptunedreams.framework.ui.EnumComboBox;
 import com.neptunedreams.framework.ui.EnumGroup;
 import com.neptunedreams.framework.ui.HidingPanel;
 import com.neptunedreams.framework.ui.RecordController;
+import com.neptunedreams.framework.ui.SelectionSpy;
 import com.neptunedreams.framework.ui.SwingUtils;
 import com.neptunedreams.framework.ui.SwipeDirection;
 import com.neptunedreams.framework.ui.SwipeView;
 import com.neptunedreams.jobs.data.LeadField;
+import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 
 //import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 
@@ -72,7 +82,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  * 
  * @author Miguel Mu\u00f1oz
  */
-@SuppressWarnings("HardCodedStringLiteral")
+@SuppressWarnings({"HardCodedStringLiteral", "HardcodedLineSeparator"})
 public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener {
 
   // TODO:  The QueuedTask is terrific, but it doesn't belong in this class. It belongs in the Controller. That way,
@@ -88,6 +98,8 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
 
   private static final long DELAY = 1000L;
   private static final int ONE_MINUTE_MILLIS = 60000;
+  @SuppressWarnings("HardcodedLineSeparator")
+  private static final char NEW_LINE = '\n';
 
   // We set the initial text to a space, so we can fire the initial search by setting the text to the empty String.
   private JTextField findField = new JTextField(" ",10);
@@ -240,9 +252,88 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     JPanel buttonPanel = new JPanel(new BorderLayout());
     buttonPanel.add(getSearchField(), BorderLayout.PAGE_START);
     buttonPanel.add(BorderLayout.LINE_START, searchOptionsPanel);
-    buttonPanel.add(BorderLayout.CENTER, SwingUtils.wrapCenter(getButtons()));
-    buttonPanel.add(BorderLayout.LINE_END, makeTimePanel());
+    @UnknownKeyFor @Initialized JPanel navigationPanel = SwingUtils.wrapCenter(getButtons());
+    JComponent utilityPanel = makeUtilityPanel();
+    JPanel navUtilityPanel = new JPanel(new BorderLayout());
+    navUtilityPanel.add(BorderLayout.CENTER, navigationPanel);
+    navUtilityPanel.add(SwingUtils.wrapEast(utilityPanel), BorderLayout.PAGE_END);
+    buttonPanel.add(BorderLayout.CENTER, navUtilityPanel);
     return buttonPanel;
+  }
+  
+  private JComponent makeUtilityPanel() {
+    Box navUtilPanel = new Box(BoxLayout.LINE_AXIS);
+    
+    navUtilPanel.add(makePasteHtmlButton());
+    navUtilPanel.add(makeStripBlankButton());
+    navUtilPanel.add(makeBulletButton());
+    //noinspection MagicNumber
+    navUtilPanel.add(Box.createHorizontalStrut(15));
+    navUtilPanel.add(makeTimeButton());
+    return navUtilPanel;
+  }
+
+  private Component makePasteHtmlButton() {
+    JButton pasteHtmlButton = new JButton("Paste HTML");
+    pasteHtmlButton.setFocusable(false);
+    SelectionSpy.spy.addFocusInTextFieldListener(pasteHtmlButton::setEnabled);
+    pasteHtmlButton.addActionListener(a -> {
+      @UnknownKeyFor @Initialized String htmlAsText = ClipFix.getHtmlAsText();
+      if (htmlAsText != null) {
+        SelectionSpy.spy.replaceSelectedText(htmlAsText);
+      }
+    });
+    return pasteHtmlButton;
+  }
+
+  private JButton makeStripBlankButton() {
+    JButton stripBlankButton = new JButton("Strip Blank Lines");
+    stripBlankButton.setFocusable(false);
+    SelectionSpy.spy.addSelectionExistsListener(stripBlankButton::setEnabled);
+    stripBlankButton.addActionListener(e -> {
+      String selectedText = SelectionSpy.spy.getSelectedText();
+      StringBuilder revisedText = new StringBuilder();
+      try (BufferedReader reader = new BufferedReader(new StringReader(selectedText))) {
+        String line = reader.readLine();
+        while (line != null) {
+          if (!line.isEmpty()) {
+            revisedText.append(line).append(NEW_LINE);
+          }
+          line = reader.readLine();
+        }
+      } catch (IOException ignored) { } // can't happen with a StringReader.
+      if (selectedText.endsWith("\n")) {
+        revisedText.deleteCharAt(revisedText.length()-1);
+      }
+      SelectionSpy.spy.replaceSelectedText(revisedText.toString());
+    });
+    return stripBlankButton;
+  }
+
+  private JButton makeBulletButton() {
+    JButton bullet = new JButton(Resource.getBullet16());
+    bullet.setFocusable(false);
+    bullet.setToolTipText("Add bullets to selected text");
+    SelectionSpy.spy.addSelectionExistsListener(bullet::setEnabled);
+    bullet.addActionListener(e -> {
+      String selectedText = SelectionSpy.spy.getSelectedText();
+      StringBuilder revisedText = new StringBuilder();
+      try (BufferedReader reader = new BufferedReader(new StringReader(selectedText))) {
+        String line = reader.readLine();
+        while (line != null) {
+          if (!line.isEmpty()) {
+            revisedText.append("• ");
+          }
+          revisedText.append(line).append(NEW_LINE);
+          line = reader.readLine();
+        }
+      } catch (IOException ignored) { } // can't happen with a StringReader.
+      if (!selectedText.endsWith("\n")) {
+        revisedText.deleteCharAt(revisedText.length() - 1);
+      }
+      SelectionSpy.spy.replaceSelectedText(revisedText.toString());
+    });
+    return bullet;
   }
 
   private JPanel createTrashPanel() {
@@ -304,13 +395,6 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     return buttonPanel;
   }
   
-  private JPanel makeTimePanel() {
-    JButton timeButton = makeTimeButton();
-    JPanel timePanel = new JPanel(new BorderLayout());
-    timePanel.add(SwingUtils.wrapSouth(timeButton), BorderLayout.LINE_END);
-    return timePanel;
-  }
-
   private JButton makeTimeButton() {
     JButton timeButton = new JButton();
     timeButton.addActionListener(e -> newHistoryEvent(timeButton.getText()));
@@ -388,7 +472,6 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
    * This means we're looking at record 3 of the 12 found records, from a total of 165 records in the database.
    */
   private void loadInfoLine() {
-//    Thread.dumpStack();
     final int index;
     final int foundSize;
     index = recordModel.getRecordIndex() + 1;
@@ -402,7 +485,6 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
       //noinspection HardcodedFileSeparator
       String info = String.format("%d/%d of %d", index, foundSize, total);
       infoLine.setText(info);
-//      System.err.printf("Info: %S%n", info); // NON-NLS
     } catch (SQLException e) {
       ErrorReport.reportException("loadInfoLine()", e);
     }

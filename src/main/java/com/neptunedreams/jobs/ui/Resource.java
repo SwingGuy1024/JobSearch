@@ -26,6 +26,7 @@ enum Resource {
   private static final String FORWARD_CHEVRON = "bullet_go.png";
   private static final String LEFT_CHEVRON = "arrow_turn_left.png";
   private static final String COPY = "copying_and_distribution.png";
+  private static final String BULLET_16 = "bullet_green16.png";
 
   private static Icon getIcon(String name) {
     URL resource = Objects.requireNonNull(Resource.class.getResource(name));
@@ -73,4 +74,6 @@ enum Resource {
   static Icon getLeftChevron() { return getIcon(LEFT_CHEVRON); }
   
   static Icon getCopy() { return getIcon(COPY); }
+  
+  static Icon getBullet16() { return getIcon(BULLET_16); }
 }
