@@ -165,16 +165,18 @@ public final class JobSearch extends JPanel
       info.init();
       final ConnectionSource connectionSource = info.getConnectionSource();
       Dao<LeadRecord, Integer, LeadField> dao = info.getDao(LeadRecord.class, connectionSource);
-      LeadRecord dummyRecord = new LeadRecord(0, "", "", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()));
+      LeadRecord dummyRecord = new LeadRecord(0, "", "", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", "");
       final RecordView<LeadRecord> view = new RecordView.Builder<>(dummyRecord, LeadField.CreatedOn)
           .id      (LeadRecord::getId,       LeadRecord::setId)
           .company  (LeadRecord::getCompany,   LeadRecord::setCompany)
           .contactName(LeadRecord::getContactName, LeadRecord::setContactName)
+          .client(LeadRecord::getClient, LeadRecord::setClient)
           .dicePosn(LeadRecord::getDicePosn, LeadRecord::setDicePosn)
           .diceId(LeadRecord::getDiceId, LeadRecord::setDiceId)
           .email(LeadRecord::getEmail, LeadRecord::setEmail)
           .phone1(LeadRecord::getPhone1, LeadRecord::setPhone1)
           .phone2(LeadRecord::getPhone2, LeadRecord::setPhone2)
+          .phone3(LeadRecord::getPhone3, LeadRecord::setPhone3)
           .fax(LeadRecord::getFax, LeadRecord::setFax)
           .website(LeadRecord::getWebsite, LeadRecord::setWebsite)
           .skype(LeadRecord::getSkype, LeadRecord::setSkype)
@@ -246,7 +248,7 @@ public final class JobSearch extends JPanel
 
   @SuppressWarnings("unused")
   private LeadRecord recordConstructor(@UnderInitialization JobSearch this) {
-    return new LeadRecord(0, "", "", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()));
+    return new LeadRecord(0, "", "", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", "");
   }
   
   private JPanel getPanel() { return mainPanel; }

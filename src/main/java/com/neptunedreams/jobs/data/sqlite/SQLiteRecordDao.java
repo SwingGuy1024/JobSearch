@@ -47,8 +47,10 @@ import static org.jooq.impl.DSL.*;
  *   website        VARCHAR(512) NOT NULL collate noCase,
  *   skype          VARCHAR(512) NOT NULL collate noCase,
  *   description    VARCHAR      NOT NULL collate noCase,
- *   history        VARCHAR      NOT NULL collate noCase,
- *   createdOn      DATETIME     NOT NULL DEFAULT (DATETIME('now'))
+ *   history        VARCHAR      NOT NULL collate nocase,
+ *   createdOn      DATETIME     NOT NULL DEFAULT (DATETIME('now')),
+ *   phone3         VARCHAR(512) NOT NULL DEFAULT '' collate nocase,
+ *   client         VARCHAR(512) NOT NULL DEFAULT '' collate nocase
  * );
  * 
  * <p>Created by IntelliJ IDEA.
@@ -105,8 +107,10 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
           "  website        VARCHAR(512) NOT NULL collate noCase,\n" +
           "  skype          VARCHAR(512) NOT NULL collate noCase,\n" +
           "  description    VARCHAR      NOT NULL collate noCase,\n" +
-          "  history        VARCHAR      NOT NULL collate noCase,\n" +
-          "  createdOn      DATETIME     NOT NULL DEFAULT (DATETIME('now'))\n" +
+          "  history        VARCHAR      NOT NULL collate nocase,\n" +
+          "  createdOn      DATETIME     NOT NULL DEFAULT (DATETIME('now')),\n" +
+          "  phone3         VARCHAR(512) NOT NULL DEFAULT '' collate nocase,\n" +
+          "  client         VARCHAR(512) NOT NULL DEFAULT '' collate nocase" +
           ");";
   private static final char WC = '%';
   private DSLContext getDslContext() throws SQLException {

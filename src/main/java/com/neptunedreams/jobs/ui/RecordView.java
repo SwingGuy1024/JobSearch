@@ -97,11 +97,13 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
                      Function<R, Integer> getIdFunction, BiConsumer<R, Integer> setIdFunction,
                      Function<R, String> getCompanyFunction, BiConsumer<R, String> setCompanyFunction,
                      Function<R, String> getContactNameFunction, BiConsumer<R, String> setContactNameFunction,
+                     Function<R, String> getClientFunction, BiConsumer<R, String> setClientFunction,
                      Function<R, String> getDicePosnFunction, BiConsumer<R, String> setDicePosnFunction,
                      Function<R, String> getDiceIdFunction, BiConsumer<R, String> setDiceIdFunction,
                      Function<R, String> getEMailFunction, BiConsumer<R, String> setEMailFunction,
                      Function<R, String> getPhone1Function, BiConsumer<R, String> setPhone1Function,
                      Function<R, String> getPhone2Function, BiConsumer<R, String> setPhone2Function,
+                     Function<R, String> getPhone3Function, BiConsumer<R, String> setPhone3Function,
                      Function<R, String> getFaxFunction, BiConsumer<R, String> setFaxFunction,
                      Function<R, String> getWebSiteFunction, BiConsumer<R, String> setWebSiteFunction,
                      Function<R, String> getSkypeFunction, BiConsumer<R, String> setSkypeFunction,
@@ -115,11 +117,13 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     final JLabel idField = (JLabel) addField("ID", false, LeadField.ID, initialSort);
     companyField = (JTextComponent) addField("Company", true, LeadField.Company, initialSort);
     final JTextComponent contactNameField = (JTextComponent) addField("Contact Name", true, LeadField.ContactName, initialSort);
+    final JTextComponent clientField = (JTextComponent) addField("Client", true, LeadField.Client, initialSort);
     dicePosnField = (JTextComponent) addField("Dice Position", true, LeadField.DicePosn, initialSort, makeScanButton());
     diceIdField = (JTextComponent) addField("Dice ID", true, LeadField.DiceID, initialSort);
     final JTextComponent eMailField = (JTextComponent) addFieldWithCopy("EMail", LeadField.EMail, initialSort);
     final JTextComponent phone1Field = (JTextComponent) addFieldWithCopy("Phone 1", LeadField.Phone1, initialSort);
     final JTextComponent phone2Field = (JTextComponent) addFieldWithCopy("Phone 2", LeadField.Phone2, initialSort);
+    final JTextComponent phone3Field = (JTextComponent) addFieldWithCopy("Phone 3", LeadField.Phone3, initialSort);
     final JTextComponent faxField = (JTextComponent) addFieldWithCopy("Fax", LeadField.Fax, initialSort);
     final JTextComponent webSiteField = (JTextComponent) addFieldWithCopy("Web Site", LeadField.WebSite, initialSort);
     final JTextComponent skypeField = (JTextComponent) addFieldWithCopy("Skype", LeadField.Skype, initialSort);
@@ -130,20 +134,22 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     assert setIdFunction != null : "Null id Setter";
     final FieldBinding.IntegerBinding<R> idBinding = FieldBinding.bindInteger(getIdFunction, idField);
     final FieldBinding.StringEditableBinding<R> sourceBinding = FieldBinding.bindEditableString(getCompanyFunction, setCompanyFunction, companyField);
-    final FieldBinding.StringEditableBinding<R> userNameBinding = FieldBinding.bindEditableString(getContactNameFunction, setContactNameFunction, contactNameField);
+    final FieldBinding.StringEditableBinding<R> contactNameBinding = FieldBinding.bindEditableString(getContactNameFunction, setContactNameFunction, contactNameField);
+    final FieldBinding.StringEditableBinding<R> clientBinding = FieldBinding.bindEditableString(getClientFunction, setClientFunction, clientField);
     final FieldBinding.StringEditableBinding<R> dicePosnBinding = FieldBinding.bindEditableString(getDicePosnFunction, setDicePosnFunction, dicePosnField);
     final FieldBinding.StringEditableBinding<R> diceIdBinding = FieldBinding.bindEditableString(getDiceIdFunction, setDiceIdFunction, diceIdField);
     final FieldBinding.StringEditableBinding<R> eMailBinding = FieldBinding.bindEditableString(getEMailFunction, setEMailFunction, eMailField);
     final FieldBinding.StringEditableBinding<R> phone1Binding = FieldBinding.bindEditableString(getPhone1Function, setPhone1Function, phone1Field);
     final FieldBinding.StringEditableBinding<R> phone2Binding = FieldBinding.bindEditableString(getPhone2Function, setPhone2Function, phone2Field);
+    final FieldBinding.StringEditableBinding<R> phone3Binding = FieldBinding.bindEditableString(getPhone3Function, setPhone3Function, phone3Field);
     final FieldBinding.StringEditableBinding<R> faxBinding = FieldBinding.bindEditableString(getFaxFunction, setFaxFunction, faxField);
     final FieldBinding.StringEditableBinding<R> webSiteBinding = FieldBinding.bindEditableString(getWebSiteFunction, setWebSiteFunction, webSiteField);
     final FieldBinding.StringEditableBinding<R> skypeBinding = FieldBinding.bindEditableString(getSkypeFunction, setSkypeFunction, skypeField);
     final FieldBinding.StringEditableBinding<R> descriptionBinding = FieldBinding.bindEditableString(getDescriptionFunction, setDescriptionFunction, descriptionField);
     final FieldBinding.StringEditableBinding<R> historyBinding = FieldBinding.bindEditableString(getHistoryFunction, setHistoryFunction, historyField);
     final FieldBinding.StringBinding<R> createdOnBinding = FieldBinding.bindConstantString(getCreatedOnFunction, createdOnField);
-    allBindings = Arrays.asList(idBinding, sourceBinding, userNameBinding, dicePosnBinding, diceIdBinding, eMailBinding, phone1Binding, phone2Binding,
-        faxBinding, webSiteBinding, skypeBinding, descriptionBinding, historyBinding, createdOnBinding);
+    allBindings = Arrays.asList(idBinding, sourceBinding, contactNameBinding, clientBinding, dicePosnBinding, diceIdBinding, eMailBinding,
+        phone1Binding, phone2Binding, phone3Binding, faxBinding, webSiteBinding, skypeBinding, descriptionBinding, historyBinding, createdOnBinding);
 
     JPanel tempFieldPanel = makeFieldPanel();
     @NonNull JPanel historyPanel = makeFieldAndHistoryPanel(tempFieldPanel, historyField);
@@ -495,6 +501,8 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     private BiConsumer<RR, String> setCompany;
     private Function<RR, String> getContactName;
     private BiConsumer<RR, String> setContactName;
+    private Function<RR, String> getClient;
+    private BiConsumer<RR, String> setClient;
     private Function<RR, String> getDicePosn;
     private BiConsumer<RR, String> setDicePosn;
     private Function<RR, String> getDiceId;
@@ -505,6 +513,8 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     private BiConsumer<RR, String> setPhone1;
     private Function<RR, String> getPhone2;
     private BiConsumer<RR, String> setPhone2;
+    private Function<RR, String> getPhone3;
+    private BiConsumer<RR, String> setPhone3;
     private Function<RR, String> getFax;
     private BiConsumer<RR, String> setFax;
     private Function<RR, String> getWebSite;
@@ -542,6 +552,12 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
       return this;
     }
 
+    public Builder<RR> client(Function<RR, String> getter, BiConsumer<RR, String> setter) {
+      getClient = getter;
+      setClient = setter;
+      return this;
+    }
+
     public Builder<RR> dicePosn(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getDicePosn = getter;
       setDicePosn = setter;
@@ -569,6 +585,12 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     public Builder<RR> phone2(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getPhone2 = getter;
       setPhone2 = setter;
+      return this;
+    }
+
+    public Builder<RR> phone3(Function<RR, String> getter, BiConsumer<RR, String> setter) {
+      getPhone3 = getter;
+      setPhone3 = setter;
       return this;
     }
 
@@ -626,11 +648,13 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
           getId, setId,
           getCompany, setCompany,
           getContactName, setContactName,
+          getClient, setClient,
           getDicePosn, setDicePosn,
           getDiceId, setDiceId,
           getEMail, setEMail,
           getPhone1, setPhone1,
           getPhone2, setPhone2,
+          getPhone3, setPhone3,
           getFax, setFax,
           getWebSite, setWebSite,
           getSkype, setSkype,
