@@ -104,7 +104,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   // We set the initial text to a space, so we can fire the initial search by setting the text to the empty String.
   private JTextField findField = new JTextField(" ",10);
   private final RecordController<R, Integer, LeadField> controller;
-  private EnumComboBox<LeadField> searchFieldCombo = new EnumComboBox<>(LeadField.values());
+  private EnumComboBox<LeadField> searchFieldCombo = EnumComboBox.createComboBox(LeadField.values());
   //  private EnumGroup<LeadField> searchFieldGroup = new EnumGroup<>();
   private final @NonNull RecordModel<R> recordModel;
   private JButton prev = new JButton(Resource.getLeftArrow());
@@ -125,7 +125,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   private @NonNull QueuedTask<String, Collection<@NonNull R>> queuedTask;
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT);
 
-  @SuppressWarnings({"methodref.inference.unimplemented", "methodref.receiver.bound.invalid"})
+  @SuppressWarnings("methodref.receiver.bound.invalid")
   private HidingPanel makeSearchOptionsPanel(@UnderInitialization RecordUI<R> this, EnumGroup<SearchOption> optionsGroup) {
     JPanel optionsPanel = new JPanel(new GridLayout(0, 1));
     JRadioButton findExact = optionsGroup.add(SearchOption.findWhole);
@@ -444,10 +444,9 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
 //    importDialog.setVisible(true); 
 //  }
 
-  @SuppressWarnings("method.invocation.invalid")
   private JPanel getSearchField() {
     JLabel findIcon = Resource.getMagnifierLabel();
-    RecordView.installStandardCaret(findField);
+    SwingUtils.installStandardCaret(findField);
     JPanel searchPanel = new JPanel(new BorderLayout());
     searchPanel.add(findIcon, BorderLayout.LINE_START);
     searchPanel.add(searchFieldCombo, BorderLayout.LINE_END);

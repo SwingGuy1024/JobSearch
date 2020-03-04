@@ -12,7 +12,6 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -34,8 +33,6 @@ import javax.swing.JTextField;
 import javax.swing.border.MatteBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.Caret;
-import javax.swing.text.DefaultCaret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import com.google.common.eventbus.Subscribe;
@@ -130,6 +127,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     final JLabel createdOnField = (JLabel) addField("", false, LeadField.CreatedOn, initialSort);
     descriptionField = addDescriptionField();
     historyField = new JTextArea(TEXT_ROWS, HISTORY_COLUMNS);
+//    SwingUtils.replaceCaret(historyField, new EnhancedCaret());
     assert getIdFunction != null : "Null id getter";
     assert setIdFunction != null : "Null id Setter";
     final FieldBinding.IntegerBinding<R> idBinding = FieldBinding.bindInteger(getIdFunction, idField);
@@ -155,8 +153,8 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     @NonNull JPanel historyPanel = makeFieldAndHistoryPanel(tempFieldPanel, historyField);
     addHistoryPanel(historyPanel);
 
-    installStandardCaret(companyField, contactNameField, dicePosnField, diceIdField, eMailField, phone1Field,
-        phone2Field, faxField, webSiteField, skypeField, descriptionField, historyField);
+    SwingUtils.installStandardCaret(companyField, contactNameField, dicePosnField, diceIdField, eMailField, phone1Field,
+        phone2Field, phone3Field, faxField, webSiteField, skypeField, descriptionField, historyField);
   }
 
   // I'm not sure why I shouldn't say @UnderInitialization RecordView<R> this here, but it may be because the nullness
@@ -262,29 +260,6 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   }
 
   public RecordController<R, Integer, LeadField> getController() { return controller; }
-
-  /**
-   * On the Mac, the AquaCaret will get installed. This caret has an annoying feature of selecting all the text on a
-   * focus-gained event. If this isn't bad enough, it also fails to check temporary vs permanent focus gain, so it
-   * gets triggered on a focused JTextComponent whenever a menu is released! This method removes the Aqua Caret and
-   * installs a standard caret. It's only needed on the Mac, but it's safe to use on any platform.
-   *
-   * @param components The components to repair. This is usually a JTextField or JTextArea.
-   */
-  public static void installStandardCaret(JTextComponent... components) {
-    for (JTextComponent component : components) {
-      final Caret priorCaret = component.getCaret();
-      int blinkRate = priorCaret.getBlinkRate();
-      if (priorCaret instanceof PropertyChangeListener) {
-        // com.apple.laf.AquaCaret, the troublemaker, installs this listener which doesn't get removed when the Caret 
-        // gets uninstalled.
-        component.removePropertyChangeListener((PropertyChangeListener) priorCaret);
-      }
-      DefaultCaret caret = new DefaultCaret();
-      component.setCaret(caret);
-      caret.setBlinkRate(blinkRate); // Starts the new caret blinking.
-    }
-  }
 
   @RequiresNonNull({"labelPanel", "fieldPanel", "buttonGroup", "checkBoxPanel", "controller"})
   private JComponent addField(@UnderInitialization RecordView<R> this, final String labelText, final boolean editable, final LeadField orderField, LeadField initialSort) {
@@ -491,6 +466,9 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     historyField.requestFocus();
   }
 
+  // If I don't suppress this warning, and initialize these values to null, I just get a assignment.type.incompatible
+  // warning instead, because I haven't declared these values Nullable. But if I do that, I'll get warnings when I 
+  // build, because they're NonNull in the constructor. Not sure what's the best approach, but this works for now.
   @SuppressWarnings("initialization.fields.uninitialized")
   public static class Builder<@NonNull RR> {
     private RR record;

@@ -4,7 +4,7 @@
 
   <groupId>neptunedreams.com</groupId>
   <artifactId>job.search</artifactId>
-  <version>0.1.9-SNAPSHOT</version>
+  <version>0.1.10-SNAPSHOT</version>
   <name>Job Search</name>
   <packaging>jar</packaging>
 
@@ -42,7 +42,7 @@
 	  <dependency>
 		  <groupId>com.neptunedreams</groupId>
 		  <artifactId>tango</artifactId>
-		  <version>1.0-SNAPSHOT</version>
+		  <version>1.0.2-SNAPSHOT</version>
 	  </dependency>
     <dependency>
       <groupId>junit</groupId>
