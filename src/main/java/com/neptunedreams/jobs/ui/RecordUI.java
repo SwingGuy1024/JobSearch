@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
@@ -184,6 +186,16 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     MasterEventBus.registerMasterEventHandler(this);
     queuedTask = new QueuedTask<>(DELAY, createCallable(), recordConsumer);
     queuedTask.launch();
+    // Send focus to find field on launch. This sets the enabled state of some of the buttons
+    addComponentListener(new ComponentAdapter() {
+      @Override
+      public void componentShown(final ComponentEvent e) {
+        SwingUtilities.invokeLater(() -> {
+          findField.requestFocus();
+          removeComponentListener(this);
+        });
+      }
+    });
   }
   
   @SuppressWarnings({"ResultOfObjectAllocationIgnored", "Convert2MethodRef"})

@@ -118,44 +118,51 @@ public final class JobSearch extends JPanel
   private final @NonNull DatabaseInfo info;
   private final @NonNull RecordController<LeadRecord, Integer, LeadField> controller;
 
-  public static void main(String[] args) throws IOException, ClassNotFoundException {
-    boolean doImport = (args.length > 0) && Objects.equals(args[0], "-import");
-    frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-    frame.setLocationByPlatform(true);
-    final JobSearch jobSearch = new JobSearch(doImport);
-    frame.add(jobSearch.getPanel());
-    frame.pack();
-    frame.addWindowListener(jobSearch.shutdownListener());
+  public static void main(String[] args) { //throws IOException, ClassNotFoundException {
+    Thread.setDefaultUncaughtExceptionHandler((t, e) -> ErrorReport.reportException("Unknown", e));
+
+    //noinspection ErrorNotRethrown
+    try {
+      boolean doImport = (args.length > 0) && Objects.equals(args[0], "-import");
+      frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+      frame.setLocationByPlatform(true);
+      final JobSearch jobSearch = new JobSearch(doImport);
+      frame.add(jobSearch.getPanel());
+      frame.pack();
+      frame.addWindowListener(jobSearch.shutdownListener());
 //    UIMenus.Menu.installMenu(frame);
-    jobSearch.mainPanel.launchInitialSearch();
-    frame.setVisible(true);
-
-    doExport(args, jobSearch);
-  }
-
-  private static void doExport(final String[] args, final JobSearch jobSearch) {
-    if ((args.length > 0) && Objects.equals(args[0], "-export")) {
-      try {
-        // There has to be a delay, because there's a 1-second delay built into the launchInitialSearch() method,
-        // and this needs to take place after that finishes, or we won't see any records. 
-        Thread.sleep(1000); // Yeah, this is kludgy, but it's only for the export, which is only done in development.
-      } catch (InterruptedException ignored) { }
-
-      SwingUtilities.invokeLater(() -> {
-        RecordModel<LeadRecord> model = jobSearch.controller.getModel();
-        // noinspection StringConcatenation
-        String exportPath = System.getProperty("user.home") + EXPORT_FILE;
-        System.err.printf("Exporting %d records to %s%n", model.getSize(), exportPath); // NON-NLS
-        //noinspection OverlyBroadCatchBlock
-        try (ObjectOutputStream bos = new ObjectOutputStream(new FileOutputStream(exportPath))) {
-          bos.writeObject(model);
-        } catch (IOException e) {
-          ErrorReport.reportException("Error during export", e);
-        }
-        System.err.printf("Export done%n"); // NON-NLS
-      });
+      jobSearch.mainPanel.launchInitialSearch();
+      frame.setVisible(true);
+    } catch (IOException | ClassNotFoundException | RuntimeException | Error e) {
+      ErrorReport.reportException("Initialization Error", e);
     }
+
+//    doExport(args, jobSearch);
   }
+
+//  private static void doExport(final String[] args, final JobSearch jobSearch) {
+//    if ((args.length > 0) && Objects.equals(args[0], "-export")) {
+//      try {
+//        // There has to be a delay, because there's a 1-second delay built into the launchInitialSearch() method,
+//        // and this needs to take place after that finishes, or we won't see any records. 
+//        Thread.sleep(1000); // Yeah, this is kludgy, but it's only for the export, which is only done in development.
+//      } catch (InterruptedException ignored) { }
+//
+//      SwingUtilities.invokeLater(() -> {
+//        RecordModel<LeadRecord> model = jobSearch.controller.getModel();
+//        // noinspection StringConcatenation
+//        String exportPath = System.getProperty("user.home") + EXPORT_FILE;
+//        System.err.printf("Exporting %d records to %s%n", model.getSize(), exportPath); // NON-NLS
+//        //noinspection OverlyBroadCatchBlock
+//        try (ObjectOutputStream bos = new ObjectOutputStream(new FileOutputStream(exportPath))) {
+//          bos.writeObject(model);
+//        } catch (IOException e) {
+//          ErrorReport.reportException("Error during export", e);
+//        }
+//        System.err.printf("Export done%n"); // NON-NLS
+//      });
+//    }
+//  }
 
   private JobSearch(boolean doImport) throws IOException, ClassNotFoundException {
     super();
@@ -290,5 +297,3 @@ public final class JobSearch extends JPanel
     dInfo.shutdown();
   }
 }
-
-/**/

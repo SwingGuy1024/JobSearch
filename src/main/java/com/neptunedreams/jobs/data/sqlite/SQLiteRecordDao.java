@@ -71,17 +71,24 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
     fieldMap.put(LeadField.ID,       Lead.LEAD.ID);
     fieldMap.put(LeadField.Company,   Lead.LEAD.COMPANY);
     fieldMap.put(LeadField.ContactName, Lead.LEAD.CONTACT_NAME);
+    fieldMap.put(LeadField.Client, Lead.LEAD.CLIENT);
     fieldMap.put(LeadField.DicePosn, Lead.LEAD.DICE_POSN);
     fieldMap.put(LeadField.DiceID, Lead.LEAD.DICE_ID);
     fieldMap.put(LeadField.EMail, Lead.LEAD.EMAIL);
     fieldMap.put(LeadField.Phone1, Lead.LEAD.PHONE1);
     fieldMap.put(LeadField.Phone2, Lead.LEAD.PHONE2);
+    fieldMap.put(LeadField.Phone3, Lead.LEAD.PHONE3);
     fieldMap.put(LeadField.Fax, Lead.LEAD.FAX);
     fieldMap.put(LeadField.WebSite, Lead.LEAD.WEBSITE);
     fieldMap.put(LeadField.Skype, Lead.LEAD.SKYPE);
     fieldMap.put(LeadField.Description, Lead.LEAD.DESCRIPTION);
     fieldMap.put(LeadField.History, Lead.LEAD.HISTORY);
     fieldMap.put(LeadField.CreatedOn, Lead.LEAD.CREATEDON);
+    for (LeadField leadField: LeadField.values()) {
+      if (leadField.isField() && !fieldMap.containsKey(leadField)) {
+        throw new IllegalStateException("Missing Field in FieldMap: " + leadField);
+      }
+    }
     return fieldMap;
   }
 
