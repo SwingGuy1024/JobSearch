@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @author Miguel Mu\u00f1oz
  */
-public class TextSearch implements Iterable<String> {
+public final class TextSearch implements Iterable<String> {
   private final List<JTextComponent> componentList;
   private @Nullable SearchStatusInfo searchStatusInfo;
   
@@ -60,8 +60,8 @@ public class TextSearch implements Iterable<String> {
   }
   
   private static class SearchStatusInfo {
-    final Iterator<String> iterator;
-    final String[] lowTargets;
+    private final Iterator<String> iterator;
+    private final String[] lowTargets;
 
     private Map<String, Integer> searchWordPositionMap = new HashMap<>();
     SearchStatusInfo(Iterator<String> iterator, String... targets) {

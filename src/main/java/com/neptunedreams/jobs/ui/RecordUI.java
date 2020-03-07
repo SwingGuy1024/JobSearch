@@ -121,11 +121,10 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   private RecordView<R> recordView;
 
   // recordConsumer is how the QueuedTask communicates with the application code.
-  private final Consumer<Collection<@NonNull R>> recordConsumer = createRecordConsumer();
+  private final Consumer<Collection<@NonNull R>> recordConsumer;
   private @NonNull QueuedTask<String, Collection<@NonNull R>> queuedTask;
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT);
 
-  @SuppressWarnings("methodref.receiver.bound.invalid")
   private HidingPanel makeSearchOptionsPanel(@UnderInitialization RecordUI<R> this, EnumGroup<SearchOption> optionsGroup) {
     JPanel optionsPanel = new JPanel(new GridLayout(0, 1));
     JRadioButton findExact = optionsGroup.add(SearchOption.findWhole);
@@ -135,16 +134,21 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     optionsPanel.add(findAll);
     optionsPanel.add(findExact);
     optionsGroup.setSelected(SearchOption.findAny);
-
-//    optionsGroup.addButtonGroupListener(selectedButtonModel -> selectionChanged(selectedButtonModel));
-    optionsGroup.addButtonGroupListener(this::searchOptionChanged); // Using a lambda is an error. This is a warning. 
+    addButtonGroupListener(optionsGroup);
 
     final HidingPanel hidingPanel = HidingPanel.create(optionsPanel);
     hidingPanel.setDisableInsteadOfHide(true);
     return hidingPanel;
   }
 
-  @SuppressWarnings({"method.invocation.invalid", "argument.type.incompatible"})
+  // Moved to a separate method so we can limit the SuppressWarnings to one line.
+  @SuppressWarnings("methodref.receiver.bound.invalid")
+  private void addButtonGroupListener(@UnderInitialization RecordUI<R> this, final EnumGroup<SearchOption> optionsGroup) {
+//    optionsGroup.addButtonGroupListener(selectedButtonModel -> selectionChanged(selectedButtonModel));
+    optionsGroup.addButtonGroupListener(this::searchOptionChanged); // Using a lambda is an error. This is a warning. 
+  }
+
+    @SuppressWarnings({"method.invocation.invalid", "argument.type.incompatible"})
   // add(), setBorder(), etc not properly annotated in JDK.
   public RecordUI(@NonNull RecordModel<R> model, RecordView<R> theView, RecordController<R, Integer, LeadField> theController) {
     super(new BorderLayout());
@@ -155,6 +159,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     add(createControlPanel(), BorderLayout.PAGE_START);
     add(createTrashPanel(), BorderLayout.PAGE_END);
     controller = theController;
+    recordConsumer = createRecordConsumer(theController);
     setBorder(new MatteBorder(4, 4, 4, 4, getBackground()));
     recordModel.addModelListener(this); // argument.type.incompatible checker error suppressed
     
@@ -275,6 +280,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
 
   private Component makePasteHtmlButton() {
     JButton pasteHtmlButton = new JButton("Paste HTML");
+    pasteHtmlButton.setEnabled(false);
     pasteHtmlButton.setFocusable(false);
     SelectionSpy.spy.addFocusInTextFieldListener(pasteHtmlButton::setEnabled);
     pasteHtmlButton.addActionListener(a -> {
@@ -288,6 +294,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
 
   private JButton makeStripBlankButton() {
     JButton stripBlankButton = new JButton("Strip Blank Lines");
+    stripBlankButton.setEnabled(false);
     stripBlankButton.setFocusable(false);
     SelectionSpy.spy.addSelectionExistsListener(stripBlankButton::setEnabled);
     stripBlankButton.addActionListener(e -> {
@@ -312,6 +319,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
 
   private JButton makeBulletButton() {
     JButton bullet = new JButton(Resource.getBullet16());
+    bullet.setEnabled(false);
     bullet.setFocusable(false);
     bullet.setToolTipText("Add bullets to selected text");
     SelectionSpy.spy.addSelectionExistsListener(bullet::setEnabled);
@@ -543,9 +551,12 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   }
 
   // This needs to be a separate object so we can pass it to the QueuedTask.
-  @SuppressWarnings("dereference.of.nullable") // controller is null when we call this, but not when we call the lambda.
-  private Consumer<Collection<@NonNull R>> createRecordConsumer(@UnderInitialization RecordUI<R>this) {
-    return records -> SwingUtilities.invokeLater(() -> controller.setFoundRecords(records));
+  // I passed the RecordController as a parameter to avoid a nullness checker warning. It complains that the 
+  // controller member may be null.
+  private static <RR> Consumer<Collection<@NonNull RR>> createRecordConsumer(
+      RecordController<RR, Integer, LeadField> theController
+  ) {
+    return records -> SwingUtilities.invokeLater(() -> theController.setFoundRecords(records));
   }
 
   @Override

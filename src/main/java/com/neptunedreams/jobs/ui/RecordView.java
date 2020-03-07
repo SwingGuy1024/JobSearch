@@ -151,19 +151,10 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
 
     JPanel tempFieldPanel = makeFieldPanel();
     @NonNull JPanel historyPanel = makeFieldAndHistoryPanel(tempFieldPanel, historyField);
-    addHistoryPanel(historyPanel);
+    add(historyPanel, BorderLayout.PAGE_START);
 
     SwingUtils.installStandardCaret(companyField, contactNameField, dicePosnField, diceIdField, eMailField, phone1Field,
         phone2Field, phone3Field, faxField, webSiteField, skypeField, descriptionField, historyField);
-  }
-
-  // I'm not sure why I shouldn't say @UnderInitialization RecordView<R> this here, but it may be because the nullness
-  // checker recognizes that no more members are set, so it changes the type of this to Initialized part way through
-  // the constructor. 
-  @SuppressWarnings("method.invocation.invalid")
-  private void addHistoryPanel(JComponent panel) {
-    // this is pulled out as a separate method because I can't annotate the add() method directory.
-    add(panel, BorderLayout.PAGE_START);
   }
 
   @SuppressWarnings("method.invocation.invalid")
@@ -245,8 +236,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
 
   // I'm not sure why I shouldn't say @UnderInitialization RecordView<R> this here, but it may be because the nullness
   // checker recognizes that no more members are set, so it changes the type of this to Initialized part way through
-  // the constructor. 
-  @SuppressWarnings("method.invocation.invalid")
+  // the constructor. It may also be that the @RequiresNonNull fixes this. 
   @RequiresNonNull({"labelPanel", "fieldPanel", "checkBoxPanel"})
   private JPanel makeFieldPanel() {
     JPanel topPanel = new JPanel(new BorderLayout());
@@ -341,7 +331,6 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, stringSelection);
   }
 
-  @SuppressWarnings("method.invocation.invalid")
   private JTextComponent addDescriptionField(@UnderInitialization RecordView<R> this) {
     final JTextArea wrappedField = new JTextArea(TEXT_ROWS, TEXT_COLUMNS);
     JComponent scrollPane = scrollArea(wrappedField);

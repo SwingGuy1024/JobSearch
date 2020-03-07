@@ -103,7 +103,7 @@
   
   <build>
     <plugins>
-      <!--This is the standard Maven plugin-->
+      <!--This is the standard Maven compiler plugin-->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -116,6 +116,8 @@
             <Xmaxwarns>10000</Xmaxwarns>
             <!--<AsuppressWarnings>uninitialized</AsuppressWarnings>-->
           </compilerArguments>
+          <!-- Reveals bugs in stubs. -->
+          <showWarnings>true</showWarnings>
           <annotationProcessorPaths>
             <path>
               <groupId>org.checkerframework</groupId>
@@ -141,8 +143,10 @@
             <!-- Optionally, -Awarns turns type-checking errors into warnings. -->
 <!--            <arg>-Awarns</arg>-->
 
-            <!--<arg>-Astubs=checkerframework/stubs</arg> &lt;!&ndash; Suggested by https://github.com/typetools/checker-framework/issues/445 &ndash;&gt;-->
+<!--            <arg>-Astubs=checkerframework/stubs</arg> &lt;!&ndash; Suggested by https://github.com/typetools/checker-framework/issues/445 &ndash;&gt;-->
             <!--<arg>-AstubWarnIfNotFound</arg>-->
+            <arg>-Astubs=nullness-stub/</arg>
+            <arg>-AstubWarnIfNotFound</arg>
           </compilerArgs>
         </configuration>
         <version>3.8.1</version>
