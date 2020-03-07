@@ -40,6 +40,7 @@ import com.neptunedreams.framework.data.Dao;
 import com.neptunedreams.framework.data.RecordSelectionModel;
 import com.neptunedreams.framework.event.ChangeRecord;
 import com.neptunedreams.framework.event.MasterEventBus;
+import com.neptunedreams.framework.ui.EnhancedCaret;
 import com.neptunedreams.framework.ui.FieldBinding;
 import com.neptunedreams.framework.ui.RecordController;
 import com.neptunedreams.framework.ui.SelectionSpy;
@@ -127,7 +128,6 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     final JLabel createdOnField = (JLabel) addField("", false, LeadField.CreatedOn, initialSort);
     descriptionField = addDescriptionField();
     historyField = new JTextArea(TEXT_ROWS, HISTORY_COLUMNS);
-//    SwingUtils.replaceCaret(historyField, new EnhancedCaret());
     assert getIdFunction != null : "Null id getter";
     assert setIdFunction != null : "Null id Setter";
     final FieldBinding.IntegerBinding<R> idBinding = FieldBinding.bindInteger(getIdFunction, idField);
@@ -153,8 +153,22 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     @NonNull JPanel historyPanel = makeFieldAndHistoryPanel(tempFieldPanel, historyField);
     add(historyPanel, BorderLayout.PAGE_START);
 
-    SwingUtils.installStandardCaret(companyField, contactNameField, dicePosnField, diceIdField, eMailField, phone1Field,
-        phone2Field, phone3Field, faxField, webSiteField, skypeField, descriptionField, historyField);
+    SwingUtils.installCustomCaret(EnhancedCaret::new,
+        companyField,
+        contactNameField,
+        clientField,
+        dicePosnField,
+        diceIdField,
+        eMailField,
+        phone1Field,
+        phone2Field,
+        phone3Field,
+        faxField,
+        webSiteField,
+        skypeField,
+        descriptionField,
+        historyField
+    );
   }
 
   @SuppressWarnings("method.invocation.invalid")

@@ -4,30 +4,27 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Objects;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import com.neptunedreams.framework.ErrorReport;
 import com.neptunedreams.framework.data.ConnectionSource;
 import com.neptunedreams.framework.data.Dao;
 import com.neptunedreams.framework.data.DatabaseInfo;
+import com.neptunedreams.framework.data.RecordModel;
+import com.neptunedreams.framework.data.SearchOption;
 import com.neptunedreams.framework.ui.RecordController;
 import com.neptunedreams.jobs.data.LeadField;
 import com.neptunedreams.jobs.data.sqlite.SQLiteInfo;
 import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
-import com.neptunedreams.framework.data.RecordModel;
 import com.neptunedreams.jobs.ui.RecordUI;
 import com.neptunedreams.jobs.ui.RecordView;
-import com.neptunedreams.framework.data.SearchOption;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -41,7 +38,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  * Neither of these options assumes long-term storage. They use serialization, so import should be done 
  * immediately after exporting and deleting the database.
  */
-@SuppressWarnings({"UseOfSystemOutOrSystemErr", "HardCodedStringLiteral"})
+@SuppressWarnings({"HardCodedStringLiteral"})
 public final class JobSearch extends JPanel
 {
   @SuppressWarnings("HardcodedFileSeparator")
