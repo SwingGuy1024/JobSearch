@@ -47,7 +47,7 @@ import static org.jooq.impl.DSL.*;
  *   website        VARCHAR(512) NOT NULL collate noCase,
  *   skype          VARCHAR(512) NOT NULL collate noCase,
  *   description    VARCHAR      NOT NULL collate noCase,
- *   history        VARCHAR      NOT NULL collate nocase,
+ *   history        VARCHAR      NOT NULL collate noCase,
  *   createdOn      DATETIME     NOT NULL DEFAULT (DATETIME('now')),
  *   phone3         VARCHAR(512) NOT NULL DEFAULT '' collate nocase,
  *   client         VARCHAR(512) NOT NULL DEFAULT '' collate nocase
@@ -93,8 +93,9 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
   }
 
   // If you change the CREATE statement, you need to change it two other places. First, you should change the comment
-  // at the beginning of this file. But more important, you should delete the master database 
-  // at src/main/resources/sql/generateFromJobHunt.db anc re-create it using the revised CREATE statement.
+  // at the beginning of this file. But more important, you should change it in src/main/sql/JobSearch.sql. Then you
+  // should delete the master source database at src/main/resources/sql/generateFromJobs.db and re-create it using the
+  // revised CREATE statement. (This database has no records. It is only used by the code generator.)
   // Also, this statement specifies the primary key as a property, instead of as a constraint at the end of the 
   // statement. This is necessary so a null id will cause the database to generate a new valid id. If it's specified
   // in a CONSTRAINT clause, a null id will throw an exception instead. In fact, even if I specify the collate noCase
@@ -216,18 +217,20 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
     try (
         final SelectWhereStep<LeadRecord> LeadRecords = dslContext.selectFrom(LEAD);
         SelectConditionStep<LeadRecord> where = LeadRecords.where(
-          LEAD.COMPANY.like(wildCardText).or(
-          LEAD.CONTACT_NAME.like(wildCardText).or(
-          LEAD.DICE_POSN.like(wildCardText).or(
-          LEAD.DICE_ID.like(wildCardText).or(
-          LEAD.EMAIL.like(wildCardText).or(
-          LEAD.PHONE1.like(wildCardText).or(
-          LEAD.PHONE2.like(wildCardText).or(
-          LEAD.FAX.like(wildCardText).or(
-          LEAD.WEBSITE.like(wildCardText).or(
-          LEAD.SKYPE.like(wildCardText).or(
-          LEAD.DESCRIPTION.like(wildCardText).or(
-          LEAD.HISTORY.like(wildCardText)))))))))))));
+          LEAD.COMPANY.like(wildCardText)).or(
+          LEAD.CONTACT_NAME.like(wildCardText)).or(
+          LEAD.CLIENT.like(wildCardText)).or(
+          LEAD.DICE_POSN.like(wildCardText)).or(
+          LEAD.DICE_ID.like(wildCardText)).or(
+          LEAD.EMAIL.like(wildCardText)).or(
+          LEAD.PHONE1.like(wildCardText)).or(
+          LEAD.PHONE2.like(wildCardText)).or(
+          LEAD.PHONE3.like(wildCardText)).or(
+          LEAD.FAX.like(wildCardText)).or(
+          LEAD.WEBSITE.like(wildCardText)).or(
+          LEAD.SKYPE.like(wildCardText)).or(
+          LEAD.DESCRIPTION.like(wildCardText)).or(
+          LEAD.HISTORY.like(wildCardText));
         final ResultQuery<LeadRecord> query = (orderBy == null) ?
           where : 
           where.orderBy(getField(orderBy))
@@ -264,11 +267,13 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
           condition = condition.or(
             LEAD.COMPANY.like(wildCardText)).or(
             LEAD.CONTACT_NAME.like(wildCardText)).or(
+            LEAD.CLIENT.like(wildCardText)).or(
             LEAD.DICE_POSN.like(wildCardText)).or(
             LEAD.DICE_ID.like(wildCardText)).or(
             LEAD.EMAIL.like(wildCardText)).or(
             LEAD.PHONE1.like(wildCardText)).or(
             LEAD.PHONE2.like(wildCardText)).or(
+            LEAD.PHONE3.like(wildCardText)).or(
             LEAD.FAX.like(wildCardText)).or(
             LEAD.SKYPE.like(wildCardText)).or(
             LEAD.WEBSITE.like(wildCardText)).or(
@@ -291,11 +296,13 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
         condition = condition.and(
                 LEAD.COMPANY.like(wildCardText).or(
                 LEAD.CONTACT_NAME.like(wildCardText)).or(
+                LEAD.CLIENT.like(wildCardText)).or(
                 LEAD.DICE_POSN.like(wildCardText)).or(
                 LEAD.DICE_ID.like(wildCardText)).or(
                 LEAD.EMAIL.like(wildCardText)).or(
                 LEAD.PHONE1.like(wildCardText)).or(
                 LEAD.PHONE2.like(wildCardText)).or(
+                LEAD.PHONE3.like(wildCardText)).or(
                 LEAD.FAX.like(wildCardText)).or(
                 LEAD.WEBSITE.like(wildCardText)).or(
                 LEAD.SKYPE.like(wildCardText)).or(

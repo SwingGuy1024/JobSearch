@@ -4,7 +4,7 @@
 
   <groupId>neptunedreams.com</groupId>
   <artifactId>job.search</artifactId>
-  <version>0.1.10-SNAPSHOT</version>
+  <version>0.1.11-SNAPSHOT</version>
   <name>Job Search</name>
   <packaging>jar</packaging>
 
@@ -35,7 +35,6 @@
     <!-- Uncomment to use the Type Annotations compiler. -->
     <!--<typeAnnotationsJavac>${org.checkerframework:compiler:jar}</typeAnnotationsJavac> -->
     <jooqVersion>3.12.3</jooqVersion>
-<!--	  <checkerVersion>3.0.1</checkerVersion>-->
   </properties>
 
   <dependencies>

@@ -11,6 +11,9 @@ package com.neptunedreams.jobs.data.derby;
 //import org.checkerframework.checker.nullness.qual.NonNull;
 //import org.junit.Test;
 
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 /**
@@ -20,8 +23,12 @@ import static org.junit.Assert.*;
  *
  * @author Miguel Mu\u00f1oz
  */
-@SuppressWarnings({"HardCodedStringLiteral", "StringConcatenation"})
 public class DerbyRecordDaoTest {
+  @BeforeClass
+  public static void setup() { }
+  
+  @Test
+  public void test() { }
 //  @Test
 //  @SuppressWarnings({"HardCodedStringLiteral", "unused", "HardcodedLineSeparator"})
 //  public void testDao() throws SQLException, IOException {
