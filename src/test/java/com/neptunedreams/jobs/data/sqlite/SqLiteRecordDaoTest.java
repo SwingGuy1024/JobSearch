@@ -17,7 +17,7 @@ import com.neptunedreams.jobs.data.LeadField;
 import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
 import org.hamcrest.Matchers;
 import org.junit.After;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -40,11 +40,11 @@ public class SqLiteRecordDaoTest {
   @SuppressWarnings("initialization.static.fields.uninitialized")
   private static SQLiteRecordDao dao;
 
-  @BeforeClass
-  public static void setup() throws SQLException, IOException {
+  @Before
+  public void setup() throws SQLException, IOException {
     System.err.printf("Before%n%n"); // NON-NLS
-    //noinspection HardcodedFileSeparator
-    final DatabaseInfo info = new SQLiteInfo("/.sqlite.jobHuntTest");
+    final DatabaseInfo info = SQLiteInfo.getInMemoryInfo();
+    System.out.printf("URL: %s%n", info.getUrl());
     info.init();
     connectionSource = info.getConnectionSource();
     dao = (SQLiteRecordDao) info.<LeadRecord, Integer, LeadField>getDao(LeadRecord.class, connectionSource);
@@ -69,7 +69,7 @@ public class SqLiteRecordDaoTest {
 //    if (info.isCreateSchemaAllowed()) {
 //      info.createSchema();
 //    }
-    LeadRecord record1 = new LeadRecord(0,"TestLeadAlpha", "testName", "testPw", "testDiceID\nNote line 2\nNoteLine 3", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", "");
+    LeadRecord record1 = new LeadRecord(0,"TestLeadAlpha", "testName", "testPw", "testDiceID\nNote line 2\nNoteLine 3", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()));
 //    LeadRecord record1 = createRecord("TestLeadAlpha", "testName", "testPw", "testDiceID\nNote line 2\nNoteLine 3");
     //noinspection recompany,resource
     assertFalse(connectionSource.getConnection().isClosed());
@@ -83,7 +83,7 @@ public class SqLiteRecordDaoTest {
     assertEquals(1, allRecords.size());
     assertEquals(allRecords.iterator().next().getId(), r1Id);
 
-    LeadRecord record2 = new LeadRecord(0, "t2Lead", "t2User", "t2Pw", "t2Note", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", "");
+    LeadRecord record2 = new LeadRecord(0, "t2Lead", "t2User", "t2Pw", "t2Note", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()));
 //    LeadRecord record2 = createRecord("t2Lead", "t2User", "t2Pw", "t2Note");
     dao.insert(record2);
     Integer r2Id = record2.getId();
@@ -183,7 +183,9 @@ public class SqLiteRecordDaoTest {
 
     // Find Any
     results = dao.findAny(null, "bravo", "charlie", "delta");
-    assertThat(getIds(results), hasItems(1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18));
+    List<Integer> ids = getIds(results);
+    System.out.printf("IDs: %s%n", ids);
+    assertThat(ids, hasItems(1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18));
     assertEquals(17, results.size());
 
     results = dao.findAny(LeadField.Company, "bravo", "charlie", "delta");
@@ -297,51 +299,54 @@ public class SqLiteRecordDaoTest {
   
   private void setupFindTests() throws SQLException {
     LeadRecord[] records = {
-        new LeadRecord(1, "mBravoCompany", "xCharlieName", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(2, "EBravoCompany", "xDeltaName", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(3, "kBravoCompany", "dummy", "xCharliePw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(4, "BBravoCompany", "name", "xDeltaPw", "xCharlieDiceID", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(5, "pCharlieCompany", "xCharlieName", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(6, "HDeltaCompany", "xCharlieName", "xDeltaPw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(7, "aDeltaCompany", "xDeltaName", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(8, "lCompany", "xCharlieName", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(9, "dCompany", "name", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(10, "NDeltaCompany", "name", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(11, "fCompany", "xDeltaName", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(12, "cCompany", "xName", "xDeltaPw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(13, "iBravoCompany", "xEchoName", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(14, "GDeltaCompany", "xEchoName", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(15, "jCompany", "xName", "xpw", "xDeltaZ", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(16, "OBravoCompany", "name", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(17, "RBravoCompany", "xDelta", "pw", "xCharlieDiceID", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(18, "qCharlieCompany", "xDeltaName", "pw", "zBravoDiceID", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
+        new LeadRecord(1, "mBravoCompany", "xCharlieName", "", "pw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(2, "EBravoCompany", "xDeltaName", "", "pw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(3, "kBravoCompany", "dummy", "", "xCharliePw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(4, "BBravoCompany", "name", "", "xDeltaPw", "xCharlieDiceID", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(5, "pCharlieCompany", "xCharlieName", "", "pw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(6, "HDeltaCompany", "xCharlieName", "", "xDeltaPw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(7, "aDeltaCompany", "xDeltaName", "", "pw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(8, "lCompany", "xCharlieName", "", "pw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(9, "dCompany", "name", "", "pw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(10, "NDeltaCompany", "name", "", "pw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(11, "fCompany", "xDeltaName", "", "pw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(12, "cCompany", "xName", "", "xDeltaPw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(13, "iBravoCompany", "xEchoName", "", "pw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(14, "GDeltaCompany", "xEchoName", "", "pw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(15, "jCompany", "xName", "", "xpw", "xDeltaZ", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(16, "OBravoCompany", "name", "", "pw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(17, "RBravoCompany", "xDelta", "", "pw", "xCharlieDiceID", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(18, "qCharlieCompany", "xDeltaName", "", "pw", "zBravoDiceID", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
     };
     assert dao != null;
     for (LeadRecord r: records) {
       dao.insert(r);
     }
+    showAllRecords(dao, 18);
+//    Collection<LeadRecord> all = dao.getAll(LeadField.ID);
+//    System
   }
   
   private void setUpFindAllTests() throws SQLException {
     LeadRecord[] records = {
-        new LeadRecord(1, "mBravoCompany CharlieX", "xCharlieName", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(2, "NBravoCompany DeltaX", "xDeltaName", "aBravo bEchoX cCharlieZ", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(3, "KBravoCompany EchoX", "dummy", "xCharliePw bBravoX aDeltaZ", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(4, "bBravoCompany CharlieX Delta Force", "name", "xDeltaPw", "xCharlieDiceID", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(5, "pCharlieCompany", "xCharlieName yBravo", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(6, "HDeltaCompany", "xCharlieNameX yDeltaX", "xDeltaPw", "xDeltaNameX PBravoNameX ZCharlieX", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(7, "aDeltaCompany", "xDeltaNameX PBravoNameX ZCharlieX", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(8, "LCompany", "xCharlieName", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(9, "dCompany", "name", "CharlieXpw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(10, "eDeltaCompany", "name", "CharlieX BravoPw XDeltaZ", "XBravoZ aCharlieZ", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(11, "JCompany", "xDeltaName zCharlieX bBravoZ", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(12, "CCompany", "xName", "xDeltaPw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(13, "qBravoCompany dDeltaX aCharlieB", "xEchoName", "ABravoZ BDeltaX bCharlieX pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(14, "GDeltaCompany", "xEchoName", "pw", "xBravo bCharlie ZDeltaX", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(15, "fCompany", "xName", "xpw", "xDeltaNameX PBravoNameX ZCharlieX", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(16, "OBravoCompany", "name", "pw", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(17, "rBravoCompany", "xDelta", "pw", "xCharlieDiceID", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
-        new LeadRecord(18, "ICharlieCompany aDeltaX bBravoX", "xDeltaName aBravoX bCharlieZ", "bEcho", "zBravoDiceID", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", ""),
+        new LeadRecord(1, "mBravoCompany CharlieX", "xCharlieName", "", "pw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(2, "NBravoCompany DeltaX", "xDeltaName", "", "aBravo bEchoX cCharlieZ", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(3, "KBravoCompany EchoX", "dummy", "", "xCharliePw bBravoX aDeltaZ", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(4, "bBravoCompany CharlieX Delta Force", "name", "", "xDeltaPw", "xCharlieDiceID", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(5, "pCharlieCompany", "xCharlieName yBravo", "", "pw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(6, "HDeltaCompany", "xCharlieNameX yDeltaX", "", "xDeltaPw", "xDeltaNameX PBravoNameX ZCharlieX", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(7, "aDeltaCompany", "xDeltaNameX PBravoNameX ZCharlieX", "", "pw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(8, "LCompany", "xCharlieName", "", "pw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(9, "dCompany", "name", "", "CharlieXpw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(10, "eDeltaCompany", "name", "", "CharlieX BravoPw XDeltaZ", "XBravoZ aCharlieZ", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(11, "JCompany", "xDeltaName zCharlieX bBravoZ", "", "pw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(12, "CCompany", "xName", "", "xDeltaPw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(13, "qBravoCompany dDeltaX aCharlieB", "xEchoName", "", "ABravoZ BDeltaX bCharlieX pw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(14, "GDeltaCompany", "xEchoName", "", "pw", "xBravo bCharlie ZDeltaX", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(15, "fCompany", "xName", "", "xpw", "xDeltaNameX PBravoNameX ZCharlieX", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(16, "OBravoCompany", "name", "", "pw", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(17, "rBravoCompany", "xDelta", "", "pw", "xCharlieDiceID", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
+        new LeadRecord(18, "ICharlieCompany aDeltaX bBravoX", "xDeltaName aBravoX bCharlieZ", "", "bEcho", "zBravoDiceID", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now())),
     };
     assert dao != null;
     for (LeadRecord r : records) {

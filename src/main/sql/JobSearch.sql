@@ -12,48 +12,22 @@
 -- SQLiteRecordDao.class.
  
 drop table "lead";
-CREATE TABLE IF NOT EXISTS lead (
-  id             INTEGER      NOT NULL PRIMARY KEY AUTOINCREMENT,
-  company        VARCHAR(512) NOT NULL collate noCase,
-  contact_name   VARCHAR(512) NOT NULL collate noCase,
-  dice_posn      VARCHAR(512) NOT NULL collate noCase,
-  dice_id        VARCHAR(512) NOT NULL collate noCase,
-  email          VARCHAR(512) NOT NULL collate noCase,
-  phone1         VARCHAR(512) NOT NULL collate noCase,
-  phone2         VARCHAR(512) NOT NULL collate noCase,
-  fax            VARCHAR(512) NOT NULL collate noCase,
-  website        VARCHAR(512) NOT NULL collate noCase,
-  skype          VARCHAR(512) NOT NULL collate noCase,
-  description    VARCHAR      NOT NULL collate noCase,
-  history        VARCHAR      NOT NULL collate noCase,
-  createdOn      DATETIME     NOT NULL DEFAULT (DATETIME('now'))
+CREATE TABLE IF NOT EXISTS lead
+(
+    id           INTEGER      NOT NULL PRIMARY KEY AUTOINCREMENT,
+    company      VARCHAR(512) NOT NULL collate noCase,
+    contact_name VARCHAR(512) NOT NULL collate noCase,
+    client       VARCHAR(512) NOT NULL collate noCase,
+    dice_posn    VARCHAR(512) NOT NULL collate noCase,
+    dice_id      VARCHAR(512) NOT NULL collate noCase,
+    email        VARCHAR(512) NOT NULL collate noCase,
+    phone1       VARCHAR(512) NOT NULL collate noCase,
+    phone2       VARCHAR(512) NOT NULL collate noCase,
+    phone3       VARCHAR(512) NOT NULL collate noCase,
+    fax          VARCHAR(512) NOT NULL collate noCase,
+    website      VARCHAR(512) NOT NULL collate noCase,
+    skype        VARCHAR(512) NOT NULL collate noCase,
+    description  VARCHAR      NOT NULL collate noCase,
+    history      VARCHAR      NOT NULL collate noCase,
+    created_on   DATETIME     NOT NULL DEFAULT (DATETIME('now'))
 );
-
--- CREATE TABLE IF NOT EXISTS lead2 (
---   id             INTEGER      NOT NULL PRIMARY KEY AUTOINCREMENT,
---   company        VARCHAR(512) NOT NULL collate noCase,
---   contact_name   VARCHAR(512) NOT NULL collate noCase,
---   dice_posn      VARCHAR(512) NOT NULL collate noCase,
---   dice_id        VARCHAR(512) NOT NULL collate noCase,
---   email          VARCHAR(512) NOT NULL collate noCase,
---   phone1         VARCHAR(512) NOT NULL collate noCase,
---   phone2         VARCHAR(512) NOT NULL collate noCase,
---   fax            VARCHAR(512) NOT NULL collate noCase,
---   website        VARCHAR(512) NOT NULL collate noCase,
---   skype          VARCHAR(512) NOT NULL collate noCase,
---   description    VARCHAR      NOT NULL collate noCase,
---   history        VARCHAR      NOT NULL collate noCase,
---   created_on     DATETIME     NOT NULL DEFAULT (DATETIME('now'))
--- );
-
--- FOREIGN KEY CONSTRAINTS SHOULD BE TURNED ON when making a database connection, using
--- SQLITE_DEFAULT_FOREIGN_KEYS=1
-
--- drop table "history_event";
--- CREATE TABLE IF NOT EXISTS history_event (
---   id         INTEGER      NOT NULL PRIMARY KEY,
---   event_time  VARCHAR(40) NOT NULL,
---   info       VARCHAR      NOT NULL collate noCase,
---   lead_id    INTEGER      NOT NULL,
---   FOREIGN KEY(lead_id) REFERENCES lead(id)
--- );

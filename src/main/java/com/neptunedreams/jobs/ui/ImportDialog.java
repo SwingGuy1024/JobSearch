@@ -140,7 +140,7 @@ final class ImportDialog extends JDialog {
         break;
       case "createdOn":
         Timestamp timestamp = loadTime(fieldValue);
-        record.setCreatedon(timestamp);
+        record.setCreatedOn(timestamp);
         break;
       default:
         throw new IllegalArgumentException(text);

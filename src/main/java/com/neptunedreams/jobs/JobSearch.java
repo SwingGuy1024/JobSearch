@@ -38,7 +38,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  * Neither of these options assumes long-term storage. They use serialization, so import should be done 
  * immediately after exporting and deleting the database.
  */
-@SuppressWarnings({"HardCodedStringLiteral"})
+@SuppressWarnings("HardCodedStringLiteral")
 public final class JobSearch extends JPanel
 {
   @SuppressWarnings("HardcodedFileSeparator")
@@ -115,6 +115,10 @@ public final class JobSearch extends JPanel
   private final @NonNull DatabaseInfo info;
   private final @NonNull RecordController<LeadRecord, Integer, LeadField> controller;
 
+  /**
+   * Launch the App!
+   * @param args Unused
+   */
   public static void main(String[] args) { //throws IOException, ClassNotFoundException {
     Thread.setDefaultUncaughtExceptionHandler((t, e) -> ErrorReport.reportException("Unknown", e));
 
@@ -169,7 +173,7 @@ public final class JobSearch extends JPanel
       info.init();
       final ConnectionSource connectionSource = info.getConnectionSource();
       Dao<LeadRecord, Integer, LeadField> dao = info.getDao(LeadRecord.class, connectionSource);
-      LeadRecord dummyRecord = new LeadRecord(0, "", "", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", "");
+      LeadRecord dummyRecord = new LeadRecord(0, "", "", "", "", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()));
       final RecordView<LeadRecord> view = new RecordView.Builder<>(dummyRecord, LeadField.CreatedOn)
           .id      (LeadRecord::getId,       LeadRecord::setId)
           .company  (LeadRecord::getCompany,   LeadRecord::setCompany)
@@ -186,7 +190,7 @@ public final class JobSearch extends JPanel
           .skype(LeadRecord::getSkype, LeadRecord::setSkype)
           .description(LeadRecord::getDescription, LeadRecord::setDescription)
           .history(LeadRecord::getHistory, LeadRecord::setHistory)
-          .createdOn(LeadRecord::getCreatedon)
+          .createdOn(LeadRecord::getCreatedOn)
           .withDao(dao)
           .withConstructor(this::recordConstructor)
           .build();
@@ -252,7 +256,7 @@ public final class JobSearch extends JPanel
 
   @SuppressWarnings("unused")
   private LeadRecord recordConstructor(@UnderInitialization JobSearch this) {
-    return new LeadRecord(0, "", "", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()), "", "");
+    return new LeadRecord(0, "", "", "", "", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()));
   }
   
   private JPanel getPanel() { return mainPanel; }

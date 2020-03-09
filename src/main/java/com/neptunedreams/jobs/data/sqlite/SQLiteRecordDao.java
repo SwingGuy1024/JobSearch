@@ -33,24 +33,23 @@ import static org.jooq.impl.DSL.*;
 
 /**
  * Create statement: 
- * 
  * CREATE TABLE IF NOT EXISTS lead (
  *   id             INTEGER      NOT NULL PRIMARY KEY AUTOINCREMENT,
  *   company        VARCHAR(512) NOT NULL collate noCase,
  *   contact_name   VARCHAR(512) NOT NULL collate noCase,
+ *   client         VARCHAR(512) NOT NULL collate noCase, 
  *   dice_posn      VARCHAR(512) NOT NULL collate noCase,
  *   dice_id        VARCHAR(512) NOT NULL collate noCase,
  *   email          VARCHAR(512) NOT NULL collate noCase,
  *   phone1         VARCHAR(512) NOT NULL collate noCase,
  *   phone2         VARCHAR(512) NOT NULL collate noCase,
+ *   phone3         VARCHAR(512) NOT NULL collate noCase,
  *   fax            VARCHAR(512) NOT NULL collate noCase,
  *   website        VARCHAR(512) NOT NULL collate noCase,
  *   skype          VARCHAR(512) NOT NULL collate noCase,
  *   description    VARCHAR      NOT NULL collate noCase,
  *   history        VARCHAR      NOT NULL collate noCase,
- *   createdOn      DATETIME     NOT NULL DEFAULT (DATETIME('now')),
- *   phone3         VARCHAR(512) NOT NULL DEFAULT '' collate nocase,
- *   client         VARCHAR(512) NOT NULL DEFAULT '' collate nocase
+ *   created_on     DATETIME     NOT NULL DEFAULT (DATETIME('now'))
  * );
  * 
  * <p>Created by IntelliJ IDEA.
@@ -83,7 +82,7 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
     fieldMap.put(LeadField.Skype, Lead.LEAD.SKYPE);
     fieldMap.put(LeadField.Description, Lead.LEAD.DESCRIPTION);
     fieldMap.put(LeadField.History, Lead.LEAD.HISTORY);
-    fieldMap.put(LeadField.CreatedOn, Lead.LEAD.CREATEDON);
+    fieldMap.put(LeadField.CreatedOn, Lead.LEAD.CREATED_ON);
     for (LeadField leadField: LeadField.values()) {
       if (leadField.isField() && !fieldMap.containsKey(leadField)) {
         throw new IllegalStateException("Missing Field in FieldMap: " + leadField);
@@ -106,19 +105,19 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
           "  id             INTEGER      NOT NULL PRIMARY KEY AUTOINCREMENT,\n" +
           "  company        VARCHAR(512) NOT NULL collate noCase,\n" +
           "  contact_name   VARCHAR(512) NOT NULL collate noCase,\n" +
+          "  client         VARCHAR(512) NOT NULL collate noCase, \n" +
           "  dice_posn      VARCHAR(512) NOT NULL collate noCase,\n" +
           "  dice_id        VARCHAR(512) NOT NULL collate noCase,\n" +
           "  email          VARCHAR(512) NOT NULL collate noCase,\n" +
           "  phone1         VARCHAR(512) NOT NULL collate noCase,\n" +
           "  phone2         VARCHAR(512) NOT NULL collate noCase,\n" +
+          "  phone3         VARCHAR(512) NOT NULL collate noCase,\n" +
           "  fax            VARCHAR(512) NOT NULL collate noCase,\n" +
           "  website        VARCHAR(512) NOT NULL collate noCase,\n" +
           "  skype          VARCHAR(512) NOT NULL collate noCase,\n" +
           "  description    VARCHAR      NOT NULL collate noCase,\n" +
-          "  history        VARCHAR      NOT NULL collate nocase,\n" +
-          "  createdOn      DATETIME     NOT NULL DEFAULT (DATETIME('now')),\n" +
-          "  phone3         VARCHAR(512) NOT NULL DEFAULT '' collate nocase,\n" +
-          "  client         VARCHAR(512) NOT NULL DEFAULT '' collate nocase" +
+          "  history        VARCHAR      NOT NULL collate noCase,\n" +
+          "  created_on     DATETIME     NOT NULL DEFAULT (DATETIME('now'))\n" +
           ");";
   private static final char WC = '%';
   private DSLContext getDslContext() throws SQLException {
@@ -275,9 +274,9 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
             LEAD.PHONE2.like(wildCardText)).or(
             LEAD.PHONE3.like(wildCardText)).or(
             LEAD.FAX.like(wildCardText)).or(
-            LEAD.SKYPE.like(wildCardText)).or(
             LEAD.WEBSITE.like(wildCardText)).or(
-            LEAD.DICE_ID.like(wildCardText)).or(
+            LEAD.SKYPE.like(wildCardText)).or(
+            LEAD.DESCRIPTION.like(wildCardText)).or(
             LEAD.HISTORY.like(wildCardText));
       }
       return getFromQuery(orderBy, LeadRecords, condition);
@@ -306,7 +305,7 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
                 LEAD.FAX.like(wildCardText)).or(
                 LEAD.WEBSITE.like(wildCardText)).or(
                 LEAD.SKYPE.like(wildCardText)).or(
-                LEAD.DICE_ID.like(wildCardText)).or(
+                LEAD.DESCRIPTION.like(wildCardText)).or(
                 LEAD.HISTORY.like(wildCardText)));
       }
       return getFromQuery(orderBy, leadRecords, condition);

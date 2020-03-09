@@ -32,22 +32,30 @@ import static org.jooq.SQLDialect.SQLITE;
 public class SQLiteInfo extends AbstractDatabaseInfo {
 
   private static final Class<LeadRecord> RECORD_RECORD_CLASS = LeadRecord.class;
+  @SuppressWarnings("HardcodedFileSeparator")
+  private static final String JOBS_DB = "/jobs.db";
+  private final String dbName;
 
   @SuppressWarnings("JavaDoc")
   public SQLiteInfo() {
     //noinspection HardcodedFileSeparator
-    this("/.sqlite.jobs");
+    this("/.sqlite.jobs", JOBS_DB);
   }
 
   @SuppressWarnings("JavaDoc")
-  SQLiteInfo(String homeDir) {
+  SQLiteInfo(String homeDir, String dbName) {
     super(homeDir);
+    this.dbName = dbName;
 //    init();
   }
+  
+  static SQLiteInfo getInMemoryInfo() {
+    return new SQLiteInfo(":memory:", "");
+  }
+
   @NotNull
   @Override
   public String getUrl() {
-    //noinspection StringConcatenationMissingWhitespace
     return "jdbc:sqlite:" + getHomeDir() + getHome();
   }
 
@@ -68,8 +76,7 @@ public class SQLiteInfo extends AbstractDatabaseInfo {
   }
 
   private String getHome() {
-    //noinspection HardcodedFileSeparator
-    return "/jobs.db";
+    return dbName;
   }
 
   @Override
