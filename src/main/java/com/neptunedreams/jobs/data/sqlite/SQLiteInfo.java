@@ -42,15 +42,24 @@ public class SQLiteInfo extends AbstractDatabaseInfo {
     this("/.sqlite.jobs", JOBS_DB);
   }
 
-  @SuppressWarnings("JavaDoc")
+  /**
+   * Create a new SQLiteInfo from a home directory and a database file name. For an in-memory database, use 
+   * getInMemoryInfo().
+   * @param homeDir The home directory
+   * @param dbName The name of the database file
+   * @see #getInMemoryInfo() 
+   */
   SQLiteInfo(String homeDir, String dbName) {
     super(homeDir);
     this.dbName = dbName;
-//    init();
   }
-  
+
+  /**
+   * Create a new SQLiteInfo set up to use an in-memory database. This is primarily for unit tests.
+   * @return an SQLiteInfo using an in memory database.
+   */
   static SQLiteInfo getInMemoryInfo() {
-    return new SQLiteInfo(":memory:", "");
+    return new SQLiteInfo("", ":memory:");
   }
 
   @NotNull
@@ -81,12 +90,16 @@ public class SQLiteInfo extends AbstractDatabaseInfo {
 
   @Override
   public void init() throws IOException, SQLException {
-    File homeDir = new File(getHomeDir());
-    File databaseFile = new File(homeDir, getHome());
-    if (!databaseFile.exists()) {
-      boolean failed = !databaseFile.createNewFile();
-      if (failed) {
-        throw new IOException("Failed to create database file at " + databaseFile.getAbsolutePath());
+    // For an inMemory database, home will be empty.
+    @UnknownKeyFor @Initialized String home = getHomeDir();
+    if (!home.isEmpty()) {
+      File homeDir = new File(home);
+      File databaseFile = new File(homeDir, getHome());
+      if (!databaseFile.exists()) {
+        boolean failed = !databaseFile.createNewFile();
+        if (failed) {
+          throw new IOException("Failed to create database file at " + databaseFile.getAbsolutePath());
+        }
       }
     }
     try {
