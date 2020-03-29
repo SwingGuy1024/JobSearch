@@ -143,6 +143,12 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     optionsGroup.addButtonGroupListener(this::searchOptionChanged); // Using a lambda is an error. This is a warning. 
   }
 
+  /**
+   * Instantiate a RecordUI
+   * @param model The record model
+   * @param theView the record view
+   * @param theController the controller
+   */
     @SuppressWarnings({"method.invocation.invalid", "argument.type.incompatible"})
   // add(), setBorder(), etc not properly annotated in JDK.
   public RecordUI(@NonNull RecordModel<R> model, RecordView<R> theView, RecordController<R, Integer, LeadField> theController) {
@@ -207,7 +213,10 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     swipeView = SwipeView.wrap(recordView);
     return swipeView.getLayer();
   }
-  
+
+  /**
+   * Launch the initial search of the database
+   */
   public void launchInitialSearch() {
     SwingUtilities.invokeLater(() -> {
       findField.setText(""); // This fires the initial search in queuedTask.
@@ -512,13 +521,21 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     assert searchFieldCombo != null;
     return controller.retrieveNow(searchFieldCombo.getSelected(), getSearchOption(), text);
   }
-  
+
+  /**
+   * Called by the event bus to search the newly-typed text.
+   * @param searchNowEvent The event, which contains no useful data.
+   */
   @Subscribe
   public void doSearchNow(MasterEventBus.SearchNowEvent searchNowEvent) {
     searchNow();
   }
 
   // This is public because I expect other classes to use it in the future. 
+
+  /**
+   * Searches for the text in the find field, and passed the retrieved data to the model
+   */
   @SuppressWarnings("WeakerAccess")
   public void searchNow() {
     assert SwingUtilities.isEventDispatchThread();
