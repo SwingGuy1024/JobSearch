@@ -4,7 +4,7 @@
 
   <groupId>neptunedreams.com</groupId>
   <artifactId>job.search</artifactId>
-  <version>0.1.12-SNAPSHOT</version>
+  <version>0.1.13-SNAPSHOT</version>
   <name>Job Search</name>
   <packaging>jar</packaging>
 
@@ -41,7 +41,7 @@
 	  <dependency>
 		  <groupId>com.neptunedreams</groupId>
 		  <artifactId>tango</artifactId>
-		  <version>1.0.4-SNAPSHOT</version>
+		  <version>1.0.5-SNAPSHOT</version>
 	  </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -84,13 +84,13 @@
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker-qual</artifactId>
-      <version>3.1.0</version>
+      <version>3.2.0</version>
     </dependency>
     <!-- If using JDK 8, add the following additional dependencies -->
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>jdk8</artifactId>
-      <version>3.1.0</version>
+      <version>3.2.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.errorprone</groupId>
@@ -121,7 +121,7 @@
             <path>
               <groupId>org.checkerframework</groupId>
               <artifactId>checker</artifactId>
-              <version>3.1.0</version>
+              <version>3.2.0</version>
             </path>
           </annotationProcessorPaths>
           <annotationProcessors>

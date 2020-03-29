@@ -72,14 +72,16 @@ public final class JobSearch extends JPanel
   // done  2. Dim instead of hide search options. (I had forgotten all about them!)
   // todo  3. Put search field options in a new sidebar. Allow show/hide.
   // todo  4. Add column header to sort buttons.
-  // TODO: BUG: Find All doesn't find everything. It may fail to search in the Description field. Search for
-  // todo  North Hollywood. Find all finds it on id 4 and 33. Find Exact finds it on 4, 33, and 82. 
+  // Done: BUG: Find All doesn't find everything. It may fail to search in the Description field. Search for
+  // done  North Hollywood. Find all finds it on id 4 and 33. Find Exact finds it on 4, 33, and 82. 
   // TODO: Highlight found text after a find. Add a next button that highlights the next example on the current card, 
   // todo  or goes to the next card if there aren't any more. (This will be tricky.)
   // TODO: BUG Delete fails in certain circumstances. If I type some search text, then create a card (presumably not
   // todo  a part of the search text), the delete-card button will throw an exception: Detached Exception: Cannot
   // todo  execute query. No Connection Configured. (It may be because the card hasn't been inserted yet. But it's
   // todo  a strange message.)
+  // TODO: BUG Hold down L/R arrow keys defeats speed limit of swipe. (Holding down the mouse on the L/R buttons 
+  // todo  successfully limits the speed.)
   
   // https://db.apache.org/ojb/docu/howtos/howto-use-db-sequences.html
   // https://db.apache.org/derby/docs/10.8/ref/rrefsqljcreatesequence.html 

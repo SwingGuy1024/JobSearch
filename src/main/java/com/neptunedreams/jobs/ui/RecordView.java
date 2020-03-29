@@ -48,6 +48,7 @@ import com.neptunedreams.framework.ui.SwingUtils;
 import com.neptunedreams.jobs.data.LeadField;
 import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
@@ -72,15 +73,15 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   private static final int TEXT_COLUMNS = 20;
   private static final int TEXT_ROWS = 15;
   private static final int HISTORY_COLUMNS = 40;
-  private JPanel labelPanel = new JPanel(new GridLayout(0, 1));
-  private JPanel fieldPanel = new JPanel(new GridLayout(0, 1));
-  private JPanel checkBoxPanel = new JPanel(new GridLayout(0, 1));
-  private ButtonGroup buttonGroup = new ButtonGroup();
+  private final JPanel labelPanel = new JPanel(new GridLayout(0, 1));
+  private final JPanel fieldPanel = new JPanel(new GridLayout(0, 1));
+  private final JPanel checkBoxPanel = new JPanel(new GridLayout(0, 1));
+  private final ButtonGroup buttonGroup = new ButtonGroup();
 
   private R currentRecord; // = new Record("D", "D", "D", "D");
 
 //  @NotOnlyInitialized
-  private RecordController<R, Integer, LeadField> controller;
+  private final RecordController<R, Integer, LeadField> controller;
   private final List<? extends FieldBinding<R, ? extends Serializable, ? extends JComponent>> allBindings;
   private final JTextComponent companyField;
   private final JTextArea historyField;
@@ -235,7 +236,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
       final Supplier<R> recordConstructor,
       final Function<R, Integer> getIdFunction
   ) {
-    return new RecordController<>(
+    return RecordController.createRecordController(
         dao,
         this,
         initialSort,
@@ -251,7 +252,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   // I'm not sure why I shouldn't say @UnderInitialization RecordView<R> this here, but it may be because the nullness
   // checker recognizes that no more members are set, so it changes the type of this to Initialized part way through
   // the constructor. It may also be that the @RequiresNonNull fixes this. 
-  @RequiresNonNull({"labelPanel", "fieldPanel", "checkBoxPanel"})
+//  @RequiresNonNull({"labelPanel", "fieldPanel", "checkBoxPanel"})
   private JPanel makeFieldPanel() {
     JPanel topPanel = new JPanel(new BorderLayout());
     topPanel.add(labelPanel, BorderLayout.LINE_START);
@@ -263,14 +264,18 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     return topPanel;
   }
 
+  /**
+   * Get the Controller
+   * @return The RecordController
+   */
   public RecordController<R, Integer, LeadField> getController() { return controller; }
 
-  @RequiresNonNull({"labelPanel", "fieldPanel", "buttonGroup", "checkBoxPanel", "controller"})
+//  @RequiresNonNull({"labelPanel", "fieldPanel", "buttonGroup", "checkBoxPanel", "controller"})
   private JComponent addField(@UnderInitialization RecordView<R> this, final String labelText, final boolean editable, final LeadField orderField, LeadField initialSort) {
     return addField(labelText, editable, orderField, initialSort, null);
   }
 
-  @RequiresNonNull({"labelPanel", "fieldPanel", "buttonGroup", "checkBoxPanel", "controller"})
+//  @RequiresNonNull({"labelPanel", "fieldPanel", "buttonGroup", "checkBoxPanel", "controller"})
   private JComponent addFieldWithCopy(@UnderInitialization RecordView<R>this, final String labelText, final LeadField orderField, LeadField initialSort) {
     JButton copyButton = new JButton(Resource.getCopy());
 
@@ -294,7 +299,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     return field;
   }
 
-  @RequiresNonNull({"labelPanel", "fieldPanel", "buttonGroup", "checkBoxPanel", "controller"})
+//  @RequiresNonNull({"labelPanel", "fieldPanel", "buttonGroup", "checkBoxPanel", "controller"})
   private JComponent addField(@UnderInitialization RecordView<R>this, final String labelText, final boolean editable, final LeadField orderField, LeadField initialSort, @Nullable JComponent extraComponent) {
     //noinspection StringConcatenation,MagicCharacter
     JLabel label = new JLabel(labelText + ':');
@@ -395,6 +400,10 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     };
   }
 
+  /**
+   * Responds to the RecordChange event sent by the MasterEventBus
+   * @param recordEvent The record event which holds the new record
+   */
   @Subscribe
   public void setCurrentRecord(ChangeRecord<R> recordEvent) {
     R newRecord = recordEvent.getNewRecord();
@@ -415,6 +424,10 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     return false;
   }
 
+  /**
+   * Saves any changes to the current record before exiting the application
+   * @return true if the edits were saved, false otherwise.
+   */
   public boolean saveOnExit() {// throws SQLException {
     // Test four cases:
     // 1. New Record with data
@@ -457,6 +470,10 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     companyField.requestFocus();
   }
 
+  /**
+   * Adds a new history event, with a date and time, to the history field
+   * @param timeText The text of the date and time.
+   */
   public void addHistoryEvent(final String timeText) {
     String historyText = historyField.getText().trim();
     historyField.setText(historyText);
@@ -472,155 +489,185 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   // If I don't suppress this warning, and initialize these values to null, I just get a assignment.type.incompatible
   // warning instead, because I haven't declared these values Nullable. But if I do that, I'll get warnings when I 
   // build, because they're NonNull in the constructor. Not sure what's the best approach, but this works for now.
-  @SuppressWarnings("initialization.fields.uninitialized")
+  @SuppressWarnings("JavaDoc")
   public static class Builder<@NonNull RR> {
     private RR record;
     private LeadField initialSort;
-    private Function<RR, Integer> getId;
-    private BiConsumer<RR, Integer> setId;
-    private Function<RR, String> getCompany;
-    private BiConsumer<RR, String> setCompany;
-    private Function<RR, String> getContactName;
-    private BiConsumer<RR, String> setContactName;
-    private Function<RR, String> getClient;
-    private BiConsumer<RR, String> setClient;
-    private Function<RR, String> getDicePosn;
-    private BiConsumer<RR, String> setDicePosn;
-    private Function<RR, String> getDiceId;
-    private BiConsumer<RR, String> setDiceId;
-    private Function<RR, String> getEMail;
-    private BiConsumer<RR, String> setEMail;
-    private Function<RR, String> getPhone1;
-    private BiConsumer<RR, String> setPhone1;
-    private Function<RR, String> getPhone2;
-    private BiConsumer<RR, String> setPhone2;
-    private Function<RR, String> getPhone3;
-    private BiConsumer<RR, String> setPhone3;
-    private Function<RR, String> getFax;
-    private BiConsumer<RR, String> setFax;
-    private Function<RR, String> getWebSite;
-    private BiConsumer<RR, String> setWebSite;
-    private Function<RR, String> getSkype;
-    private BiConsumer<RR, String> setSkype;
-    private Function<RR, String> getDescription;
-    private BiConsumer<RR, String> setDescription;
-    private Function<RR, String> getHistory;
-    private BiConsumer<RR, String> setHistory;
-    private Function<RR, String> getCreatedOn;
-    private Dao<RR, Integer, LeadField> dao;
-    private Supplier<RR> recordConstructor;
+    private @Nullable Function<RR, Integer> getId;
+    private @Nullable BiConsumer<RR, Integer> setId;
+    private @Nullable Function<RR, String> getCompany;
+    private @Nullable BiConsumer<RR, String> setCompany;
+    private @Nullable Function<RR, String> getContactName=null;
+    private @Nullable BiConsumer<RR, String> setContactName=null;
+    private @Nullable Function<RR, String> getClient=null;
+    private @Nullable BiConsumer<RR, String> setClient=null;
+    private @Nullable Function<RR, String> getDicePosn;
+    private @Nullable BiConsumer<RR, String> setDicePosn;
+    private @Nullable Function<RR, String> getDiceId=null;
+    private @Nullable BiConsumer<RR, String> setDiceId=null;
+    private @Nullable Function<RR, String> getEMail=null;
+    private @Nullable BiConsumer<RR, String> setEMail=null;
+    private @Nullable Function<RR, String> getPhone1=null;
+    private @Nullable BiConsumer<RR, String> setPhone1=null;
+    private @Nullable Function<RR, String> getPhone2=null;
+    private @Nullable BiConsumer<RR, String> setPhone2=null;
+    private @Nullable Function<RR, String> getPhone3=null;
+    private @Nullable BiConsumer<RR, String> setPhone3=null;
+    private @Nullable Function<RR, String> getFax=null;
+    private @Nullable BiConsumer<RR, String> setFax=null;
+    private @Nullable Function<RR, String> getWebSite=null;
+    private @Nullable BiConsumer<RR, String> setWebSite=null;
+    private @Nullable Function<RR, String> getSkype=null;
+    private @Nullable BiConsumer<RR, String> setSkype=null;
+    private @Nullable Function<RR, String> getDescription=null;
+    private @Nullable BiConsumer<RR, String> setDescription=null;
+    private @Nullable Function<RR, String> getHistory=null;
+    private @Nullable BiConsumer<RR, String> setHistory=null;
+    private @Nullable Function<RR, String> getCreatedOn=null;
+    private @Nullable Dao<RR, Integer, LeadField> dao=null;
+    private @Nullable Supplier<RR> recordConstructor=null;
 
     public Builder(RR record, LeadField initialSort) {
       this.record = record;
       this.initialSort = initialSort;
     }
 
-    public Builder<RR> id(Function<RR, Integer> getter, BiConsumer<RR, Integer> setter) {
+    @EnsuresNonNull({"getId", "setId"})
+    public Builder<RR> id(@NonNull Function<RR, Integer> getter, @NonNull BiConsumer<RR, Integer> setter) {
       getId = getter;
       setId = setter;
       return this;
     }
 
-    public Builder<RR> company(Function<RR, String> getter, BiConsumer<RR, String> setter) {
+    @EnsuresNonNull({"getCompany", "setCompany"})
+    public Builder<RR> company(@NonNull Function<RR, String> getter, @NonNull BiConsumer<RR, String> setter) {
       getCompany = getter;
       setCompany = setter;
       return this;
     }
 
+    @EnsuresNonNull({"getContactName", "setContactName"})
     public Builder<RR> contactName(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getContactName = getter;
       setContactName = setter;
       return this;
     }
 
+    @EnsuresNonNull({"getClient", "setClient"})
     public Builder<RR> client(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getClient = getter;
       setClient = setter;
       return this;
     }
 
+    @EnsuresNonNull({"getDicePosn", "setDicePosn"})
     public Builder<RR> dicePosn(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getDicePosn = getter;
       setDicePosn = setter;
       return this;
     }
 
+    @EnsuresNonNull({"getDiceId", "setDiceId"})
     public Builder<RR> diceId(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getDiceId = getter;
       setDiceId = setter;
       return this;
     }
 
+    @EnsuresNonNull({"getEMail", "setEMail"})
     public Builder<RR> email(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getEMail = getter;
       setEMail = setter;
       return this;
     }
 
+    @EnsuresNonNull({"getPhone1", "setPhone1"})
     public Builder<RR> phone1(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getPhone1 = getter;
       setPhone1 = setter;
       return this;
     }
 
+    @EnsuresNonNull({"getPhone2", "setPhone2"})
     public Builder<RR> phone2(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getPhone2 = getter;
       setPhone2 = setter;
       return this;
     }
 
+    @EnsuresNonNull({"getPhone3", "setPhone3"})
     public Builder<RR> phone3(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getPhone3 = getter;
       setPhone3 = setter;
       return this;
     }
 
+    @EnsuresNonNull({"getFax", "setFax"})
     public Builder<RR> fax(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getFax = getter;
       setFax = setter;
       return this;
     }
 
+    @EnsuresNonNull({"getWebSite", "setWebSite"})
     public Builder<RR> website(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getWebSite = getter;
       setWebSite = setter;
       return this;
     }
 
+    @EnsuresNonNull({"getSkype", "setSkype"})
     public Builder<RR> skype(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getSkype = getter;
       setSkype = setter;
       return this;
     }
 
+    @EnsuresNonNull({"getDescription", "setDescription"})
     public Builder<RR> description(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getDescription = getter;
       setDescription = setter;
       return this;
     }
 
+    @EnsuresNonNull({"getHistory", "setHistory"})
     public Builder<RR> history(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getHistory = getter;
       setHistory = setter;
       return this;
     }
-    
+
+    @EnsuresNonNull("getCreatedOn")
     public Builder<RR> createdOn(Function<RR, Timestamp> getter) {
       getCreatedOn = (d) -> getter.apply(d).toString();
       return this;
     }
 
+    @EnsuresNonNull("#1")
     public Builder<RR> withDao(Dao<RR, Integer, LeadField> dao) {
       this.dao = dao;
       return this;
     }
 
+    @EnsuresNonNull("recordConstructor")
     public Builder<RR> withConstructor(Supplier<RR> constructor) {
       recordConstructor = constructor;
       return this;
     }
+    
+    // TODO: Make this work. The @RequiresNotNull annotation is supposed to fix the warning suppressed by the subsequent
+    // annotation. I don't know why it doesn't work, but it may be a bug in the checker framework.
+    // I have tried to replace the us of @RequiresNotNull with @EnsuresNonNull, but it doesn't work here. In smaller
+    // test cases, I've been able to get to work. It seems like a more robust (if more verbose) approach if it would
+    // work.
 
-    public RecordView<RR> build() {
+//      @RequiresNonNull({"dao", "recordConstructor", "getId", "setId", "getCompany", "setCompany", "getContactName", 
+//          "setContactName", "getClient", "setClient", "getDicePosn", "setDicePosn", "getDiceId", "setDiceId",
+//          "getEMail", "setEMail", "getPhone1", "setPhone1", "getPhone2", "setPhone2", "getPhone3", "setPhone3",
+//          "getFax", "setFax", "getWebSite", "setWebSite", "getSkype", "setSkype", "getDescription", "setDescription",
+//          "getHistory", "setHistory", "getCreatedOn"})
+    @SuppressWarnings("argument.type.incompatible")
+      public RecordView<RR> build() {
       final RecordView<RR> view = new RecordView<>(
           record,
           initialSort,
