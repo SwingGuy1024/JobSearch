@@ -3,7 +3,6 @@ package com.neptunedreams.jobs.ui;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.InputEvent;
@@ -19,13 +18,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonModel;
-import javax.swing.FocusManager;
-import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -34,7 +29,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.MatteBorder;
@@ -42,7 +36,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import com.google.common.eventbus.Subscribe;
 import com.neptunedreams.framework.ErrorReport;
 import com.neptunedreams.framework.data.RecordModel;
@@ -197,43 +190,18 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
       }
     });
   }
-  
-  @SuppressWarnings({"ResultOfObjectAllocationIgnored", "Convert2MethodRef"})
+
+  @SuppressWarnings("Convert2MethodRef")
   private void setupActions(SwipeView<RecordView<R>> swipeView) {
-    new ButtonAction("Previous", KeyEvent.VK_LEFT, 0, ()-> swipeView.swipeRight(() -> recordModel.goPrev()));
-    new ButtonAction("Next", KeyEvent.VK_RIGHT, 0, ()-> swipeView.swipeLeft(() -> recordModel.goNext()));
-    new ButtonAction("First Record", KeyEvent.VK_LEFT, InputEvent.META_DOWN_MASK, () -> swipeView.swipeRight(() -> recordModel.goFirst()));
-    new ButtonAction("Last Record", KeyEvent.VK_RIGHT, InputEvent.META_DOWN_MASK, () -> swipeView.swipeLeft(() -> recordModel.goLast()));
+    swipeView.assignRepeatingKeystrokeAction("Previous", KeyEvent.VK_LEFT, 0, () -> recordModel.goPrev(), SwipeDirection.SWIPE_RIGHT);
+    swipeView.assignRepeatingKeystrokeAction("Next", KeyEvent.VK_RIGHT, 0, () -> recordModel.goNext(), SwipeDirection.SWIPE_LEFT);
+    
+    // These don't work, with either Alt or meta masks. I don't know why, but they're not that important.
+    swipeView.assignKeyStrokeAction("First Record", KeyEvent.VK_LEFT, InputEvent.ALT_DOWN_MASK, 
+        () -> recordModel.goFirst(), SwipeDirection.SWIPE_RIGHT);
+    swipeView.assignKeyStrokeAction("Last Record", KeyEvent.VK_RIGHT, InputEvent.META_DOWN_MASK, 
+        () -> recordModel.goLast(), SwipeDirection.SWIPE_LEFT);
   }
-
-  @SuppressWarnings("CloneableClassWithoutClone")
-  private final class ButtonAction extends AbstractAction {
-    private final Runnable operation;
-    private FocusManager focusManager = FocusManager.getCurrentManager();
-
-
-    private ButtonAction(final String name, int key, int modifiers, final Runnable theOp) {
-      super(name);
-      operation = theOp;
-      KeyStroke keyStroke = KeyStroke.getKeyStroke(key, modifiers);
-      
-      InputMap inputMap = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-      ActionMap actionMap = getActionMap();
-      inputMap.put(keyStroke, name);
-      actionMap.put(name, this);
-    }
-
-    @Override
-    public void actionPerformed(final ActionEvent e) {
-      final Component owner = focusManager.getPermanentFocusOwner();
-      // The second half of this conditional doesn't work. It may be because the text components already have
-      // KeyStrokes mapped to arrow keys.
-      if ((!(owner instanceof JTextComponent)) || (((JTextComponent) owner).getText().isEmpty())) {
-        operation.run();
-      }
-    }
-  }
-
 
   private JLayer<RecordView<R>> wrapInLayer(@UnderInitialization RecordUI<R> this, RecordView<R> recordView) {
     swipeView = SwipeView.wrap(recordView);
