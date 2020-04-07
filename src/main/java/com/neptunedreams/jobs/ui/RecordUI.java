@@ -519,10 +519,15 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     return controller.retrieveNow(searchFieldCombo.getSelected(), getSearchOption(), text);
   }
 
+  /**
+   * This gets called after the record has change, and all data model listeners have been called. This means all the data for the 
+   * new record has been loaded into the fields, and the FieldIterator may now be updated.
+   * @param ignored ignored
+   */
   @Subscribe
   void setSearchTerms(MasterEventBus.DataModelChangedEvent ignored) {
-    String terms = findField.getText().trim();
     assert SwingUtilities.isEventDispatchThread();
+    String terms = findField.getText().trim();
 
     if (getSearchOption() == SearchOption.findWhole) {
       recordView.setNewSearch(terms);

@@ -57,6 +57,7 @@ import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 
 import static com.neptunedreams.framework.ui.SwingUtils.*;
 import static com.neptunedreams.util.StringStuff.*;
@@ -194,14 +195,13 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     );
     // start with empty list. 
     fieldIterator = new FieldIterator(componentList, FieldIterator.Direction.FORWARD);
-    installIteratorActions();
+    SwingUtils.executeOnDisplay(this, this::installIteratorActions);
   }
 
   private void installIteratorActions() {
-    Keystrokes.installKeystrokeAction(
-        Keystrokes.getLastAncestorOf(this), "nextFoundText", KeyEvent.VK_F3, 0, this::goToNextHilight);
-    Keystrokes.installKeystrokeAction(
-        Keystrokes.getLastAncestorOf(this), "previousFoundText", KeyEvent.VK_F3, KeyEvent.SHIFT_DOWN_MASK, this::goToPreviousHilight);
+    @UnknownKeyFor @Initialized JComponent root = Keystrokes.getLastAncestorOf(this);
+    Keystrokes.installKeystrokeAction(root, "nextFoundText", KeyEvent.VK_F3, 0, this::goToNextHilight);
+    Keystrokes.installKeystrokeAction(root, "previousFoundText", KeyEvent.VK_F3, KeyEvent.SHIFT_DOWN_MASK, this::goToPreviousHilight);
   }
 
   @SuppressWarnings("method.invocation.invalid")
@@ -520,34 +520,32 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   
   void setNewSearch(String... searchTerms) {
     assert SwingUtilities.isEventDispatchThread();
-    System.out.printf("setNewSearch(%s)%n", Arrays.toString(searchTerms));
     
     // Maintain the current direction by getting it from the previous FieldIterator.
     fieldIterator = new FieldIterator(componentList, fieldIterator.getDirection(), searchTerms);
-    if (fieldIterator.hasNext()) {
-      System.out.printf("  go to next%n");
-      fieldIterator.goToNext();
+    if (fieldIterator.getDirection() == FieldIterator.Direction.FORWARD) {
+      if (fieldIterator.hasNext()) {
+        fieldIterator.goToNext();
+      }
+    } else {
+      if (fieldIterator.hasPrevious()) {
+        fieldIterator.goToPrevious();
+      }
     }
   }
   
   void goToNextHilight() {
-    System.out.printf("goToNextHilight()%n");
     if (fieldIterator.hasNext()) {
-      System.out.println("  goToNext()");
       fieldIterator.goToNext();
     } else {
-      System.out.printf("  animateAction(this, %s)%n", SwipeDirection.SWIPE_LEFT);
       SwipeView.animateAction(this, () -> getController().getModel().goNext(), SwipeDirection.SWIPE_LEFT);
     }
   }
   
   void goToPreviousHilight() {
-    System.out.println("goToPreviousHilight()");
     if (fieldIterator.hasPrevious()) {
-      System.out.println("  goToPrevious()");
       fieldIterator.goToPrevious();
     } else {
-      System.out.printf("  animateAction(this, %s)%n", SwipeDirection.SWIPE_RIGHT);
       SwipeView.animateAction(this, () -> controller.getModel().goPrev(), SwipeDirection.SWIPE_RIGHT);
     }
   }
