@@ -12,6 +12,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -30,6 +31,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.MatteBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -42,16 +44,19 @@ import com.neptunedreams.framework.event.ChangeRecord;
 import com.neptunedreams.framework.event.MasterEventBus;
 import com.neptunedreams.framework.ui.EnhancedCaret;
 import com.neptunedreams.framework.ui.FieldBinding;
+import com.neptunedreams.framework.ui.FieldIterator;
+import com.neptunedreams.framework.ui.Keystrokes;
 import com.neptunedreams.framework.ui.RecordController;
 import com.neptunedreams.framework.ui.SelectionSpy;
 import com.neptunedreams.framework.ui.SwingUtils;
+import com.neptunedreams.framework.ui.SwipeDirection;
+import com.neptunedreams.framework.ui.SwipeView;
 import com.neptunedreams.jobs.data.LeadField;
 import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
 import static com.neptunedreams.framework.ui.SwingUtils.*;
 import static com.neptunedreams.util.StringStuff.*;
@@ -78,9 +83,8 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   private final JPanel checkBoxPanel = new JPanel(new GridLayout(0, 1));
   private final ButtonGroup buttonGroup = new ButtonGroup();
 
-  private R currentRecord; // = new Record("D", "D", "D", "D");
+  private R currentRecord;
 
-//  @NotOnlyInitialized
   private final RecordController<R, Integer, LeadField> controller;
   private final List<? extends FieldBinding<R, ? extends Serializable, ? extends JComponent>> allBindings;
   private final JTextComponent companyField;
@@ -88,6 +92,8 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   private final JTextComponent descriptionField;
   private final JTextComponent dicePosnField;
   private final JTextComponent diceIdField;
+  private final List<JTextComponent> componentList;
+  private FieldIterator fieldIterator;
 
   private RecordView(R record,
                      LeadField initialSort,
@@ -170,6 +176,32 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
         descriptionField,
         historyField
     );
+    componentList = Arrays.asList(
+        companyField,
+        contactNameField,
+        clientField,
+        dicePosnField,
+        diceIdField,
+        eMailField,
+        phone1Field,
+        phone2Field,
+        phone3Field,
+        faxField,
+        webSiteField,
+        skypeField,
+        historyField,
+        descriptionField
+    );
+    // start with empty list. 
+    fieldIterator = new FieldIterator(componentList, FieldIterator.Direction.FORWARD);
+    installIteratorActions();
+  }
+
+  private void installIteratorActions() {
+    Keystrokes.installKeystrokeAction(
+        Keystrokes.getLastAncestorOf(this), "nextFoundText", KeyEvent.VK_F3, 0, this::goToNextHilight);
+    Keystrokes.installKeystrokeAction(
+        Keystrokes.getLastAncestorOf(this), "previousFoundText", KeyEvent.VK_F3, KeyEvent.SHIFT_DOWN_MASK, this::goToPreviousHilight);
   }
 
   @SuppressWarnings("method.invocation.invalid")
@@ -253,7 +285,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   // checker recognizes that no more members are set, so it changes the type of this to Initialized part way through
   // the constructor. It may also be that the @RequiresNonNull fixes this. 
 //  @RequiresNonNull({"labelPanel", "fieldPanel", "checkBoxPanel"})
-  private JPanel makeFieldPanel() {
+  private JPanel makeFieldPanel(@UnderInitialization RecordView<R> this) {
     JPanel topPanel = new JPanel(new BorderLayout());
     topPanel.add(labelPanel, BorderLayout.LINE_START);
     topPanel.add(fieldPanel, BorderLayout.CENTER);
@@ -484,6 +516,40 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     historyField.append(timeText);
     historyField.setSelectionStart(historyField.getText().length());
     historyField.requestFocus();
+  }
+  
+  void setNewSearch(String... searchTerms) {
+    assert SwingUtilities.isEventDispatchThread();
+    System.out.printf("setNewSearch(%s)%n", Arrays.toString(searchTerms));
+    
+    // Maintain the current direction by getting it from the previous FieldIterator.
+    fieldIterator = new FieldIterator(componentList, fieldIterator.getDirection(), searchTerms);
+    if (fieldIterator.hasNext()) {
+      System.out.printf("  go to next%n");
+      fieldIterator.goToNext();
+    }
+  }
+  
+  void goToNextHilight() {
+    System.out.printf("goToNextHilight()%n");
+    if (fieldIterator.hasNext()) {
+      System.out.println("  goToNext()");
+      fieldIterator.goToNext();
+    } else {
+      System.out.printf("  animateAction(this, %s)%n", SwipeDirection.SWIPE_LEFT);
+      SwipeView.animateAction(this, () -> getController().getModel().goNext(), SwipeDirection.SWIPE_LEFT);
+    }
+  }
+  
+  void goToPreviousHilight() {
+    System.out.println("goToPreviousHilight()");
+    if (fieldIterator.hasPrevious()) {
+      System.out.println("  goToPrevious()");
+      fieldIterator.goToPrevious();
+    } else {
+      System.out.printf("  animateAction(this, %s)%n", SwipeDirection.SWIPE_RIGHT);
+      SwipeView.animateAction(this, () -> controller.getModel().goPrev(), SwipeDirection.SWIPE_RIGHT);
+    }
   }
 
   // If I don't suppress this warning, and initialize these values to null, I just get a assignment.type.incompatible

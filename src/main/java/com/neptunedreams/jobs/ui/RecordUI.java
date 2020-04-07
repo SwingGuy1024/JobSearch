@@ -51,14 +51,16 @@ import com.neptunedreams.framework.ui.HidingPanel;
 import com.neptunedreams.framework.ui.RecordController;
 import com.neptunedreams.framework.ui.SelectionSpy;
 import com.neptunedreams.framework.ui.SwingUtils;
-import com.neptunedreams.framework.ui.SwipeDirection;
 import com.neptunedreams.framework.ui.SwipeView;
 import com.neptunedreams.jobs.data.LeadField;
+import com.neptunedreams.util.StringStuff;
 import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
+
+import static com.neptunedreams.framework.ui.SwipeDirection.*;
 
 //import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 
@@ -88,9 +90,6 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   // todo   Maybe the way to do this would be to create a UIModel class that keeps track of all the UI state. Maybe 
   // todo   that way, the controller won't need to keep an instance of RecordView.
   
-  // Todo:  Add keyboard listener to JLayer to handle left and right arrow keys. They should only activate when the 
-  // todo   focus is not held by a JTextComponent.
-
   private static final long DELAY = 1000L;
   private static final int ONE_MINUTE_MILLIS = 60000;
   @SuppressWarnings("HardcodedLineSeparator")
@@ -199,14 +198,12 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
 
   @SuppressWarnings("Convert2MethodRef")
   private void setupActions(SwipeView<RecordView<R>> swipeView) {
-    swipeView.assignRepeatingKeystrokeAction("Previous", KeyEvent.VK_LEFT, 0, () -> recordModel.goPrev(), SwipeDirection.SWIPE_RIGHT);
-    swipeView.assignRepeatingKeystrokeAction("Next", KeyEvent.VK_RIGHT, 0, () -> recordModel.goNext(), SwipeDirection.SWIPE_LEFT);
+    swipeView.assignRestrictedRepeatingKeystrokeAction("Previous", KeyEvent.VK_LEFT, 0, () -> recordModel.goPrev(), SWIPE_RIGHT);
+    swipeView.assignRestrictedRepeatingKeystrokeAction("Next", KeyEvent.VK_RIGHT, 0, () -> recordModel.goNext(), SWIPE_LEFT);
     
-    // These don't work, with either Alt or meta masks. I don't know why, but they're not that important.
-    swipeView.assignKeyStrokeAction("First Record", KeyEvent.VK_LEFT, InputEvent.ALT_DOWN_MASK, 
-        () -> recordModel.goFirst(), SwipeDirection.SWIPE_RIGHT);
-    swipeView.assignKeyStrokeAction("Last Record", KeyEvent.VK_RIGHT, InputEvent.META_DOWN_MASK, 
-        () -> recordModel.goLast(), SwipeDirection.SWIPE_LEFT);
+    // On Mac, Meta is command, and alt is option.
+    swipeView.assignKeyStrokeAction("First Record", KeyEvent.VK_LEFT, InputEvent.META_DOWN_MASK, () -> recordModel.goFirst(), SWIPE_RIGHT);
+    swipeView.assignKeyStrokeAction("Last Record", KeyEvent.VK_RIGHT, InputEvent.META_DOWN_MASK, () -> recordModel.goLast(), SWIPE_LEFT);
   }
 
   private JLayer<RecordView<R>> wrapInLayer(@UnderInitialization RecordUI<R> this, RecordView<R> recordView) {
@@ -377,9 +374,9 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     add.addActionListener((e)->addBlankRecord());
     SwipeView<RecordView<R>> sView = Objects.requireNonNull(swipeView);
     //noinspection Convert2MethodRef
-    sView.assignMouseDownAction(prev, () -> recordModel.goPrev(), SwipeDirection.SWIPE_RIGHT);
+    sView.assignMouseDownAction(prev, () -> recordModel.goPrev(), SWIPE_RIGHT);
     //noinspection Convert2MethodRef
-    sView.assignMouseDownAction(next, () -> recordModel.goNext(), SwipeDirection.SWIPE_LEFT);
+    sView.assignMouseDownAction(next, () -> recordModel.goNext(), SWIPE_LEFT);
     //noinspection Convert2MethodRef
     first.addActionListener((e) -> sView.swipeRight(() -> recordModel.goFirst()));
     //noinspection Convert2MethodRef
@@ -520,6 +517,18 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     assert controller != null;
     assert searchFieldCombo != null;
     return controller.retrieveNow(searchFieldCombo.getSelected(), getSearchOption(), text);
+  }
+
+  @Subscribe
+  void setSearchTerms(MasterEventBus.DataModelChangedEvent ignored) {
+    String terms = findField.getText().trim();
+    assert SwingUtilities.isEventDispatchThread();
+
+    if (getSearchOption() == SearchOption.findWhole) {
+      recordView.setNewSearch(terms);
+    } else {
+      recordView.setNewSearch(StringStuff.splitText(terms));
+    }
   }
 
   /**
