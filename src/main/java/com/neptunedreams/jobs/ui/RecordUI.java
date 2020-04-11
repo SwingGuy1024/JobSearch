@@ -47,13 +47,13 @@ import com.neptunedreams.framework.task.QueuedTask;
 import com.neptunedreams.framework.ui.ClipFix;
 import com.neptunedreams.framework.ui.EnumComboBox;
 import com.neptunedreams.framework.ui.EnumGroup;
+import com.neptunedreams.framework.ui.FieldIterator;
 import com.neptunedreams.framework.ui.HidingPanel;
 import com.neptunedreams.framework.ui.RecordController;
 import com.neptunedreams.framework.ui.SelectionSpy;
 import com.neptunedreams.framework.ui.SwingUtils;
 import com.neptunedreams.framework.ui.SwipeView;
 import com.neptunedreams.jobs.data.LeadField;
-import com.neptunedreams.util.StringStuff;
 import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -65,7 +65,7 @@ import static com.neptunedreams.framework.ui.SwipeDirection.*;
 //import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 
 /**
- * The RecordUI is the main global UI component. This is what gets added to the main window. It consists of a 
+ * The RecordUI is the main global UI component. This is what gets added to the main window. It consists of a
  * RecordView, along with a control panel at the top and a trash panel at the bottom.
  * <p>
  * Functions
@@ -76,7 +76,7 @@ import static com.neptunedreams.framework.ui.SwipeDirection.*;
  * <p>Created by IntelliJ IDEA.
  * <p>Date: 10/29/17
  * <p>Time: 12:50 PM
- * 
+ *
  * @author Miguel Mu\u00f1oz
  */
 @SuppressWarnings({"HardCodedStringLiteral", "HardcodedLineSeparator"})
@@ -89,14 +89,14 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   // todo   is easier to maintain. This will also allow me to implement instant response to changing the sort order.
   // todo   Maybe the way to do this would be to create a UIModel class that keeps track of all the UI state. Maybe 
   // todo   that way, the controller won't need to keep an instance of RecordView.
-  
+
   private static final long DELAY = 1000L;
   private static final int ONE_MINUTE_MILLIS = 60000;
   @SuppressWarnings("HardcodedLineSeparator")
   private static final char NEW_LINE = '\n';
 
   // We set the initial text to a space, so we can fire the initial search by setting the text to the empty String.
-  private JTextField findField = new JTextField(" ",10);
+  private JTextField findField = new JTextField(" ", 10);
   private final RecordController<R, Integer, LeadField> controller;
   private EnumComboBox<LeadField> searchFieldCombo = EnumComboBox.createComboBox(LeadField.values());
   //  private EnumGroup<LeadField> searchFieldGroup = new EnumGroup<>();
@@ -108,8 +108,8 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
 
   private JLabel infoLine = new JLabel("");
   private final EnumGroup<SearchOption> optionsGroup = new EnumGroup<>();
-  
-  private @MonotonicNonNull SwipeView<RecordView<R>> swipeView=null;
+
+  private @MonotonicNonNull SwipeView<RecordView<R>> swipeView = null;
 
   private final HidingPanel searchOptionsPanel = makeSearchOptionsPanel(optionsGroup);
   private RecordView<R> recordView;
@@ -119,7 +119,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   private @NonNull QueuedTask<String, Collection<@NonNull R>> queuedTask;
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT);
 
-  private HidingPanel makeSearchOptionsPanel(@UnderInitialization RecordUI<R> this, EnumGroup<SearchOption> optionsGroup) {
+  private HidingPanel makeSearchOptionsPanel(@UnderInitialization RecordUI<R>this, EnumGroup<SearchOption> optionsGroup) {
     JPanel optionsPanel = new JPanel(new GridLayout(0, 1));
     JRadioButton findExact = optionsGroup.add(SearchOption.findWhole);
     JRadioButton findAll = optionsGroup.add(SearchOption.findAll);
@@ -137,18 +137,17 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
 
   // Moved to a separate method so we can limit the SuppressWarnings to one line.
   @SuppressWarnings("methodref.receiver.bound.invalid")
-  private void addButtonGroupListener(@UnderInitialization RecordUI<R> this, final EnumGroup<SearchOption> optionsGroup) {
-//    optionsGroup.addButtonGroupListener(selectedButtonModel -> selectionChanged(selectedButtonModel));
+  private void addButtonGroupListener(@UnderInitialization RecordUI<R>this, final EnumGroup<SearchOption> optionsGroup) {
     optionsGroup.addButtonGroupListener(this::searchOptionChanged); // Using a lambda is an error. This is a warning. 
   }
 
   /**
    * Instantiate a RecordUI
-   * @param model The record model
-   * @param theView the record view
+   * @param model         The record model
+   * @param theView       the record view
    * @param theController the controller
    */
-    @SuppressWarnings({"method.invocation.invalid", "argument.type.incompatible"})
+  @SuppressWarnings({"method.invocation.invalid", "argument.type.incompatible"})
   // add(), setBorder(), etc not properly annotated in JDK.
   public RecordUI(@NonNull RecordModel<R> model, RecordView<R> theView, RecordController<R, Integer, LeadField> theController) {
     super(new BorderLayout());
@@ -159,10 +158,10 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     add(createControlPanel(), BorderLayout.PAGE_START);
     add(createTrashPanel(), BorderLayout.PAGE_END);
     controller = theController;
-    recordConsumer = createRecordConsumer(theController);
+    recordConsumer = createRecordConsumer(theController, this);
     setBorder(new MatteBorder(4, 4, 4, 4, getBackground()));
     recordModel.addModelListener(this); // argument.type.incompatible checker error suppressed
-    
+
     findField.getDocument().addDocumentListener(new DocumentListener() {
       @Override
       public void insertUpdate(final DocumentEvent e) {
@@ -178,9 +177,9 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
       public void changedUpdate(final DocumentEvent e) {
         process(e);
       }
-      
+
     });
-    
+
     MasterEventBus.registerMasterEventHandler(this);
     queuedTask = new QueuedTask<>(DELAY, createCallable(), recordConsumer);
     queuedTask.launch();
@@ -200,13 +199,13 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   private void setupActions(SwipeView<RecordView<R>> swipeView) {
     swipeView.assignRestrictedRepeatingKeystrokeAction("Previous", KeyEvent.VK_LEFT, 0, () -> recordModel.goPrev(), SWIPE_RIGHT);
     swipeView.assignRestrictedRepeatingKeystrokeAction("Next", KeyEvent.VK_RIGHT, 0, () -> recordModel.goNext(), SWIPE_LEFT);
-    
+
     // On Mac, Meta is command, and alt is option.
     swipeView.assignKeyStrokeAction("First Record", KeyEvent.VK_LEFT, InputEvent.META_DOWN_MASK, () -> recordModel.goFirst(), SWIPE_RIGHT);
     swipeView.assignKeyStrokeAction("Last Record", KeyEvent.VK_RIGHT, InputEvent.META_DOWN_MASK, () -> recordModel.goLast(), SWIPE_LEFT);
   }
 
-  private JLayer<RecordView<R>> wrapInLayer(@UnderInitialization RecordUI<R> this, RecordView<R> recordView) {
+  private JLayer<RecordView<R>> wrapInLayer(@UnderInitialization RecordUI<R>this, RecordView<R> recordView) {
     swipeView = SwipeView.wrap(recordView);
     return swipeView.getLayer();
   }
@@ -238,7 +237,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
       e1.printStackTrace();
     }
   }
-  
+
   private JPanel createControlPanel() {
     JPanel buttonPanel = new JPanel(new BorderLayout());
     buttonPanel.add(getSearchField(), BorderLayout.PAGE_START);
@@ -251,10 +250,10 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     buttonPanel.add(BorderLayout.CENTER, navUtilityPanel);
     return buttonPanel;
   }
-  
+
   private JComponent makeUtilityPanel() {
     Box navUtilPanel = new Box(BoxLayout.LINE_AXIS);
-    
+
     navUtilPanel.add(makePasteHtmlButton());
     navUtilPanel.add(makeStripBlankButton());
     navUtilPanel.add(makeBulletButton());
@@ -296,7 +295,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
         }
       } catch (IOException ignored) { } // can't happen with a StringReader.
       if (selectedText.endsWith("\n")) {
-        revisedText.deleteCharAt(revisedText.length()-1);
+        revisedText.deleteCharAt(revisedText.length() - 1);
       }
       SelectionSpy.spy.replaceSelectedText(revisedText.toString());
     });
@@ -334,7 +333,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     JPanel trashPanel = new JPanel(new BorderLayout());
     JButton trashRecord = new JButton(Resource.getBin());
     trashPanel.add(trashRecord, BorderLayout.LINE_END);
-    trashRecord.addActionListener((e)->delete());
+    trashRecord.addActionListener((e) -> delete());
 
     assert infoLine != null;
     trashPanel.add(infoLine, BorderLayout.LINE_START);
@@ -345,7 +344,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   private void delete() {
     if (JOptionPane.showConfirmDialog(this,
         "Are you sure?",
-        "Delete Record", 
+        "Delete Record",
         JOptionPane.YES_NO_OPTION,
         JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION
     ) {
@@ -370,8 +369,8 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     buttons.add(next);
     buttons.add(last);
 //    buttons.add(importBtn);
-    
-    add.addActionListener((e)->addBlankRecord());
+
+    add.addActionListener((e) -> addBlankRecord());
     SwipeView<RecordView<R>> sView = Objects.requireNonNull(swipeView);
     //noinspection Convert2MethodRef
     sView.assignMouseDownAction(prev, () -> recordModel.goPrev(), SWIPE_RIGHT);
@@ -380,7 +379,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     //noinspection Convert2MethodRef
     first.addActionListener((e) -> sView.swipeRight(() -> recordModel.goFirst()));
     //noinspection Convert2MethodRef
-    last.addActionListener((e)  -> sView.swipeLeft(() -> recordModel.goLast()));
+    last.addActionListener((e) -> sView.swipeLeft(() -> recordModel.goLast()));
 //    importBtn.addActionListener((e) -> doImport());
     JPanel buttonPanel = new JPanel(new BorderLayout());
     buttonPanel.add(buttons, BorderLayout.LINE_START);
@@ -388,7 +387,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
 
     return buttonPanel;
   }
-  
+
   private JButton makeTimeButton() {
     JButton timeButton = new JButton();
     timeButton.addActionListener(e -> newHistoryEvent(timeButton.getText()));
@@ -409,7 +408,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
 
       @Override
       protected void process(final List<String> chunks) {
-        timeButton.setText(chunks.get(chunks.size()-1));
+        timeButton.setText(chunks.get(chunks.size() - 1));
       }
     };
     timeWorker.execute();
@@ -448,7 +447,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     findField.addActionListener((e) -> findText());
     return searchPanel;
   }
-  
+
   private void findText() {
     LeadField field = searchFieldCombo.getSelected();
     final SearchOption searchOption = getSearchOption();
@@ -492,7 +491,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     last.setEnabled(pnEnabled);
     loadInfoLine();
   }
-  
+
   /*
     NullnessChecker notes:
     This used to be called during construction. It specified an implicit parameter. But this created a compiler
@@ -508,32 +507,16 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     return new ParameterizedCallable<String, Collection<@NonNull R>>(null) {
       @Override
       public Collection<@NonNull R> call(String inputData) {
+        recordView.setNewSearch(inputData, getSearchOption());
         return retrieveNow(inputData);
       }
     };
   }
-  
+
   private Collection<@NonNull R> retrieveNow(String text) {
     assert controller != null;
     assert searchFieldCombo != null;
     return controller.retrieveNow(searchFieldCombo.getSelected(), getSearchOption(), text);
-  }
-
-  /**
-   * This gets called after the record has change, and all data model listeners have been called. This means all the data for the 
-   * new record has been loaded into the fields, and the FieldIterator may now be updated.
-   * @param ignored ignored
-   */
-  @Subscribe
-  void setSearchTerms(MasterEventBus.DataModelChangedEvent ignored) {
-    assert SwingUtilities.isEventDispatchThread();
-    String terms = findField.getText().trim();
-
-    if (getSearchOption() == SearchOption.findWhole) {
-      recordView.setNewSearch(terms);
-    } else {
-      recordView.setNewSearch(StringStuff.splitText(terms));
-    }
   }
 
   /**
@@ -565,9 +548,22 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   // I passed the RecordController as a parameter to avoid a nullness checker warning. It complains that the 
   // controller member may be null.
   private static <RR> Consumer<Collection<@NonNull RR>> createRecordConsumer(
-      RecordController<RR, Integer, LeadField> theController
+      RecordController<RR, Integer, LeadField> theController,
+      RecordUI<RR> view
   ) {
-    return records -> SwingUtilities.invokeLater(() -> theController.setFoundRecords(records));
+    return records -> SwingUtilities.invokeLater(() -> setRecordsFromSearch(view, theController, records));
+  }
+
+  private static <RR> void setRecordsFromSearch(final RecordUI<RR> view, final RecordController<RR, Integer, LeadField> theController, final Collection<@NonNull RR> records) {
+    assert SwingUtilities.isEventDispatchThread();
+    assert view != null;
+    theController.setFoundRecords(records);
+    SwingUtilities.invokeLater(() -> {
+
+          view.recordView.setForwardDirection();
+          view.recordView.hilightNextTerm(FieldIterator.Direction.FORWARD, true);
+        }
+    );
   }
 
   @Override

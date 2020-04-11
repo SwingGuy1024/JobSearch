@@ -66,7 +66,7 @@ public final class JobSearch extends JPanel
   // TODO:  Fix bug on adding: If I add a record, then do a find all by hitting return in the find field, it finds
   // todo   all the records except the one I just added. Doing another find all finds everything.
   // TODO: Replace CountDownDoor with CyclicBarrier?
-  // TODO: On changing sort column, search for previously selected card. (Search by id)
+  // Done: On changing sort column, search for previously selected card. (Search by id)
   // TODO: Redo layout: 
   // todo  1. Put Search Option Panel (in RecordUI) to the right of search field.
   // done  2. Dim instead of hide search options. (I had forgotten all about them!)
@@ -84,6 +84,7 @@ public final class JobSearch extends JPanel
   // done  successfully limits the speed.)
   // TODO: Select found word (and use swipe animation) and set direction to forward on new search.
   // TODO: Wrap around at the end of Find-Next/Find-Previous
+  // TODO: BUG After searching for North Hollywood, change search option to "Find Exact" Hilighter doesnt' get updated.
   
   // https://db.apache.org/ojb/docu/howtos/howto-use-db-sequences.html
   // https://db.apache.org/derby/docs/10.8/ref/rrefsqljcreatesequence.html 
@@ -93,25 +94,6 @@ public final class JobSearch extends JPanel
 
 //  private static final String DERBY_SYSTEM_HOME = "derby.system.home";
 //  private Connection connection;
-  
-  /*
-  TODO: Fix Arrow-Key Support
-  I have implemented keyboard arrow support, but it has 2 problems.
-  
-  1. It works properly when a text component has the focus, in that it moves among the text characters. But the menu 
-  flickers each time an arrow key is struck, even though it's not performing the menu function. Somehow, it knows to
-  swallow the menu operation before it gets executed. 
-  
-  2. Holding down the arrow key will move the cards quickly, bypassing any swipe effect. To move and swipe at the same
-  time, hold the mouse button down on one of the arrow keys.
-  
-  I'm not sure what the best approach is to fix each of these problems. One idea is to write an AWTEventListener to 
-  respond to the arrow keystrokes, instead of using the menu accelerator mechanism. This would be a lot more work, 
-  since I would need to take care that it only gets executed when the proper components have the focus. 
-  
-  Also, I should add support to the swipe feature to handle keystroke events, delaying processing until a swipe is 
-  done. I'm not sure how these two solutions should be integrated together.
-   */
   
   private RecordUI<LeadRecord> mainPanel;
   //    org.jooq.util.JavaGenerator generator;

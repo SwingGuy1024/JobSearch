@@ -19,6 +19,7 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -31,7 +32,6 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.border.MatteBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -39,12 +39,15 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import com.google.common.eventbus.Subscribe;
 import com.neptunedreams.framework.data.Dao;
+import com.neptunedreams.framework.data.RecordModel;
 import com.neptunedreams.framework.data.RecordSelectionModel;
+import com.neptunedreams.framework.data.SearchOption;
 import com.neptunedreams.framework.event.ChangeRecord;
 import com.neptunedreams.framework.event.MasterEventBus;
 import com.neptunedreams.framework.ui.EnhancedCaret;
 import com.neptunedreams.framework.ui.FieldBinding;
 import com.neptunedreams.framework.ui.FieldIterator;
+import com.neptunedreams.framework.ui.FieldIterator.Direction;
 import com.neptunedreams.framework.ui.Keystrokes;
 import com.neptunedreams.framework.ui.RecordController;
 import com.neptunedreams.framework.ui.SelectionSpy;
@@ -52,6 +55,8 @@ import com.neptunedreams.framework.ui.SwingUtils;
 import com.neptunedreams.framework.ui.SwipeDirection;
 import com.neptunedreams.framework.ui.SwipeView;
 import com.neptunedreams.jobs.data.LeadField;
+import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
+import com.neptunedreams.util.StringStuff;
 import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
@@ -59,6 +64,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 
+import static com.neptunedreams.framework.ui.FieldIterator.Direction.*;
 import static com.neptunedreams.framework.ui.SwingUtils.*;
 import static com.neptunedreams.util.StringStuff.*;
 
@@ -79,6 +85,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   private static final int TEXT_COLUMNS = 20;
   private static final int TEXT_ROWS = 15;
   private static final int HISTORY_COLUMNS = 40;
+  private static final String[] EMPTY_ARRAY = new String[0];
   private final JPanel labelPanel = new JPanel(new GridLayout(0, 1));
   private final JPanel fieldPanel = new JPanel(new GridLayout(0, 1));
   private final JPanel checkBoxPanel = new JPanel(new GridLayout(0, 1));
@@ -95,6 +102,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   private final JTextComponent diceIdField;
   private final List<JTextComponent> componentList;
   private FieldIterator fieldIterator;
+  private AtomicReference<String[]> searchTerms = new AtomicReference<>(RecordView.EMPTY_ARRAY);
 
   private RecordView(R record,
                      LeadField initialSort,
@@ -194,7 +202,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
         descriptionField
     );
     // start with empty list. 
-    fieldIterator = new FieldIterator(componentList, FieldIterator.Direction.FORWARD);
+    fieldIterator = new FieldIterator(componentList, FORWARD, -1);
     SwingUtils.executeOnDisplay(this, this::installIteratorActions);
   }
 
@@ -518,36 +526,60 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     historyField.requestFocus();
   }
   
-  void setNewSearch(String... searchTerms) {
-    assert SwingUtilities.isEventDispatchThread();
+  void setNewSearch(String searchTerm, SearchOption searchOption) {
+    if (searchOption == SearchOption.findWhole) {
+      searchTerms.set(new String[]{searchTerm});
+    } else {
+      searchTerms.set(StringStuff.splitText(searchTerm));
+    }
+  }
+  
+  void hilightNextTerm(Direction direction, boolean termsChanged) {
     
-    // Maintain the current direction by getting it from the previous FieldIterator.
-    fieldIterator = new FieldIterator(componentList, fieldIterator.getDirection(), searchTerms);
-    if (fieldIterator.getDirection() == FieldIterator.Direction.FORWARD) {
+    @UnknownKeyFor @Initialized RecordModel<R> recordModel = getController().getModel();
+    LeadRecord foundRecord = (LeadRecord) recordModel.getFoundRecord();
+    int id = foundRecord.getId();
+    if (termsChanged) {
+      // Start with forward for new terms.
+      fieldIterator = new FieldIterator(componentList, FORWARD, id, searchTerms.get());
+    } else if(fieldIterator.getId() != id) {
+      // Maintain the current direction by getting it from the previous FieldIterator.
+      fieldIterator = new FieldIterator(componentList, fieldIterator.getDirection(), id, searchTerms.get());
+    }
+    
+    if (direction == FORWARD) {
+      //noinspection IfStatementWithIdenticalBranches
       if (fieldIterator.hasNext()) {
+        fieldIterator.goToNext();
+      } else {
+        recordModel.goNext();
+        foundRecord = (LeadRecord) recordModel.getFoundRecord();
+        fieldIterator = new FieldIterator(componentList, FORWARD, foundRecord.getId(), searchTerms.get());
         fieldIterator.goToNext();
       }
     } else {
+      //noinspection IfStatementWithIdenticalBranches
       if (fieldIterator.hasPrevious()) {
+        fieldIterator.goToPrevious();
+      } else {
+        recordModel.goPrev();
+        foundRecord = (LeadRecord) recordModel.getFoundRecord();
+        fieldIterator = new FieldIterator(componentList, BACKWARD, foundRecord.getId(), searchTerms.get());
         fieldIterator.goToPrevious();
       }
     }
   }
   
   void goToNextHilight() {
-    if (fieldIterator.hasNext()) {
-      fieldIterator.goToNext();
-    } else {
-      SwipeView.animateAction(this, () -> getController().getModel().goNext(), SwipeDirection.SWIPE_LEFT);
-    }
+    SwipeView.animateAction(this, () -> hilightNextTerm(FORWARD, false), SwipeDirection.SWIPE_LEFT);
   }
   
   void goToPreviousHilight() {
-    if (fieldIterator.hasPrevious()) {
-      fieldIterator.goToPrevious();
-    } else {
-      SwipeView.animateAction(this, () -> controller.getModel().goPrev(), SwipeDirection.SWIPE_RIGHT);
-    }
+    SwipeView.animateAction(this, () -> hilightNextTerm(BACKWARD, false), SwipeDirection.SWIPE_RIGHT);
+  }
+  
+  void setForwardDirection() {
+    fieldIterator.hasNext();
   }
 
   // If I don't suppress this warning, and initialize these values to null, I just get a assignment.type.incompatible
