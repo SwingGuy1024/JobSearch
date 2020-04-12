@@ -102,7 +102,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   private final JTextComponent diceIdField;
   private final List<JTextComponent> componentList;
   private FieldIterator fieldIterator;
-  private AtomicReference<String[]> searchTerms = new AtomicReference<>(RecordView.EMPTY_ARRAY);
+  private final AtomicReference<String[]> searchTerms = new AtomicReference<>(RecordView.EMPTY_ARRAY);
 
   private RecordView(R record,
                      LeadField initialSort,
@@ -341,8 +341,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
 
 //  @RequiresNonNull({"labelPanel", "fieldPanel", "buttonGroup", "checkBoxPanel", "controller"})
   private JComponent addField(@UnderInitialization RecordView<R>this, final String labelText, final boolean editable, final LeadField orderField, LeadField initialSort, @Nullable JComponent extraComponent) {
-    //noinspection StringConcatenation,MagicCharacter
-    JLabel label = new JLabel(labelText + ':');
+    JLabel label = new JLabel(String.format("%s:", labelText));
     labelPanel.add(label);
     JComponent field;
     if (editable) {
@@ -548,25 +547,19 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     }
     
     if (direction == FORWARD) {
-      //noinspection IfStatementWithIdenticalBranches
-      if (fieldIterator.hasNext()) {
-        fieldIterator.goToNext();
-      } else {
+      if (!fieldIterator.hasNext()) {
         recordModel.goNext();
         foundRecord = (LeadRecord) recordModel.getFoundRecord();
         fieldIterator = new FieldIterator(componentList, FORWARD, foundRecord.getId(), searchTerms.get());
-        fieldIterator.goToNext();
       }
+      fieldIterator.goToNext();
     } else {
-      //noinspection IfStatementWithIdenticalBranches
-      if (fieldIterator.hasPrevious()) {
-        fieldIterator.goToPrevious();
-      } else {
+      if (!fieldIterator.hasPrevious()) {
         recordModel.goPrev();
         foundRecord = (LeadRecord) recordModel.getFoundRecord();
         fieldIterator = new FieldIterator(componentList, BACKWARD, foundRecord.getId(), searchTerms.get());
-        fieldIterator.goToPrevious();
       }
+      fieldIterator.goToPrevious();
     }
   }
   

@@ -49,6 +49,7 @@ import com.neptunedreams.framework.ui.EnumComboBox;
 import com.neptunedreams.framework.ui.EnumGroup;
 import com.neptunedreams.framework.ui.FieldIterator;
 import com.neptunedreams.framework.ui.HidingPanel;
+import com.neptunedreams.framework.ui.Keystrokes;
 import com.neptunedreams.framework.ui.RecordController;
 import com.neptunedreams.framework.ui.SelectionSpy;
 import com.neptunedreams.framework.ui.SwingUtils;
@@ -96,27 +97,27 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   private static final char NEW_LINE = '\n';
 
   // We set the initial text to a space, so we can fire the initial search by setting the text to the empty String.
-  private JTextField findField = new JTextField(" ", 10);
+  private final JTextField findField = new JTextField(" ", 10);
   private final RecordController<R, Integer, LeadField> controller;
-  private EnumComboBox<LeadField> searchFieldCombo = EnumComboBox.createComboBox(LeadField.values());
+  private final EnumComboBox<LeadField> searchFieldCombo = EnumComboBox.createComboBox(LeadField.values());
   //  private EnumGroup<LeadField> searchFieldGroup = new EnumGroup<>();
   private final @NonNull RecordModel<R> recordModel;
-  private JButton prev = new JButton(Resource.getLeftArrow());
-  private JButton next = new JButton(Resource.getRightArrow());
-  private JButton first = new JButton(Resource.getFirst());
-  private JButton last = new JButton(Resource.getLast());
+  private final JButton prev = new JButton(Resource.getLeftArrow());
+  private final JButton next = new JButton(Resource.getRightArrow());
+  private final JButton first = new JButton(Resource.getFirst());
+  private final JButton last = new JButton(Resource.getLast());
 
-  private JLabel infoLine = new JLabel("");
+  private final JLabel infoLine = new JLabel("");
   private final EnumGroup<SearchOption> optionsGroup = new EnumGroup<>();
 
   private @MonotonicNonNull SwipeView<RecordView<R>> swipeView = null;
 
   private final HidingPanel searchOptionsPanel = makeSearchOptionsPanel(optionsGroup);
-  private RecordView<R> recordView;
+  private final RecordView<R> recordView;
 
   // recordConsumer is how the QueuedTask communicates with the application code.
   private final Consumer<Collection<@NonNull R>> recordConsumer;
-  private @NonNull QueuedTask<String, Collection<@NonNull R>> queuedTask;
+  private final @NonNull QueuedTask<String, Collection<@NonNull R>> queuedTask;
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT);
 
   private HidingPanel makeSearchOptionsPanel(@UnderInitialization RecordUI<R>this, EnumGroup<SearchOption> optionsGroup) {
@@ -178,6 +179,16 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
         process(e);
       }
 
+    });
+
+    // Assign the escape key to send the focus to the searchField.
+    SwingUtils.executeOnDisplay(this, () -> {
+      @UnknownKeyFor @Initialized JComponent lastAncestor = Keystrokes.getLastAncestorOf(this);
+      @UnknownKeyFor @Initialized Runnable selectFindFieldAction = () -> {
+        findField.selectAll();
+        findField.requestFocus();
+      };
+      Keystrokes.installKeystrokeAction(lastAncestor, "sendFocusToSearchField", KeyEvent.VK_ESCAPE, 0, selectFindFieldAction);
     });
 
     MasterEventBus.registerMasterEventHandler(this);
@@ -401,6 +412,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
           publish(nowText);
           long elapsedMinute = time % ONE_MINUTE_MILLIS;
           long remainingInMinute = ONE_MINUTE_MILLIS - elapsedMinute;
+          //noinspection BusyWait
           Thread.sleep(remainingInMinute);
           time = System.currentTimeMillis();
         }
