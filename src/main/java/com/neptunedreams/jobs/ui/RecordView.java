@@ -66,6 +66,7 @@ import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 
 import static com.neptunedreams.framework.ui.FieldIterator.Direction.*;
 import static com.neptunedreams.framework.ui.SwingUtils.*;
+import static com.neptunedreams.jobs.ui.Resource.*;
 import static com.neptunedreams.util.StringStuff.*;
 
 //import org.checkerframework.checker.initialization.qual.Initialized;
@@ -214,7 +215,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
 
   @SuppressWarnings("method.invocation.invalid")
   private JComponent makeScanButton(@UnderInitialization RecordView<R>this) {
-    JButton button = new JButton(Resource.getLeftChevron());
+    JButton button = new JButton(getIcon(LEFT_CHEVRON));
     button.addActionListener(e -> scanForDiceInfo());
     button.setFocusable(false);
     return button;
@@ -317,7 +318,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
 
 //  @RequiresNonNull({"labelPanel", "fieldPanel", "buttonGroup", "checkBoxPanel", "controller"})
   private JComponent addFieldWithCopy(@UnderInitialization RecordView<R>this, final String labelText, final LeadField orderField, LeadField initialSort) {
-    JButton copyButton = new JButton(Resource.getCopy());
+    JButton copyButton = new JButton(getIcon(COPY));
 
     setNoBorder(copyButton);
     // For any field with a copy button, editable will be true
@@ -398,13 +399,13 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
 
   JComponent wrapField(@UnderInitialization RecordView<R> this, JComponent component, String label) {
     if (!(component instanceof JTextField)) {
-      Icon blankIcon = makeBlankIcon(Resource.getFwdChevron());
+      Icon blankIcon = makeBlankIcon(getIcon(FORWARD_CHEVRON));
       JPanel panel = new JPanel(new BorderLayout());
       panel.add(new JLabel(blankIcon), BorderLayout.LINE_START);
       panel.add(component, BorderLayout.CENTER);
       return panel;
     }
-    JButton button = new JButton(Resource.getFwdChevron());
+    JButton button = new JButton(getIcon(FORWARD_CHEVRON));
     setNoBorder(button);
     button.setToolTipText(String.format("Copy selected text to %s", label));
     button.setFocusable(false);
@@ -580,8 +581,8 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   // build, because they're NonNull in the constructor. Not sure what's the best approach, but this works for now.
   @SuppressWarnings("JavaDoc")
   public static class Builder<@NonNull RR> {
-    private RR record;
-    private LeadField initialSort;
+    private final RR record;
+    private final LeadField initialSort;
     private @Nullable Function<RR, Integer> getId;
     private @Nullable BiConsumer<RR, Integer> setId;
     private @Nullable Function<RR, String> getCompany;

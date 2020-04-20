@@ -102,10 +102,10 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   private final EnumComboBox<LeadField> searchFieldCombo = EnumComboBox.createComboBox(LeadField.values());
   //  private EnumGroup<LeadField> searchFieldGroup = new EnumGroup<>();
   private final @NonNull RecordModel<R> recordModel;
-  private final JButton prev = new JButton(Resource.getLeftArrow());
-  private final JButton next = new JButton(Resource.getRightArrow());
-  private final JButton first = new JButton(Resource.getFirst());
-  private final JButton last = new JButton(Resource.getLast());
+  private final JButton prev = new JButton(Resource.getIcon(Resource.ARROW_LEFT_PNG));
+  private final JButton next = new JButton(Resource.getIcon(Resource.ARROW_RIGHT_PNG));
+  private final JButton first = new JButton(Resource.getIcon(Resource.ARROW_FIRST_PNG));
+  private final JButton last = new JButton(Resource.getIcon(Resource.ARROW_LAST_PNG));
 
   private final JLabel infoLine = new JLabel("");
   private final EnumGroup<SearchOption> optionsGroup = new EnumGroup<>();
@@ -289,9 +289,10 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   }
 
   private JButton makeStripBlankButton() {
-    JButton stripBlankButton = new JButton("Strip Blank Lines");
+    JButton stripBlankButton = new JButton(Resource.getIcon(Resource.SINGLE_SPACE));
     stripBlankButton.setEnabled(false);
     stripBlankButton.setFocusable(false);
+    stripBlankButton.setToolTipText("Single Space");
     SelectionSpy.spy.addSelectionExistsListener(stripBlankButton::setEnabled);
     stripBlankButton.addActionListener(e -> {
       String selectedText = SelectionSpy.spy.getSelectedText();
@@ -314,7 +315,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   }
 
   private JButton makeBulletButton() {
-    JButton bullet = new JButton(Resource.getBullet16());
+    JButton bullet = new JButton(Resource.getIcon(Resource.BULLET_16));
     bullet.setEnabled(false);
     bullet.setFocusable(false);
     bullet.setToolTipText("Add bullets to selected text");
@@ -342,7 +343,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
 
   private JPanel createTrashPanel() {
     JPanel trashPanel = new JPanel(new BorderLayout());
-    JButton trashRecord = new JButton(Resource.getBin());
+    JButton trashRecord = new JButton(Resource.getIcon(Resource.BIN_EMPTY_PNG));
     trashPanel.add(trashRecord, BorderLayout.LINE_END);
     trashRecord.addActionListener((e) -> delete());
 
@@ -372,7 +373,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
 
   private JPanel getButtons() {
     JPanel buttons = new JPanel(new GridLayout(1, 0));
-    JButton add = new JButton(Resource.getAdd());
+    JButton add = new JButton(Resource.getIcon(Resource.BULLET_ADD_PNG));
 //    final JButton importBtn = new JButton("Imp");
     buttons.add(add);
     buttons.add(first);
