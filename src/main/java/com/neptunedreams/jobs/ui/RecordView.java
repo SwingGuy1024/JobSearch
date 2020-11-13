@@ -51,6 +51,7 @@ import com.neptunedreams.framework.ui.FieldIterator.Direction;
 import com.neptunedreams.framework.ui.Keystrokes;
 import com.neptunedreams.framework.ui.RecordController;
 import com.neptunedreams.framework.ui.SelectionSpy;
+import com.neptunedreams.framework.ui.SelectionViewControl;
 import com.neptunedreams.framework.ui.SwingUtils;
 import com.neptunedreams.framework.ui.SwipeDirection;
 import com.neptunedreams.framework.ui.SwipeView;
@@ -452,6 +453,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     for (FieldBinding<R, ?, ?> binding: allBindings) {
       binding.prepareEditor(newRecord);
     }
+    SelectionViewControl.showNothing();
   }
 
   @Override

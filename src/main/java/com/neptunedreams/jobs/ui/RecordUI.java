@@ -52,6 +52,7 @@ import com.neptunedreams.framework.ui.HidingPanel;
 import com.neptunedreams.framework.ui.Keystrokes;
 import com.neptunedreams.framework.ui.RecordController;
 import com.neptunedreams.framework.ui.SelectionSpy;
+import com.neptunedreams.framework.ui.SelectionViewControl;
 import com.neptunedreams.framework.ui.SwingUtils;
 import com.neptunedreams.framework.ui.SwipeView;
 import com.neptunedreams.jobs.data.LeadField;
@@ -180,6 +181,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
       }
 
     });
+    SelectionViewControl.prepareSearchField(findField);
 
     // Assign the escape key to send the focus to the searchField.
     SwingUtils.executeOnDisplay(this, () -> {
