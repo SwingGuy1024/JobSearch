@@ -376,8 +376,11 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   private JPanel getButtons() {
     JPanel buttons = new JPanel(new GridLayout(1, 0));
     JButton add = new JButton(Resource.getIcon(Resource.BULLET_ADD_PNG));
+    JButton copyRecord = new JButton(Resource.getIcon(Resource.PAGE_COPY));
 //    final JButton importBtn = new JButton("Imp");
     buttons.add(add);
+    buttons.add(copyRecord);
+    buttons.add(Box.createHorizontalStrut(10));
     buttons.add(first);
     buttons.add(prev);
     buttons.add(next);
@@ -385,6 +388,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
 //    buttons.add(importBtn);
 
     add.addActionListener((e) -> addBlankRecord());
+    copyRecord.addActionListener((e) -> sendRecordsToNewCopy());
     SwipeView<RecordView<R>> sView = Objects.requireNonNull(swipeView);
     //noinspection Convert2MethodRef
     sView.assignMouseDownAction(prev, () -> recordModel.goPrev(), SWIPE_RIGHT);
@@ -400,6 +404,10 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     setupActions(sView);
 
     return buttonPanel;
+  }
+
+  private void sendRecordsToNewCopy() {
+    controller.copyCurrentRecord(recordView.getDuplicateList());
   }
 
   private JButton makeTimeButton() {

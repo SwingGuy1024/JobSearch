@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
@@ -87,7 +88,8 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   private static final int TEXT_COLUMNS = 20;
   private static final int TEXT_ROWS = 15;
   private static final int HISTORY_COLUMNS = 40;
-  private static final String[] EMPTY_ARRAY = new String[0];
+  private static final String[] EMPTY_STRING_ARRAY = new String[0];
+  private static final JTextComponent[] EMPTY_TC_ARRAY = new JTextComponent[0];
   private final JPanel labelPanel = new JPanel(new GridLayout(0, 1));
   private final JPanel fieldPanel = new JPanel(new GridLayout(0, 1));
   private final JPanel checkBoxPanel = new JPanel(new GridLayout(0, 1));
@@ -104,7 +106,8 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   private final JTextComponent diceIdField;
   private final List<JTextComponent> componentList;
   private FieldIterator fieldIterator;
-  private final AtomicReference<String[]> searchTerms = new AtomicReference<>(RecordView.EMPTY_ARRAY);
+  private final AtomicReference<String[]> searchTerms = new AtomicReference<>(RecordView.EMPTY_STRING_ARRAY);
+  private final List<FieldBinding.EditableFieldBinding<R, ?, ?>> duplicateList; // For copying a record
 
   private RecordView(R record,
                      LeadField initialSort,
@@ -171,22 +174,6 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     @NonNull JPanel historyPanel = makeFieldAndHistoryPanel(tempFieldPanel, historyField);
     add(historyPanel, BorderLayout.PAGE_START);
 
-    SwingUtils.installCustomCaret(EnhancedCaret::new,
-        companyField,
-        contactNameField,
-        clientField,
-        dicePosnField,
-        diceIdField,
-        eMailField,
-        phone1Field,
-        phone2Field,
-        phone3Field,
-        faxField,
-        webSiteField,
-        skypeField,
-        descriptionField,
-        historyField
-    );
     componentList = Arrays.asList(
         companyField,
         contactNameField,
@@ -203,6 +190,20 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
         historyField,
         descriptionField
     );
+    @SuppressWarnings("assignment.type.incompatible") // This makes no sense
+    final JTextComponent[] components = componentList.toArray(EMPTY_TC_ARRAY);
+    SwingUtils.installCustomCaret(EnhancedCaret::new, components);
+    duplicateList = Collections.unmodifiableList(Arrays.asList(
+        sourceBinding,
+        contactNameBinding,
+        eMailBinding,
+        phone1Binding,
+        phone2Binding,
+        phone3Binding,
+        faxBinding,
+        webSiteBinding,
+        skypeBinding
+    ));
     // start with empty list. 
     fieldIterator = new FieldIterator(componentList, FORWARD, -1);
     SwingUtils.executeOnDisplay(this, this::installIteratorActions);
@@ -578,6 +579,14 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     fieldIterator.hasNext();
   }
 
+  /**
+   * Return the list of FieldBindings for fields that need to be copied to a new copy of a record.
+   * @return an unmodifiable List of FieldBindings
+   */
+  List<FieldBinding.EditableFieldBinding<R, ?, ?>> getDuplicateList() {
+    return duplicateList;
+  }
+
   // If I don't suppress this warning, and initialize these values to null, I just get a assignment.type.incompatible
   // warning instead, because I haven't declared these values Nullable. But if I do that, I'll get warnings when I 
   // build, because they're NonNull in the constructor. Not sure what's the best approach, but this works for now.
@@ -759,7 +768,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
 //          "getFax", "setFax", "getWebSite", "setWebSite", "getSkype", "setSkype", "getDescription", "setDescription",
 //          "getHistory", "setHistory", "getCreatedOn"})
     @SuppressWarnings("argument.type.incompatible")
-      public RecordView<RR> build() {
+    public RecordView<RR> build() {
       final RecordView<RR> view = new RecordView<>(
           record,
           initialSort,

@@ -28,6 +28,7 @@ enum Resource {
   COPY("copying_and_distribution.png"),
   BULLET_16("bullet_green16.png"),
   SINGLE_SPACE("single_space-40x16.png"),
+  PAGE_COPY("page_copy.png"),
   ;
 
   private final String name;
