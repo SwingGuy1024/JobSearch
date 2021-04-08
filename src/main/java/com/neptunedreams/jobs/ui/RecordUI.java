@@ -374,7 +374,8 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   }
 
   private JPanel getButtons() {
-    JPanel buttons = new JPanel(new GridLayout(1, 0));
+    Box buttons = new Box(BoxLayout.LINE_AXIS);
+    
     JButton add = new JButton(Resource.getIcon(Resource.BULLET_ADD_PNG));
     JButton copyRecord = new JButton(Resource.getIcon(Resource.PAGE_COPY));
 //    final JButton importBtn = new JButton("Imp");
