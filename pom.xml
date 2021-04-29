@@ -4,7 +4,7 @@
 
   <groupId>neptunedreams.com</groupId>
   <artifactId>job.search</artifactId>
-  <version>0.2.6-SNAPSHOT</version>
+  <version>0.2.7-SNAPSHOT</version>
   <name>Job Search</name>
   <packaging>jar</packaging>
 
@@ -235,7 +235,7 @@
           <mainClass>com.neptunedreams.jobs.JobSearch</mainClass>
           <!--<dictionaryFile>YourCustomInfo.plist</dictionaryFile>-->
           <iconFile>binoculars.icns</iconFile>
-          <!-- Put this line in to bundle the jdk with the app. This is untested. -->
+          <!-- Put this line in to bundle the jdk with the app. -->
           <!--suppress UnresolvedMavenProperty -->
 <!--          <jrePath>${env.JAVA_HOME}/../../</jrePath>-->
         </configuration>

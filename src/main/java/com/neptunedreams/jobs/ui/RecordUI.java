@@ -2,6 +2,7 @@ package com.neptunedreams.jobs.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -29,6 +30,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.MatteBorder;
@@ -120,6 +122,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   private final Consumer<Collection<@NonNull R>> recordConsumer;
   private final @NonNull QueuedTask<String, Collection<@NonNull R>> queuedTask;
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT);
+  private final JButton timeButton;
 
   private HidingPanel makeSearchOptionsPanel(@UnderInitialization RecordUI<R>this, EnumGroup<SearchOption> optionsGroup) {
     JPanel optionsPanel = new JPanel(new GridLayout(0, 1));
@@ -155,6 +158,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     super(new BorderLayout());
     recordModel = model;
     recordView = theView;
+    timeButton = makeTimeButton();
     final JLayer<RecordView<R>> layer = wrapInLayer(theView);
     add(layer, BorderLayout.CENTER);
     add(createControlPanel(), BorderLayout.PAGE_START);
@@ -272,7 +276,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     navUtilPanel.add(makeBulletButton());
     //noinspection MagicNumber
     navUtilPanel.add(Box.createHorizontalStrut(15));
-    navUtilPanel.add(makeTimeButton());
+    navUtilPanel.add(timeButton);
     return navUtilPanel;
   }
 
@@ -352,7 +356,21 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     assert infoLine != null;
     trashPanel.add(infoLine, BorderLayout.LINE_START);
     assert recordModel != null;
+    trashPanel.add(makeJavaVersion(), BorderLayout.CENTER);
     return trashPanel;
+  }
+
+  private JPanel makeJavaVersion() {
+    JLabel label = new JLabel("Java Version " + System.getProperty("java.version"));
+//    label.setAlignmentX(1.0f);
+    label.setHorizontalAlignment(SwingConstants.CENTER);
+    final Font labelFont = label.getFont();
+    int textSize = labelFont.getSize();
+    Font smallFont = labelFont.deriveFont(0.75f * textSize);
+    label.setFont(smallFont);
+    JPanel centerPanel = new JPanel(new BorderLayout());
+    centerPanel.add(label, BorderLayout.PAGE_END);
+    return centerPanel;
   }
 
   private void delete() {
@@ -409,11 +427,12 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
 
   private void sendRecordsToNewCopy() {
     controller.copyCurrentRecord(recordView.getDuplicateList());
+    newHistoryEvent(timeButton.getText());
   }
 
   private JButton makeTimeButton() {
-    JButton timeButton = new JButton();
-    timeButton.addActionListener(e -> newHistoryEvent(timeButton.getText()));
+    JButton localTimeButton = new JButton();
+    localTimeButton.addActionListener(e -> newHistoryEvent(localTimeButton.getText()));
     SwingWorker<String, String> timeWorker = new SwingWorker<String, String>() {
       @Override
       protected String doInBackground() throws InterruptedException {
@@ -432,11 +451,11 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
 
       @Override
       protected void process(final List<String> chunks) {
-        timeButton.setText(chunks.get(chunks.size() - 1));
+        localTimeButton.setText(chunks.get(chunks.size() - 1));
       }
     };
     timeWorker.execute();
-    return timeButton;
+    return localTimeButton;
   }
 
   private String formattedTime() {
