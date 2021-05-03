@@ -64,6 +64,7 @@ import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 
 import static com.neptunedreams.framework.ui.FieldIterator.Direction.*;
@@ -101,7 +102,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   private final List<? extends FieldBinding<R, ? extends Serializable, ? extends JComponent>> allBindings;
   private final JTextComponent companyField;
   private final JTextArea historyField;
-  private final JTextComponent descriptionField;
+  private final JTextArea descriptionField;
   private final JTextComponent dicePosnField;
   private final JTextComponent diceIdField;
   private final List<JTextComponent> componentList;
@@ -133,12 +134,12 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     super(new BorderLayout());
     currentRecord = record;
     controller = makeController(initialSort, dao, recordConstructor, getIdFunction);
-    final JLabel idField = (JLabel) addField("ID", false, LeadField.ID, initialSort);
-    companyField = (JTextComponent) addField("Company", true, LeadField.Company, initialSort);
-    final JTextComponent contactNameField = (JTextComponent) addField("Contact Name", true, LeadField.ContactName, initialSort);
-    final JTextComponent clientField = (JTextComponent) addField("Client", true, LeadField.Client, initialSort);
+    final JLabel idField = (JLabel) addFieldOnly("ID", false, LeadField.ID, initialSort);
+    companyField = (JTextComponent) addFieldOnly("Company", true, LeadField.Company, initialSort);
+    final JTextComponent contactNameField = (JTextComponent) addFieldOnly("Contact Name", true, LeadField.ContactName, initialSort);
+    final JTextComponent clientField = (JTextComponent) addFieldOnly("Client", true, LeadField.Client, initialSort);
     dicePosnField = (JTextComponent) addField("Dice Position", true, LeadField.DicePosn, initialSort, makeScanButton());
-    diceIdField = (JTextComponent) addField("Dice ID", true, LeadField.DiceID, initialSort);
+    diceIdField = (JTextComponent) addFieldOnly("Dice ID", true, LeadField.DiceID, initialSort);
     final JTextComponent eMailField = (JTextComponent) addFieldWithCopy("EMail", LeadField.EMail, initialSort);
     final JTextComponent phone1Field = (JTextComponent) addFieldWithCopy("Phone 1", LeadField.Phone1, initialSort);
     final JTextComponent phone2Field = (JTextComponent) addFieldWithCopy("Phone 2", LeadField.Phone2, initialSort);
@@ -146,8 +147,9 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     final JTextComponent faxField = (JTextComponent) addFieldWithCopy("Fax", LeadField.Fax, initialSort);
     final JTextComponent webSiteField = (JTextComponent) addFieldWithCopy("Web Site", LeadField.WebSite, initialSort);
     final JTextComponent skypeField = (JTextComponent) addFieldWithCopy("Skype", LeadField.Skype, initialSort);
-    final JLabel createdOnField = (JLabel) addField("", false, LeadField.CreatedOn, initialSort);
-    descriptionField = addDescriptionField();
+    final JLabel createdOnField = (JLabel) addFieldOnly("", false, LeadField.CreatedOn, initialSort);
+    descriptionField = new JTextArea(TEXT_ROWS, TEXT_COLUMNS);
+    add(BorderLayout.CENTER, scrollArea(descriptionField));
     historyField = new JTextArea(TEXT_ROWS, HISTORY_COLUMNS);
     assert getIdFunction != null : "Null id getter";
     assert setIdFunction != null : "Null id Setter";
@@ -170,8 +172,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     allBindings = Arrays.asList(idBinding, sourceBinding, contactNameBinding, clientBinding, dicePosnBinding, diceIdBinding, eMailBinding,
         phone1Binding, phone2Binding, phone3Binding, faxBinding, webSiteBinding, skypeBinding, descriptionBinding, historyBinding, createdOnBinding);
 
-    JPanel tempFieldPanel = makeFieldPanel();
-    @NonNull JPanel historyPanel = makeFieldAndHistoryPanel(tempFieldPanel, historyField);
+    @NonNull JPanel historyPanel = makeFieldAndHistoryPanel(makeFieldDisplayPanel(), historyField);
     add(historyPanel, BorderLayout.PAGE_START);
 
     componentList = Arrays.asList(
@@ -264,6 +265,13 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     return null;
   }
 
+  /**
+   * Creates the field-and-history panel, which holds the fieldPanel on the left, and the history text area on the right. Also wraps the 
+   * historyField inside a JScrollPane.
+   * @param fieldPanel The field panel, which contains the labels, database fields, and sorting radio buttons.
+   * @param historyField The history field, which is not yet wrapped inside a scroll panel
+   * @return a field-and-history panel, containing the fieldPanel and the historyField.
+   */
   private static JPanel makeFieldAndHistoryPanel(JPanel fieldPanel, JTextArea historyField) {
     JPanel fieldAndHistoryPanel = new JPanel(new BorderLayout());
     fieldAndHistoryPanel.add(fieldPanel, BorderLayout.LINE_START);
@@ -292,11 +300,14 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     MasterEventBus.registerMasterEventHandler(this);
   }
 
-  // I'm not sure why I shouldn't say @UnderInitialization RecordView<R> this here, but it may be because the nullness
-  // checker recognizes that no more members are set, so it changes the type of this to Initialized part way through
-  // the constructor. It may also be that the @RequiresNonNull fixes this. 
-//  @RequiresNonNull({"labelPanel", "fieldPanel", "checkBoxPanel"})
-  private JPanel makeFieldPanel(@UnderInitialization RecordView<R> this) {
+  /**
+   * This makes the field display panel, which has the three data fields, plus, for each field, a label on the left and a radio button
+   * (for sorting) on the right.
+   *
+   * @return The field display panel
+   */
+  @RequiresNonNull({"labelPanel", "fieldPanel", "checkBoxPanel"})
+  private JPanel makeFieldDisplayPanel(@UnderInitialization RecordView<R> this) {
     JPanel topPanel = new JPanel(new BorderLayout());
     topPanel.add(labelPanel, BorderLayout.LINE_START);
     topPanel.add(fieldPanel, BorderLayout.CENTER);
@@ -313,11 +324,39 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
    */
   public RecordController<R, Integer, LeadField> getController() { return controller; }
 
+  /**
+   * Adds a label, text field and sorting radio button to the labelPanel, fieldPanel, and checkBoxPanel for the specified database field.
+   * This is called addFieldOnly because it does not add a copy button. Defers the work to the addField() method.
+   *
+   * @param labelText   The text of the label
+   * @param editable    True for editable fields
+   * @param orderField  The SiteField for ordering
+   * @param initialSort The field to use for the initial sort.
+   * @return The field that will display the database value, which will be a JTextField or a JLabel depending on whether the field is
+   * editable.
+   */
 //  @RequiresNonNull({"labelPanel", "fieldPanel", "buttonGroup", "checkBoxPanel", "controller"})
-  private JComponent addField(@UnderInitialization RecordView<R> this, final String labelText, final boolean editable, final LeadField orderField, LeadField initialSort) {
+  private JComponent addFieldOnly(
+      @UnderInitialization RecordView<R> this,
+      final String labelText,
+      final boolean editable,
+      final LeadField orderField,
+      final LeadField initialSort
+  ) {
     return addField(labelText, editable, orderField, initialSort, null);
   }
 
+  /**
+   * Adds a label, editable text field and sorting radio button to the labelPanel, fieldPanel, and checkBoxPanel for the specified database
+   * field. Also adds a copy button for convenience, which copies the text of the field to the clipboard. Defers the work to the addField()
+   * method.
+   *
+   * @param labelText   The text of the label
+   * @param orderField  The SiteField for ordering
+   * @param initialSort The field to use for the initial sort.
+   * @return The field that will display the database value, which will be a JTextField or a JLabel depending on whether the field is
+   * editable.
+   */
 //  @RequiresNonNull({"labelPanel", "fieldPanel", "buttonGroup", "checkBoxPanel", "controller"})
   private JComponent addFieldWithCopy(@UnderInitialization RecordView<R>this, final String labelText, final LeadField orderField, LeadField initialSort) {
     JButton copyButton = new JButton(getIcon(COPY));
@@ -342,6 +381,17 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     return field;
   }
 
+  /**
+   * Adds a label, text field and sorting radio button to the labelPanel, fieldPanel, and checkBoxPanel for the specified database field.
+   *
+   * @param labelText      The text of the label
+   * @param editable       True for editable fields
+   * @param orderField     The SiteField for ordering
+   * @param initialSort    The field to use for the initial sort.
+   * @param extraComponent The extra component, which will either be null or a copy button.
+   * @return The field that will display the database value, which will be a JTextField or a JLabel depending on whether the field is
+   * editable.
+   */
 //  @RequiresNonNull({"labelPanel", "fieldPanel", "buttonGroup", "checkBoxPanel", "controller"})
   private JComponent addField(@UnderInitialization RecordView<R>this, final String labelText, final boolean editable, final LeadField orderField, LeadField initialSort, @Nullable JComponent extraComponent) {
     JLabel label = new JLabel(String.format("%s:", labelText));
@@ -392,13 +442,13 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, stringSelection);
   }
 
-  private JTextComponent addDescriptionField(@UnderInitialization RecordView<R> this) {
-    final JTextArea wrappedField = new JTextArea(TEXT_ROWS, TEXT_COLUMNS);
-    JComponent scrollPane = scrollArea(wrappedField);
-    add(BorderLayout.CENTER, scrollPane);
-    return wrappedField;
-  }
-
+  /**
+   * Wraps the specified text component in a larger component that also includes an arrow button (to copy selected text into the field)
+   * and a copy button. If the specified component is a JLabel, inserts a blank icon and does not add the copy button.
+   * @param component The text component, which may be a JLabel or a JTextField. 
+   * @param label a name for the button's field. Used to create a tool tip.
+   * @return A JPanel containing the button with the arrow and copy buttons.
+   */
   JComponent wrapField(@UnderInitialization RecordView<R> this, JComponent component, String label) {
     if (!(component instanceof JTextField)) {
       Icon blankIcon = makeBlankIcon(getIcon(FORWARD_CHEVRON));

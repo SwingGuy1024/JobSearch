@@ -109,7 +109,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   private final JButton next = new JButton(Resource.getIcon(Resource.ARROW_RIGHT_PNG));
   private final JButton first = new JButton(Resource.getIcon(Resource.ARROW_FIRST_PNG));
   private final JButton last = new JButton(Resource.getIcon(Resource.ARROW_LAST_PNG));
-
+  
   private final JLabel infoLine = new JLabel("");
   private final EnumGroup<SearchOption> optionsGroup = new EnumGroup<>();
 
@@ -124,6 +124,13 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT);
   private final JButton timeButton;
 
+  /**
+   * Makes the Search-options panel, which holds a radio button for each of the three search modes. These are activated only
+   * when the search term contains multiple words, since they all do the same thing with just a single word.
+   *
+   * @param optionsGroup The searchOptions Group, to which the radio buttons will all be added.
+   * @return The search options panel
+   */
   private HidingPanel makeSearchOptionsPanel(@UnderInitialization RecordUI<R>this, EnumGroup<SearchOption> optionsGroup) {
     JPanel optionsPanel = new JPanel(new GridLayout(0, 1));
     JRadioButton findExact = optionsGroup.add(SearchOption.findWhole);
@@ -255,11 +262,16 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     }
   }
 
+  /**
+   * Creates the control panel, which has the search field, the search options, and the main navigation panel.
+   *
+   * @return The control panel
+   */
   private JPanel createControlPanel() {
     JPanel buttonPanel = new JPanel(new BorderLayout());
     buttonPanel.add(getSearchField(), BorderLayout.PAGE_START);
     buttonPanel.add(BorderLayout.LINE_START, searchOptionsPanel);
-    @UnknownKeyFor @Initialized JPanel navigationPanel = SwingUtils.wrapCenter(getButtons());
+    @UnknownKeyFor @Initialized JPanel navigationPanel = SwingUtils.wrapCenter(getNavigationButtons());
     JComponent utilityPanel = makeUtilityPanel();
     JPanel navUtilityPanel = new JPanel(new BorderLayout());
     navUtilityPanel.add(BorderLayout.CENTER, navigationPanel);
@@ -268,6 +280,10 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     return buttonPanel;
   }
 
+  /**
+   * Creates the utility panel, which has the pasteHtml button, strip-blank-lines button, bullet button, and the new-history-event button.
+   * @return The utility panel
+   */
   private JComponent makeUtilityPanel() {
     Box navUtilPanel = new Box(BoxLayout.LINE_AXIS);
 
@@ -347,6 +363,11 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     return bullet;
   }
 
+  /**
+   * Creates the trash panel, which has the info line, the java version, and the trash button.
+   *
+   * @return The trash panel
+   */
   private JPanel createTrashPanel() {
     JPanel trashPanel = new JPanel(new BorderLayout());
     JButton trashRecord = new JButton(Resource.getIcon(Resource.BIN_EMPTY_PNG));
@@ -391,7 +412,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     }
   }
 
-  private JPanel getButtons() {
+  private JPanel getNavigationButtons() {
     Box buttons = new Box(BoxLayout.LINE_AXIS);
     
     JButton add = new JButton(Resource.getIcon(Resource.BULLET_ADD_PNG));
