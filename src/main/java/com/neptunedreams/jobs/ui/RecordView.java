@@ -45,7 +45,6 @@ import com.neptunedreams.framework.data.RecordSelectionModel;
 import com.neptunedreams.framework.data.SearchOption;
 import com.neptunedreams.framework.event.ChangeRecord;
 import com.neptunedreams.framework.event.MasterEventBus;
-import com.neptunedreams.framework.ui.EnhancedCaret;
 import com.neptunedreams.framework.ui.FieldBinding;
 import com.neptunedreams.framework.ui.FieldIterator;
 import com.neptunedreams.framework.ui.FieldIterator.Direction;
@@ -53,7 +52,7 @@ import com.neptunedreams.framework.ui.Keystrokes;
 import com.neptunedreams.framework.ui.RecordController;
 import com.neptunedreams.framework.ui.SelectionSpy;
 import com.neptunedreams.framework.ui.SelectionViewControl;
-import com.neptunedreams.framework.ui.SwingUtils;
+import com.neptunedreams.framework.ui.TangoUtils;
 import com.neptunedreams.framework.ui.SwipeDirection;
 import com.neptunedreams.framework.ui.SwipeView;
 import com.neptunedreams.jobs.data.LeadField;
@@ -68,7 +67,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 
 import static com.neptunedreams.framework.ui.FieldIterator.Direction.*;
-import static com.neptunedreams.framework.ui.SwingUtils.*;
+import static com.neptunedreams.framework.ui.TangoUtils.*;
 import static com.neptunedreams.jobs.ui.Resource.*;
 import static com.neptunedreams.util.StringStuff.*;
 
@@ -193,7 +192,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     );
     @SuppressWarnings("assignment.type.incompatible") // This makes no sense
     final JTextComponent[] components = componentList.toArray(EMPTY_TC_ARRAY);
-    SwingUtils.installCustomCaret(EnhancedCaret::new, components);
+    TangoUtils.installStandardCaret(components);
     duplicateList = Collections.unmodifiableList(Arrays.asList(
         sourceBinding,
         contactNameBinding,
@@ -207,7 +206,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     ));
     // start with empty list. 
     fieldIterator = new FieldIterator(componentList, FORWARD, -1);
-    SwingUtils.executeOnDisplay(this, this::installIteratorActions);
+    TangoUtils.executeOnDisplay(this, this::installIteratorActions);
   }
 
   private void installIteratorActions() {

@@ -55,7 +55,7 @@ import com.neptunedreams.framework.ui.Keystrokes;
 import com.neptunedreams.framework.ui.RecordController;
 import com.neptunedreams.framework.ui.SelectionSpy;
 import com.neptunedreams.framework.ui.SelectionViewControl;
-import com.neptunedreams.framework.ui.SwingUtils;
+import com.neptunedreams.framework.ui.TangoUtils;
 import com.neptunedreams.framework.ui.SwipeView;
 import com.neptunedreams.jobs.data.LeadField;
 import org.checkerframework.checker.initialization.qual.Initialized;
@@ -195,7 +195,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     SelectionViewControl.prepareSearchField(findField);
 
     // Assign the escape key to send the focus to the searchField.
-    SwingUtils.executeOnDisplay(this, () -> {
+    TangoUtils.executeOnDisplay(this, () -> {
       @UnknownKeyFor @Initialized JComponent lastAncestor = Keystrokes.getLastAncestorOf(this);
       @UnknownKeyFor @Initialized Runnable selectFindFieldAction = () -> {
         findField.selectAll();
@@ -271,11 +271,11 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     JPanel buttonPanel = new JPanel(new BorderLayout());
     buttonPanel.add(getSearchField(), BorderLayout.PAGE_START);
     buttonPanel.add(BorderLayout.LINE_START, searchOptionsPanel);
-    @UnknownKeyFor @Initialized JPanel navigationPanel = SwingUtils.wrapCenter(getNavigationButtons());
+    @UnknownKeyFor @Initialized JPanel navigationPanel = TangoUtils.wrapCenter(getNavigationButtons());
     JComponent utilityPanel = makeUtilityPanel();
     JPanel navUtilityPanel = new JPanel(new BorderLayout());
     navUtilityPanel.add(BorderLayout.CENTER, navigationPanel);
-    navUtilityPanel.add(SwingUtils.wrapEast(utilityPanel), BorderLayout.PAGE_END);
+    navUtilityPanel.add(TangoUtils.wrapEast(utilityPanel), BorderLayout.PAGE_END);
     buttonPanel.add(BorderLayout.CENTER, navUtilityPanel);
     return buttonPanel;
   }
@@ -503,7 +503,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
 
   private JPanel getSearchField() {
     JLabel findIcon = Resource.getMagnifierLabel();
-    SwingUtils.installStandardCaret(findField);
+    TangoUtils.installStandardCaret(findField);
     JPanel searchPanel = new JPanel(new BorderLayout());
     searchPanel.add(findIcon, BorderLayout.LINE_START);
     searchPanel.add(searchFieldCombo, BorderLayout.LINE_END);

@@ -14,7 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
-import com.neptunedreams.framework.ui.SwingUtils;
+import com.neptunedreams.framework.ui.TangoUtils;
 
 /**
  * <p>Created by IntelliJ IDEA.
@@ -54,29 +54,43 @@ enum Resource {
     this.shift = shift; 
   }
 
+  /**
+   * Loads the icon from the specified resource
+   * @param resource The Resource
+   * @return The loaded Icon
+   */
   public static Icon getIcon(Resource resource) {
     URL url = Objects.requireNonNull(Resource.class.getResource(resource.name));
     ImageIcon imageIcon = new ImageIcon(url);
     if (resource.shift) {
-      imageIcon = SwingUtils.shiftHue(imageIcon, SHIFT);
+      imageIcon = TangoUtils.shiftHue(imageIcon, SHIFT);
     }
     return imageIcon;
   }
-  
+
+  /**
+   * Loads the magnifier icon
+   * @return The magnifier icon
+   */
   static JLabel getMagnifierLabel() {
     final Icon icon = getIcon(MAGNIFIER_16_PNG);
     return new JLabel(icon);
   }
 
+  /**
+   * The main method, to test icon color shifting.
+   * @param args Unused
+   */
+  @SuppressWarnings("MagicNumber")
   public static void main(String[] args) {
     JFrame frame = new JFrame();
     JPanel display = new JPanel(new GridLayout(0, 8));
     Icon copyIcon = getIcon(PAGE_COPY);
     frame.add(display, BorderLayout.CENTER);
-    String name = ARROW_LAST_PNG.name;;
+    String name = ARROW_LAST_PNG.name;
     for (int shift=80; shift< 112; shift++) {
       ImageIcon icon = new ImageIcon(Objects.requireNonNull(Resource.class.getResource(name)));
-      icon = SwingUtils.shiftHue(icon, shift);
+      icon = TangoUtils.shiftHue(icon, shift);
       final JLabel comp = new JLabel(String.valueOf(shift), icon, SwingConstants.LEFT);
       JPanel panel = new JPanel(new BorderLayout());
       panel.add(new JLabel(copyIcon), BorderLayout.PAGE_START);

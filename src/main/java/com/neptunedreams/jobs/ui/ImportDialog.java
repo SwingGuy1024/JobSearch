@@ -19,7 +19,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import com.neptunedreams.framework.data.Dao;
-import com.neptunedreams.framework.ui.SwingUtils;
 import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
 
 /**
@@ -37,7 +36,13 @@ final class ImportDialog extends JDialog {
     recordDao = dao;
 //    build();
   }
-  
+
+  /**
+   * Used to import records from an another machine. Usually disabled.
+   * @param parent The parent window
+   * @param dao The dao
+   * @return an ImportDialog
+   */
   static ImportDialog build(Window parent, Dao<LeadRecord, ?, ?> dao) {
     ImportDialog importDialog = new ImportDialog(parent, dao);
     importDialog.build();
