@@ -38,12 +38,13 @@ enum Resource {
   COPY("copying_and_distribution.png"),
   BULLET_16("bullet_green16.png", true),
   SINGLE_SPACE("single_space-40x16.png", true),
-  PAGE_COPY("page_copy.png"),
+  PAGE_COPY("page_copy.png", 11),
   ;
 
   private static final int SHIFT = 93;
   private final String name;
-  private final boolean shift;
+  private final int delta;
+//  private 
 
   Resource(String fileName) {
     this(fileName, false);
@@ -51,7 +52,12 @@ enum Resource {
 
   Resource(String fileName, boolean shift) {
     name = fileName;
-    this.shift = shift; 
+    this.delta = shift? SHIFT : 0; 
+  }
+  
+  Resource(String fileName, int deltaColor) {
+    name = fileName;
+    delta = deltaColor;
   }
 
   /**
@@ -62,8 +68,8 @@ enum Resource {
   public static Icon getIcon(Resource resource) {
     URL url = Objects.requireNonNull(Resource.class.getResource(resource.name));
     ImageIcon imageIcon = new ImageIcon(url);
-    if (resource.shift) {
-      imageIcon = TangoUtils.shiftHue(imageIcon, SHIFT);
+    if (resource.delta != 0) {
+      imageIcon = TangoUtils.shiftHue(imageIcon, resource.delta);
     }
     return imageIcon;
   }
