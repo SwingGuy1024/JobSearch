@@ -30,6 +30,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
@@ -109,6 +110,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   private final JButton next = new JButton(Resource.getIcon(Resource.ARROW_RIGHT_PNG));
   private final JButton first = new JButton(Resource.getIcon(Resource.ARROW_FIRST_PNG));
   private final JButton last = new JButton(Resource.getIcon(Resource.ARROW_LAST_PNG));
+  private final JToggleButton edit;
   
   private final JLabel infoLine = new JLabel("");
   private final EnumGroup<SearchOption> optionsGroup = new EnumGroup<>();
@@ -161,11 +163,13 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
    */
   @SuppressWarnings({"method.invocation.invalid", "argument.type.incompatible"})
   // add(), setBorder(), etc not properly annotated in JDK.
-  public RecordUI(@NonNull RecordModel<R> model, RecordView<R> theView, RecordController<R, Integer, LeadField> theController) {
+  public RecordUI(@NonNull RecordModel<R> model, RecordView<R> theView, RecordController<R, Integer, LeadField> theController,
+                  JToggleButton.ToggleButtonModel editModel) {
     super(new BorderLayout());
     recordModel = model;
     recordView = theView;
     timeButton = makeTimeButton();
+    edit = makeEditButton(editModel);
     final JLayer<RecordView<R>> layer = wrapInLayer(theView);
     add(layer, BorderLayout.CENTER);
     add(createControlPanel(), BorderLayout.PAGE_START);
@@ -425,6 +429,8 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     buttons.add(prev);
     buttons.add(next);
     buttons.add(last);
+    buttons.add(Box.createHorizontalStrut(10));
+    buttons.add(edit);
 //    buttons.add(importBtn);
 
     add.addActionListener((e) -> addBlankRecord());
@@ -438,6 +444,9 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     first.addActionListener((e) -> sView.swipeRight(() -> recordModel.goFirst()));
     //noinspection Convert2MethodRef
     last.addActionListener((e) -> sView.swipeLeft(() -> recordModel.goLast()));
+    edit.setSelected(true); // lets me execute the listener immediately
+    edit.addItemListener(e -> sView.getLiveComponent().setEditable(edit.isSelected()));
+    edit.setSelected(false); // executes because the state changes
 //    importBtn.addActionListener((e) -> doImport());
     JPanel buttonPanel = new JPanel(new BorderLayout());
     buttonPanel.add(buttons, BorderLayout.LINE_START);
@@ -636,4 +645,10 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   }
 
   private void searchOptionChanged(@SuppressWarnings("unused") ButtonModel selectedButtonModel) { searchNow(); }
+
+  private JToggleButton makeEditButton(@UnderInitialization RecordUI<R>this, JToggleButton.ToggleButtonModel model) {
+    JToggleButton editButton = new JToggleButton(Resource.getIcon(Resource.EDIT_PNG));
+    editButton.setModel(model);
+    return editButton;
+  }
 }

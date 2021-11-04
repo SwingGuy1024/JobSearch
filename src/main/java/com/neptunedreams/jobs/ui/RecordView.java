@@ -33,6 +33,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.border.MatteBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -96,6 +97,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   private final ButtonGroup buttonGroup = new ButtonGroup();
 
   private R currentRecord;
+  private final JToggleButton.ToggleButtonModel editModel = new JToggleButton.ToggleButtonModel();
 
   private final RecordController<R, Integer, LeadField> controller;
   private final List<? extends FieldBinding<R, ? extends Serializable, ? extends JComponent>> allBindings;
@@ -294,6 +296,18 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
         getIdFunction
     );
   }
+
+  public JToggleButton.ToggleButtonModel getEditModel() { return editModel; }
+
+  public void setEditable(boolean editable) {
+    for (FieldBinding<?, ?, ?> binding : allBindings) {
+      if (binding.isEditable()) {
+        binding.getEditableBinding().setEditableState(editable);
+      }
+    }
+  }
+
+  public boolean isEditable() { return editModel.isSelected(); }
 
   private void register() {
     MasterEventBus.registerMasterEventHandler(this);
@@ -500,6 +514,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     R newRecord = recordEvent.getNewRecord();
     assert newRecord != null;
     currentRecord = newRecord;
+    editModel.setSelected(false);
     for (FieldBinding<R, ?, ?> binding: allBindings) {
       binding.prepareEditor(newRecord);
     }
@@ -560,6 +575,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   @Subscribe
   void userRequestedNewRecord(MasterEventBus.UserRequestedNewRecordEvent event) {
     companyField.requestFocus();
+    editModel.setSelected(true);
   }
 
   /**

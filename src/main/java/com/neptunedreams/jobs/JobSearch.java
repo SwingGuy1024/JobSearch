@@ -183,7 +183,7 @@ public final class JobSearch extends JPanel
           .build();
       controller = view.getController();
       final RecordModel<LeadRecord> model = controller.getModel();
-      mainPanel = new RecordUI<>(model, view, controller); // RecordUI launches the initial search
+      mainPanel = new RecordUI<>(model, view, controller, view.getEditModel()); // RecordUI launches the initial search
 
       if ((model.getSize() == 1) && (model.getRecordAt(0).getId() == 0) && doImport) {
         importFromFile(dao, controller); // throws ClassNotFoundException

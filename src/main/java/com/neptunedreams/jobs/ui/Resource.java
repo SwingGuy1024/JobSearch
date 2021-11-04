@@ -39,12 +39,12 @@ enum Resource {
   BULLET_16("bullet_green16.png", true),
   SINGLE_SPACE("single_space-40x16.png", true),
   PAGE_COPY("page_copy.png", 11),
+  EDIT_PNG("bullet_edit.png")
   ;
 
   private static final int SHIFT = 93;
   private final String name;
   private final int delta;
-//  private 
 
   Resource(String fileName) {
     this(fileName, false);
