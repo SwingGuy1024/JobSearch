@@ -84,7 +84,7 @@ import static com.neptunedreams.framework.ui.SwipeDirection.*;
  *
  * @author Miguel Mu\u00f1oz
  */
-@SuppressWarnings({"HardCodedStringLiteral", "HardcodedLineSeparator"})
+@SuppressWarnings({"HardCodedStringLiteral", "HardcodedLineSeparator", "NullableProblems"})
 public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener {
 
   // TODO:  The QueuedTask is terrific, but it doesn't belong in this class. It belongs in the Controller. That way,
@@ -125,6 +125,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   private final @NonNull QueuedTask<String, Collection<@NonNull R>> queuedTask;
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT);
   private final JButton timeButton;
+  private final JButton pasteHtmlButton = new JButton("Paste HTML");
 
   /**
    * Makes the Search-options panel, which holds a radio button for each of the three search modes. These are activated only
@@ -160,6 +161,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
    * @param model         The record model
    * @param theView       the record view
    * @param theController the controller
+   * @param editModel     the editModel
    */
   @SuppressWarnings({"method.invocation.invalid", "argument.type.incompatible"})
   // add(), setBorder(), etc not properly annotated in JDK.
@@ -301,10 +303,10 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   }
 
   private Component makePasteHtmlButton() {
-    JButton pasteHtmlButton = new JButton("Paste HTML");
     pasteHtmlButton.setEnabled(false);
     pasteHtmlButton.setFocusable(false);
-    SelectionSpy.spy.addFocusInTextFieldListener(pasteHtmlButton::setEnabled);
+    SelectionSpy.spy.addFocusInTextFieldListener(this::setPasteButtonEnabledState);
+    SelectionSpy.spy.addSelectionExistsListener(this::setPasteButtonEnabledState);
     pasteHtmlButton.addActionListener(a -> {
       @UnknownKeyFor @Initialized String htmlAsText = ClipFix.getHtmlAsText();
       if (htmlAsText != null) {
@@ -312,6 +314,10 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
       }
     });
     return pasteHtmlButton;
+  }
+  
+  private void setPasteButtonEnabledState(boolean enabledState) {
+    pasteHtmlButton.setEnabled(SelectionSpy.spy.isFocusedTextFieldEditable());
   }
 
   private JButton makeStripBlankButton() {
@@ -391,6 +397,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     label.setHorizontalAlignment(SwingConstants.CENTER);
     final Font labelFont = label.getFont();
     int textSize = labelFont.getSize();
+    //noinspection MagicNumber
     Font smallFont = labelFont.deriveFont(0.75f * textSize);
     label.setFont(smallFont);
     JPanel centerPanel = new JPanel(new BorderLayout());
@@ -464,6 +471,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     JButton localTimeButton = new JButton();
     localTimeButton.addActionListener(e -> newHistoryEvent(localTimeButton.getText()));
     SwingWorker<String, String> timeWorker = new SwingWorker<String, String>() {
+      // Update the name of the button every time the minute changes.
       @Override
       protected String doInBackground() throws InterruptedException {
         long time = System.currentTimeMillis();
@@ -493,6 +501,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   }
 
   private void newHistoryEvent(String time) {
+    recordView.getEditModel().setSelected(true); // make the card editable
     String timeText = String.format("• %s%n", time);
     recordView.addHistoryEvent(timeText);
   }
