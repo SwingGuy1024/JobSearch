@@ -47,6 +47,7 @@ import com.neptunedreams.framework.data.SearchOption;
 import com.neptunedreams.framework.event.MasterEventBus;
 import com.neptunedreams.framework.task.ParameterizedCallable;
 import com.neptunedreams.framework.task.QueuedTask;
+import com.neptunedreams.framework.ui.ClearableTextField;
 import com.neptunedreams.framework.ui.ClipFix;
 import com.neptunedreams.framework.ui.EnumComboBox;
 import com.neptunedreams.framework.ui.EnumGroup;
@@ -102,6 +103,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
 
   // We set the initial text to a space, so we can fire the initial search by setting the text to the empty String.
   private final JTextField findField = new JTextField(" ", 10);
+  private final ClearableTextField clearableTextField = new ClearableTextField(findField);
   private final RecordController<R, Integer, LeadField> controller;
   private final EnumComboBox<LeadField> searchFieldCombo = EnumComboBox.createComboBox(LeadField.values());
   //  private EnumGroup<LeadField> searchFieldGroup = new EnumGroup<>();
@@ -525,7 +527,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     JPanel searchPanel = new JPanel(new BorderLayout());
     searchPanel.add(findIcon, BorderLayout.LINE_START);
     searchPanel.add(searchFieldCombo, BorderLayout.LINE_END);
-    searchPanel.add(findField, BorderLayout.CENTER);
+    searchPanel.add(clearableTextField, BorderLayout.CENTER);
     findField.addActionListener((e) -> findText());
     return searchPanel;
   }
