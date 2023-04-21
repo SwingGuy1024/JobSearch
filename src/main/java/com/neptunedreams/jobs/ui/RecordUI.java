@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.InputEvent;
@@ -19,6 +21,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonModel;
@@ -57,9 +60,10 @@ import com.neptunedreams.framework.ui.Keystrokes;
 import com.neptunedreams.framework.ui.RecordController;
 import com.neptunedreams.framework.ui.SelectionSpy;
 import com.neptunedreams.framework.ui.SelectionViewControl;
-import com.neptunedreams.framework.ui.TangoUtils;
 import com.neptunedreams.framework.ui.SwipeView;
 import com.neptunedreams.jobs.data.LeadField;
+import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
+import com.neptunedreams.util.HtmlSelection;
 import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -67,6 +71,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 
 import static com.neptunedreams.framework.ui.SwipeDirection.*;
+import static com.neptunedreams.framework.ui.TangoUtils.*;
 
 //import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 
@@ -108,14 +113,15 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   private final EnumComboBox<LeadField> searchFieldCombo = EnumComboBox.createComboBox(LeadField.values());
   //  private EnumGroup<LeadField> searchFieldGroup = new EnumGroup<>();
   private final @NonNull RecordModel<R> recordModel;
-  private final JButton prev = new JButton(Resource.getIcon(Resource.ARROW_LEFT_PNG));
-  private final JButton next = new JButton(Resource.getIcon(Resource.ARROW_RIGHT_PNG));
-  private final JButton first = new JButton(Resource.getIcon(Resource.ARROW_FIRST_PNG));
-  private final JButton last = new JButton(Resource.getIcon(Resource.ARROW_LAST_PNG));
+  private final JButton prev = configureTextFree(new JButton("Previous", Resource.getIcon(Resource.ARROW_LEFT_PNG)));
+  private final JButton next = configureTextFree(new JButton("Next", Resource.getIcon(Resource.ARROW_RIGHT_PNG)));
+  private final JButton first = configureTextFree(new JButton("First", Resource.getIcon(Resource.ARROW_FIRST_PNG)));
+  private final JButton last = configureTextFree(new JButton("Last", Resource.getIcon(Resource.ARROW_LAST_PNG)));
   private final JToggleButton edit;
   
   private final JLabel infoLine = new JLabel("");
   private final EnumGroup<SearchOption> optionsGroup = new EnumGroup<>();
+  private final JButton exportPage = makeExportPageButton();
 
   private @MonotonicNonNull SwipeView<RecordView<R>> swipeView = null;
 
@@ -203,7 +209,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     SelectionViewControl.prepareSearchField(findField);
 
     // Assign the escape key to send the focus to the searchField.
-    TangoUtils.executeOnDisplay(this, () -> {
+    executeOnDisplay(this, () -> {
       @UnknownKeyFor @Initialized JComponent lastAncestor = Keystrokes.getLastAncestorOf(this);
       @UnknownKeyFor @Initialized Runnable selectFindFieldAction = () -> {
         findField.selectAll();
@@ -279,11 +285,11 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     JPanel buttonPanel = new JPanel(new BorderLayout());
     buttonPanel.add(getSearchField(), BorderLayout.PAGE_START);
     buttonPanel.add(BorderLayout.LINE_START, searchOptionsPanel);
-    @UnknownKeyFor @Initialized JPanel navigationPanel = TangoUtils.wrapCenter(getNavigationButtons());
+    @UnknownKeyFor @Initialized JPanel navigationPanel = wrapCenter(getNavigationButtons());
     JComponent utilityPanel = makeUtilityPanel();
     JPanel navUtilityPanel = new JPanel(new BorderLayout());
     navUtilityPanel.add(BorderLayout.CENTER, navigationPanel);
-    navUtilityPanel.add(TangoUtils.wrapEast(utilityPanel), BorderLayout.PAGE_END);
+    navUtilityPanel.add(wrapEast(utilityPanel), BorderLayout.PAGE_END);
     buttonPanel.add(BorderLayout.CENTER, navUtilityPanel);
     return buttonPanel;
   }
@@ -323,7 +329,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   }
 
   private JButton makeStripBlankButton() {
-    JButton stripBlankButton = new JButton(Resource.getIcon(Resource.SINGLE_SPACE));
+    JButton stripBlankButton = configureTextFree(new JButton("Single Space Text", Resource.getIcon(Resource.SINGLE_SPACE)));
     stripBlankButton.setEnabled(false);
     stripBlankButton.setFocusable(false);
     stripBlankButton.setToolTipText("Single Space");
@@ -349,7 +355,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   }
 
   private JButton makeBulletButton() {
-    JButton bullet = new JButton(Resource.getIcon(Resource.BULLET_16));
+    JButton bullet = configureTextFree(new JButton("Add Bullets", Resource.getIcon(Resource.BULLET_16)));
     bullet.setEnabled(false);
     bullet.setFocusable(false);
     bullet.setToolTipText("Add bullets to selected text");
@@ -382,7 +388,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
    */
   private JPanel createTrashPanel() {
     JPanel trashPanel = new JPanel(new BorderLayout());
-    JButton trashRecord = new JButton(Resource.getIcon(Resource.BIN_EMPTY_PNG));
+    JButton trashRecord = configureTextFree(new JButton("Delete Page", Resource.getIcon(Resource.BIN_EMPTY_PNG)));
     trashPanel.add(trashRecord, BorderLayout.LINE_END);
     trashRecord.addActionListener((e) -> delete());
 
@@ -428,8 +434,8 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   private JPanel getNavigationButtons() {
     Box buttons = new Box(BoxLayout.LINE_AXIS);
     
-    JButton add = new JButton(Resource.getIcon(Resource.BULLET_ADD_PNG));
-    JButton copyRecord = new JButton(Resource.getIcon(Resource.PAGE_COPY));
+    JButton add = configureTextFree(new JButton("Add a Page", Resource.getIcon(Resource.BULLET_ADD_PNG)));
+    JButton copyRecord = configureTextFree(new JButton("Duplicate Page", Resource.getIcon(Resource.PAGE_COPY)));
 //    final JButton importBtn = new JButton("Imp");
     buttons.add(add);
     buttons.add(copyRecord);
@@ -440,6 +446,8 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     buttons.add(last);
     buttons.add(Box.createHorizontalStrut(10));
     buttons.add(edit);
+    buttons.add(Box.createHorizontalStrut(10));
+    buttons.add(exportPage);
 //    buttons.add(importBtn);
 
     add.addActionListener((e) -> addBlankRecord());
@@ -456,6 +464,8 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
     edit.setSelected(true); // lets me execute the listener immediately
     edit.addItemListener(e -> sView.getLiveComponent().setEditable(edit.isSelected()));
     edit.setSelected(false); // executes because the state changes
+    exportPage.addActionListener(e -> exportToClipboard());
+
 //    importBtn.addActionListener((e) -> doImport());
     JPanel buttonPanel = new JPanel(new BorderLayout());
     buttonPanel.add(buttons, BorderLayout.LINE_START);
@@ -523,7 +533,7 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
 
   private JPanel getSearchField() {
     JLabel findIcon = Resource.getMagnifierLabel();
-    TangoUtils.installStandardCaret(findField);
+    installStandardCaret(findField);
     JPanel searchPanel = new JPanel(new BorderLayout());
     searchPanel.add(findIcon, BorderLayout.LINE_START);
     searchPanel.add(searchFieldCombo, BorderLayout.LINE_END);
@@ -658,8 +668,57 @@ public class RecordUI<@NonNull R> extends JPanel implements RecordModelListener 
   private void searchOptionChanged(@SuppressWarnings("unused") ButtonModel selectedButtonModel) { searchNow(); }
 
   private JToggleButton makeEditButton(@UnderInitialization RecordUI<R>this, JToggleButton.ToggleButtonModel model) {
-    JToggleButton editButton = new JToggleButton(Resource.getIcon(Resource.EDIT_PNG));
+    JToggleButton editButton = new JToggleButton("Edit Page", Resource.getIcon(Resource.EDIT_PNG));
     editButton.setModel(model);
-    return editButton;
+    return configureTextFree(editButton);
+  }
+  
+  private JButton makeExportPageButton(@UnderInitialization RecordUI<R> this) {
+    JButton exportButton = new JButton("Export Page to Clipboard", Resource.EXPORT.getIcon());
+    return configureTextFree(exportButton);
+  }
+  
+  private void exportToClipboard() {
+    StringBuilder builder = new StringBuilder();
+    LeadRecord record = (LeadRecord) recordModel.getFoundRecord();
+    builder
+        .append("<html><body>")
+        .append(exportField("Company", record::getCompany))
+        .append(exportField("ContactName", record::getContactName))
+        .append(exportField("Client", record::getClient))
+        .append(exportField("Dice Position", record::getDicePosn))
+        .append(exportField("Dice ID", record::getDiceId))
+        .append(exportField("Email", record::getEmail))
+        .append(exportField("Phone 1", record::getPhone1))
+        .append(exportField("Phone 2", record::getPhone2))
+        .append(exportField("Phone 3", record::getPhone3))
+        .append(exportField("Fax", record::getFax))
+        .append(exportField("Web Site", record::getWebsite))
+        .append(exportField("Skype", record::getSkype))
+        .append(exportProse("\nDescription\n", record::getDescription))
+        .append(exportProse("\nHistory\n", record::getHistory))
+        .append("\n<hr/>\n")
+        .append("</body></html>")
+    
+    ;
+    HtmlSelection htmlSelection = new HtmlSelection(builder.toString());
+    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+    clipboard.setContents(htmlSelection, htmlSelection);
+  }
+
+  private String exportProse(String label, Supplier<String> getter) {
+    String text = getter.get().replace("\n", "\n<br>");
+    if (!text.isEmpty()) {
+      return String.format("%n%n<p><strong>%s:</strong><br>%s", label.trim(), text.trim());
+    }
+    return "";
+  }
+  
+  private String exportField(String label, Supplier<String> getter) {
+    String text = getter.get();
+    if (!text.isEmpty()) {
+      return String.format("%n<br><strong>%s:</strong>\t%s", label, text);
+    }
+    return "";
   }
 }

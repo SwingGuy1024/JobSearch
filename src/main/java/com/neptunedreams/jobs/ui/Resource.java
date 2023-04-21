@@ -39,10 +39,11 @@ enum Resource {
   BULLET_16("bullet_green16.png", true),
   SINGLE_SPACE("single_space-40x16.png", true),
   PAGE_COPY("page_copy.png", 11),
+  EXPORT("document_export.png"),
   EDIT_PNG("bullet_edit.png")
   ;
 
-  private static final int SHIFT = 93;
+  private static final int SHIFT = 93; // green to blue shift, for arrows.
   private final String name;
   private final int delta;
 
@@ -72,6 +73,14 @@ enum Resource {
       imageIcon = TangoUtils.shiftHue(imageIcon, resource.delta);
     }
     return imageIcon;
+  }
+
+  /**
+   * Get the Icon for this resource.
+   * @return The resource's Icon
+   */
+  public Icon getIcon() {
+    return getIcon(this);
   }
 
   /**
