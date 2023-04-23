@@ -218,16 +218,23 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   }
 
   @SuppressWarnings("method.invocation.invalid")
-  private JComponent makeScanButton(@UnderInitialization RecordView<R>this) {
+  private JButton makeScanButton(@UnderInitialization RecordView<R>this) {
     JButton button = new JButton(getIcon(LEFT_CHEVRON));
     button.addActionListener(e -> scanForDiceInfo());
     button.setFocusable(false);
+    editModel.addItemListener(i-> enableOnEditable(i, button));
     return button;
+  }
+  
+  private void enableOnEditable(ItemEvent event, JButton button) {
+//    if (event.getStateChange() == ItemEvent.SELECTED) {
+    System.out.printf("Setting scan enabled to %s%n", isEditable()); // NON-NLS
+      button.setEnabled(isEditable());
+//    }
   }
 
   private void scanForDiceInfo(@Initialized RecordView<R>this) {
-    // description is never null, but the test is here to satisfy the Nullness Checker 
-    String description = (descriptionField == null) ? "" : emptyIfNull(descriptionField.getText());
+    String description = emptyIfNull(descriptionField.getText());
     if (scanForDiceInfo(description)) { return; }
     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
     try {
@@ -237,8 +244,8 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   }
 
   private boolean scanForDiceInfo(@Initialized RecordView<R> this, final String description) {
-    String posnHead = "Position Id :";
-    String idHead = "Dice Id :";
+    String posnHead = "Position Id:";
+    String idHead = "Dice Id:";
     String position = getNextWord(description, posnHead);
     String id = getNextWord(description, idHead);
     if ((position != null) && (id != null)) {
