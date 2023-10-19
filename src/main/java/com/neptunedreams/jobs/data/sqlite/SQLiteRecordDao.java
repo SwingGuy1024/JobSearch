@@ -3,9 +3,10 @@ package com.neptunedreams.jobs.data.sqlite;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.Objects;
+
 import com.neptunedreams.framework.data.ConnectionSource;
 import com.neptunedreams.framework.data.Dao;
 import com.neptunedreams.jobs.data.LeadField;
@@ -56,39 +57,39 @@ import static org.jooq.impl.DSL.*;
  * <p>Date: 10/29/17
  * <p>Time: 1:03 AM
  *
- * @author Miguel Mu\u00f1oz
+ * @author Miguel Muñoz
  */
 @SuppressWarnings("StringConcatenation")
-public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField> {
+public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, @NonNull LeadField> {
 
   private static final Map<LeadField, @NonNull TableField<LeadRecord, ?>> fieldMap = makeFieldMap();
   private final ConnectionSource connectionSource;
   private @NonNull Connection connection;
 
   private static Map<LeadField, @NonNull TableField<LeadRecord, ?>> makeFieldMap() {
-    final EnumMap<LeadField, @NonNull TableField<LeadRecord, ?>> fieldMap = new EnumMap<>(LeadField.class);
-    fieldMap.put(LeadField.ID,       Lead.LEAD.ID);
-    fieldMap.put(LeadField.Company,   Lead.LEAD.COMPANY);
-    fieldMap.put(LeadField.ContactName, Lead.LEAD.CONTACT_NAME);
-    fieldMap.put(LeadField.Client, Lead.LEAD.CLIENT);
-    fieldMap.put(LeadField.DicePosn, Lead.LEAD.DICE_POSN);
-    fieldMap.put(LeadField.DiceID, Lead.LEAD.DICE_ID);
-    fieldMap.put(LeadField.EMail, Lead.LEAD.EMAIL);
-    fieldMap.put(LeadField.Phone1, Lead.LEAD.PHONE1);
-    fieldMap.put(LeadField.Phone2, Lead.LEAD.PHONE2);
-    fieldMap.put(LeadField.Phone3, Lead.LEAD.PHONE3);
-    fieldMap.put(LeadField.Fax, Lead.LEAD.FAX);
-    fieldMap.put(LeadField.WebSite, Lead.LEAD.WEBSITE);
-    fieldMap.put(LeadField.Skype, Lead.LEAD.SKYPE);
-    fieldMap.put(LeadField.Description, Lead.LEAD.DESCRIPTION);
-    fieldMap.put(LeadField.History, Lead.LEAD.HISTORY);
-    fieldMap.put(LeadField.CreatedOn, Lead.LEAD.CREATED_ON);
+    final EnumMap<LeadField, @NonNull TableField<LeadRecord, ?>> fldMap = new EnumMap<>(LeadField.class);
+    fldMap.put(LeadField.ID,       Lead.LEAD.ID);
+    fldMap.put(LeadField.Company,   Lead.LEAD.COMPANY);
+    fldMap.put(LeadField.ContactName, Lead.LEAD.CONTACT_NAME);
+    fldMap.put(LeadField.Client, Lead.LEAD.CLIENT);
+    fldMap.put(LeadField.DicePosn, Lead.LEAD.DICE_POSN);
+    fldMap.put(LeadField.DiceID, Lead.LEAD.DICE_ID);
+    fldMap.put(LeadField.EMail, Lead.LEAD.EMAIL);
+    fldMap.put(LeadField.Phone1, Lead.LEAD.PHONE1);
+    fldMap.put(LeadField.Phone2, Lead.LEAD.PHONE2);
+    fldMap.put(LeadField.Phone3, Lead.LEAD.PHONE3);
+    fldMap.put(LeadField.Fax, Lead.LEAD.FAX);
+    fldMap.put(LeadField.WebSite, Lead.LEAD.WEBSITE);
+    fldMap.put(LeadField.Skype, Lead.LEAD.SKYPE);
+    fldMap.put(LeadField.Description, Lead.LEAD.DESCRIPTION);
+    fldMap.put(LeadField.History, Lead.LEAD.HISTORY);
+    fldMap.put(LeadField.CreatedOn, Lead.LEAD.CREATED_ON);
     for (LeadField leadField: LeadField.values()) {
-      if (leadField.isField() && !fieldMap.containsKey(leadField)) {
+      if (leadField.isField() && !fldMap.containsKey(leadField)) {
         throw new IllegalStateException("Missing Field in FieldMap: " + leadField);
       }
     }
-    return fieldMap;
+    return Collections.unmodifiableMap(fldMap);
   }
 
   // If you change the CREATE statement, you need to change it two other places. First, you should change the comment
@@ -100,25 +101,26 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
   // in a CONSTRAINT clause, a null id will throw an exception instead. In fact, even if I specify the collate noCase
   // constraints as named constraints, a null ID will still throw an exception.
   @SuppressWarnings("HardcodedLineSeparator")
-  private static final String CREATE_TABLE = 
-      "CREATE TABLE IF NOT EXISTS lead (\n" +
-          "  id             INTEGER      NOT NULL PRIMARY KEY AUTOINCREMENT,\n" +
-          "  company        VARCHAR(512) NOT NULL collate noCase,\n" +
-          "  contact_name   VARCHAR(512) NOT NULL collate noCase,\n" +
-          "  client         VARCHAR(512) NOT NULL collate noCase, \n" +
-          "  dice_posn      VARCHAR(512) NOT NULL collate noCase,\n" +
-          "  dice_id        VARCHAR(512) NOT NULL collate noCase,\n" +
-          "  email          VARCHAR(512) NOT NULL collate noCase,\n" +
-          "  phone1         VARCHAR(512) NOT NULL collate noCase,\n" +
-          "  phone2         VARCHAR(512) NOT NULL collate noCase,\n" +
-          "  phone3         VARCHAR(512) NOT NULL collate noCase,\n" +
-          "  fax            VARCHAR(512) NOT NULL collate noCase,\n" +
-          "  website        VARCHAR(512) NOT NULL collate noCase,\n" +
-          "  skype          VARCHAR(512) NOT NULL collate noCase,\n" +
-          "  description    VARCHAR      NOT NULL collate noCase,\n" +
-          "  history        VARCHAR      NOT NULL collate noCase,\n" +
-          "  created_on     DATETIME     NOT NULL DEFAULT (DATETIME('now'))\n" +
-          ");";
+  private static final String CREATE_TABLE =
+          """
+      CREATE TABLE IF NOT EXISTS lead (
+        id             INTEGER      NOT NULL PRIMARY KEY AUTOINCREMENT,
+        company        VARCHAR(512) NOT NULL collate noCase,
+        contact_name   VARCHAR(512) NOT NULL collate noCase,
+        client         VARCHAR(512) NOT NULL collate noCase,\s
+        dice_posn      VARCHAR(512) NOT NULL collate noCase,
+        dice_id        VARCHAR(512) NOT NULL collate noCase,
+        email          VARCHAR(512) NOT NULL collate noCase,
+        phone1         VARCHAR(512) NOT NULL collate noCase,
+        phone2         VARCHAR(512) NOT NULL collate noCase,
+        phone3         VARCHAR(512) NOT NULL collate noCase,
+        fax            VARCHAR(512) NOT NULL collate noCase,
+        website        VARCHAR(512) NOT NULL collate noCase,
+        skype          VARCHAR(512) NOT NULL collate noCase,
+        description    VARCHAR      NOT NULL collate noCase,
+        history        VARCHAR      NOT NULL collate noCase,
+        created_on     DATETIME     NOT NULL DEFAULT (DATETIME('now'))
+      );""";
   private static final char WC = '%';
   private DSLContext getDslContext() throws SQLException {
     assert connection != null;
@@ -186,9 +188,9 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
     return true;
   }
 
-  @NotNull
+
   @Override
-  public Collection<LeadRecord> getAll(final @Nullable LeadField orderBy) throws SQLException {
+  public @NotNull Collection<LeadRecord> getAll(final @Nullable LeadField orderBy) throws SQLException {
 
     DSLContext dslContext = getDslContext();
     try (SelectWhereStep<LeadRecord> LeadRecords = dslContext.selectFrom(LEAD)) {
@@ -206,9 +208,8 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
     }
   }
 
-  @NotNull
   @Override
-  public Collection<LeadRecord> find(@NotNull final String text, final @Nullable LeadField orderBy) throws SQLException {
+  public @NotNull Collection<LeadRecord> find(final @NotNull String text, final @Nullable LeadField orderBy) throws SQLException {
     final String wildCardText = wrapWithWildCards(text);
 
     DSLContext dslContext = getDslContext();
@@ -244,17 +245,17 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
    * @param orderBy The orderBy field
    * @return A Field{@literal <String>} to pass to the orderBy() method to support case insensitive ordering.
    */
-  private @NonNull TableField<LeadRecord, ?> getField(final LeadField orderBy) {
-    return Objects.requireNonNull(fieldMap.get(orderBy));
+  @SuppressWarnings({"argument", "return"})
+  private @NonNull TableField<LeadRecord, ?> getField(final @NonNull LeadField orderBy) {
+    return fieldMap.get(orderBy);
   }
 
   private @NonNull String wrapWithWildCards(final String text) {
     return WC + text + WC;
   }
 
-  @NotNull
   @Override
-  public Collection<LeadRecord> findAny(final @Nullable LeadField orderBy, final String... text) throws SQLException {
+  public @NotNull Collection<LeadRecord> findAny(final @Nullable LeadField orderBy, final String... text) throws SQLException {
 
     DSLContext dslContext = getDslContext();
     Condition condition = LEAD.COMPANY.lt(""); // Should always be false
@@ -283,9 +284,8 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
     }
   }
 
-  @NotNull
   @Override
-  public Collection<LeadRecord> findAll(final @Nullable LeadField orderBy, final String... text) throws SQLException {
+  public @NotNull Collection<LeadRecord> findAll(final @Nullable LeadField orderBy, final String... text) throws SQLException {
 
     DSLContext dslContext = getDslContext();
     Condition condition = LEAD.COMPANY.ge(""); // Should always be true
@@ -312,10 +312,9 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
     }
   }
 
-  @NotNull
   @Override
-  public Collection<LeadRecord> findInField(
-      @NotNull final String text,
+  public @NotNull Collection<LeadRecord> findInField(
+      final @NotNull String text,
       final @NonNull LeadField findBy,
       final @Nullable LeadField orderBy
   ) throws SQLException {
@@ -323,7 +322,8 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
 
     DSLContext dslContext = getDslContext();
 
-    final @NonNull TableField<LeadRecord, ?> findByField = Objects.requireNonNull(fieldMap.get(findBy));
+    @SuppressWarnings({"argument", "assignment"})
+    final @NonNull TableField<LeadRecord, ?> findByField = fieldMap.get(findBy);
     try (
         final SelectWhereStep<LeadRecord> leadRecords = dslContext.selectFrom(LEAD);
         final SelectConditionStep<LeadRecord> where = leadRecords.where((findByField.like(wildCardText)))
@@ -336,12 +336,12 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
     }
   }
 
-  @NotNull
   @Override
-  public Collection<LeadRecord> findAnyInField(final @NonNull LeadField findBy, final @Nullable LeadField orderBy, final String... text) throws SQLException {
+  public @NotNull Collection<LeadRecord> findAnyInField(final @NonNull LeadField findBy, final @Nullable LeadField orderBy, final String... text) throws SQLException {
     DSLContext dslContext = getDslContext();
 
-    final @NonNull TableField<LeadRecord, ?> findByField = Objects.requireNonNull(fieldMap.get(findBy));
+    @SuppressWarnings({"argument", "assignment"})
+    final @NonNull TableField<LeadRecord, ?> findByField = fieldMap.get(findBy);
     Condition condition = LEAD.COMPANY.lt(""); // Should always be false
     try (SelectWhereStep<LeadRecord> leadRecords = dslContext.selectFrom(LEAD)) {
       for (String txt : text) {
@@ -352,13 +352,13 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
     }
   }
 
-  @NotNull
   @Override
-  public Collection<LeadRecord> findAllInField(final @NonNull LeadField findBy, final @Nullable LeadField orderBy, final String... text) throws SQLException {
+  public @NotNull Collection<LeadRecord> findAllInField(final @NonNull LeadField findBy, final @Nullable LeadField orderBy, final String... text) throws SQLException {
 
     DSLContext dslContext = getDslContext();
 
-    final @NonNull TableField<LeadRecord, ?> findByField = Objects.requireNonNull(fieldMap.get(findBy));
+    @SuppressWarnings({"argument", "assignment"})
+    final @NonNull TableField<LeadRecord, ?> findByField = fieldMap.get(findBy);
     Condition condition = LEAD.COMPANY.ge(""); // Should always be true
     try (SelectWhereStep<LeadRecord> leadRecords = dslContext.selectFrom(LEAD)) {
       for (String txt : text) {
@@ -399,7 +399,7 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, LeadField
   }
 
   @Override
-  @SuppressWarnings("argument.type.incompatible")
+  @SuppressWarnings("argument")
   public void insert(final LeadRecord entity) throws SQLException {
 
     DSLContext dslContext = getDslContext();

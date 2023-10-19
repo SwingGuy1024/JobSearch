@@ -15,7 +15,6 @@ import com.neptunedreams.framework.data.ConnectionSource;
 import com.neptunedreams.framework.data.DatabaseInfo;
 import com.neptunedreams.jobs.data.LeadField;
 import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
-import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,14 +29,14 @@ import static org.junit.Assert.*;
  * <p>Date: 11/27/17
  * <p>Time: 5:42 PM
  *
- * @author Miguel Mu\u00f1oz
+ * @author Miguel Muñoz
  */
 @SuppressWarnings({"HardCodedStringLiteral", "HardcodedLineSeparator", "MagicNumber"})
 public class SqLiteRecordDaoTest {
 
-  @SuppressWarnings("initialization.static.fields.uninitialized")
+  @SuppressWarnings("initialization.static.field.uninitialized")
   private static ConnectionSource connectionSource;
-  @SuppressWarnings("initialization.static.fields.uninitialized")
+  @SuppressWarnings("initialization.static.field.uninitialized")
   private static SQLiteRecordDao dao;
 
   @Before
@@ -95,7 +94,7 @@ public class SqLiteRecordDaoTest {
         .stream()
         .map(LeadRecord::getId)
         .collect(Collectors.toSet());
-    assertThat(set2, Matchers.hasItems(r1Id, r2Id));
+    assertThat(set2, hasItems(r1Id, r2Id));
 
     allRecords = dao.getAll(LeadField.Company);
     System.out.printf("getAll() returned %d records, expecting 2%n", allRecords.size());

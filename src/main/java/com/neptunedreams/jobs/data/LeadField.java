@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
  * <p>Date: 11/22/17
  * <p>Time: 5:18 PM
  *
- * @author Miguel Mu\u00f1oz
+ * @author Miguel Muñoz
  */
 //@SuppressWarnings("assignment.type.incompatible") // Not sure if this makes @KeyFor pointless
 public enum LeadField implements DisplayEnum, DBField {
@@ -46,9 +46,8 @@ public enum LeadField implements DisplayEnum, DBField {
     return isField;
   }
 
-  @NotNull
   @Override
-  public String getDisplay() {
+  public @NotNull String getDisplay() {
     return toString();
   }
 }

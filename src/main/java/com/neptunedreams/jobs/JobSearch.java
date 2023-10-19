@@ -13,6 +13,8 @@ import java.util.Objects;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
+
+import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import com.neptunedreams.framework.ErrorReport;
 import com.neptunedreams.framework.data.ConnectionSource;
 import com.neptunedreams.framework.data.Dao;
@@ -37,6 +39,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  *   -import Upon launching, if there is no data, import all data from the same .xml file that you previously exported. <br>
  * Neither of these options assumes long-term storage. They use serialization, so import should be done 
  * immediately after exporting and deleting the database.
+ * @author Miguel Muñoz
  */
 @SuppressWarnings("HardCodedStringLiteral")
 public final class JobSearch extends JPanel
@@ -96,11 +99,11 @@ public final class JobSearch extends JPanel
 //  private static final String DERBY_SYSTEM_HOME = "derby.system.home";
 //  private Connection connection;
   
-  private RecordUI<LeadRecord> mainPanel;
+  private final RecordUI<@NonNull LeadRecord> mainPanel;
   //    org.jooq.util.JavaGenerator generator;
-  private static JFrame frame = new JFrame("Job Hunt");
+  private static final JFrame frame = new JFrame("Job Hunt");
   private final @NonNull DatabaseInfo info;
-  private final @NonNull RecordController<LeadRecord, Integer, LeadField> controller;
+  private final @NonNull RecordController<LeadRecord, Integer, @NonNull LeadField> controller;
 
   /**
    * Launch the App!
@@ -108,6 +111,7 @@ public final class JobSearch extends JPanel
    */
   public static void main(String[] args) { //throws IOException, ClassNotFoundException {
     Thread.setDefaultUncaughtExceptionHandler((t, e) -> ErrorReport.reportException("Unknown", e));
+    FlatMacDarkLaf.setup();
 
     //noinspection ErrorNotRethrown
     try {
@@ -159,9 +163,10 @@ public final class JobSearch extends JPanel
     try {
       info.init();
       final ConnectionSource connectionSource = info.getConnectionSource();
-      Dao<LeadRecord, Integer, LeadField> dao = info.getDao(LeadRecord.class, connectionSource);
+      Dao<LeadRecord, Integer, @NonNull LeadField> dao = info.getDao(LeadRecord.class, connectionSource);
       LeadRecord dummyRecord = new LeadRecord(0, "", "", "", "", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()));
-      final RecordView<LeadRecord> view = new RecordView.Builder<>(dummyRecord, LeadField.CreatedOn)
+      @SuppressWarnings("contracts.precondition")
+      final RecordView<@NonNull LeadRecord> view = new RecordView.Builder<>(dummyRecord, LeadField.CreatedOn)
           .id      (LeadRecord::getId,       LeadRecord::setId)
           .company  (LeadRecord::getCompany,   LeadRecord::setCompany)
           .contactName(LeadRecord::getContactName, LeadRecord::setContactName)
@@ -183,7 +188,7 @@ public final class JobSearch extends JPanel
           .build();
       controller = view.getController();
       final RecordModel<LeadRecord> model = controller.getModel();
-      mainPanel = new RecordUI<>(model, view, controller, view.getEditModel()); // RecordUI launches the initial search
+      mainPanel = RecordUI.createRecordUI(model, view, controller, view.getEditModel()); // RecordUI launches the initial search
 
       if ((model.getSize() == 1) && (model.getRecordAt(0).getId() == 0) && doImport) {
         importFromFile(dao, controller); // throws ClassNotFoundException
@@ -226,8 +231,8 @@ public final class JobSearch extends JPanel
 
   @SuppressWarnings("OverlyBroadThrowsClause")
   private static void importFromFile(
-      final Dao<@NonNull LeadRecord, Integer, LeadField> dao, 
-      RecordController<@NonNull LeadRecord, Integer, LeadField> controller)
+      final Dao<@NonNull LeadRecord, Integer, @NonNull LeadField> dao, 
+      RecordController<@NonNull LeadRecord, Integer, @NonNull LeadField> controller)
       throws SQLException, IOException, ClassNotFoundException {
     // noinspection StringConcatenation
     String exportPath = System.getProperty("user.home") + EXPORT_FILE;

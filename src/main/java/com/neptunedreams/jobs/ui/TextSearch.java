@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
  * <p>Time: 4:47 PM
  * TODO: Finish this class and integrate it.
  *
- * @author Miguel Mu\u00f1oz
+ * @author Miguel Muñoz
  */
 public final class TextSearch implements Iterable<String> {
   private final List<JTextComponent> componentList;
@@ -29,11 +29,11 @@ public final class TextSearch implements Iterable<String> {
     componentList = components;
   }
   
-  @NotNull
+
   @Override
-  public Iterator<String> iterator() {
+  public @NotNull Iterator<String> iterator() {
     final Iterator<JTextComponent> componentIterator = componentList.iterator();
-    return new Iterator<String>() {
+    return new Iterator<>() {
       @Override
       public boolean hasNext() {
         return componentIterator.hasNext();
@@ -63,7 +63,7 @@ public final class TextSearch implements Iterable<String> {
     private final Iterator<String> iterator;
     private final String[] lowTargets;
 
-    private Map<String, Integer> searchWordPositionMap = new HashMap<>();
+    private final Map<String, Integer> searchWordPositionMap = new HashMap<>();
     SearchStatusInfo(Iterator<String> iterator, String... targets) {
       this.iterator = iterator;
       this.lowTargets = targets;

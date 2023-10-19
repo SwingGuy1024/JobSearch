@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
 import java.net.URL;
-import java.util.Objects;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -21,7 +20,7 @@ import com.neptunedreams.framework.ui.TangoUtils;
  * <p>Date: 10/29/17
  * <p>Time: 12:59 PM
  *
- * @author Miguel Mu\u00f1oz
+ * @author Miguel Muñoz
  */
 @SuppressWarnings("HardCodedStringLiteral")
 enum Resource {
@@ -67,7 +66,8 @@ enum Resource {
    * @return The loaded Icon
    */
   public static Icon getIcon(Resource resource) {
-    URL url = Objects.requireNonNull(Resource.class.getResource(resource.name));
+    URL url = Resource.class.getResource(resource.name);
+    @SuppressWarnings("argument")
     ImageIcon imageIcon = new ImageIcon(url);
     if (resource.delta != 0) {
       imageIcon = TangoUtils.shiftHue(imageIcon, resource.delta);
@@ -104,7 +104,8 @@ enum Resource {
     frame.add(display, BorderLayout.CENTER);
     String name = ARROW_LAST_PNG.name;
     for (int shift=80; shift< 112; shift++) {
-      ImageIcon icon = new ImageIcon(Objects.requireNonNull(Resource.class.getResource(name)));
+      @SuppressWarnings("argument")
+      ImageIcon icon = new ImageIcon(Resource.class.getResource(name));
       icon = TangoUtils.shiftHue(icon, shift);
       final JLabel comp = new JLabel(String.valueOf(shift), icon, SwingConstants.LEFT);
       JPanel panel = new JPanel(new BorderLayout());

@@ -26,7 +26,7 @@ import static org.jooq.SQLDialect.SQLITE;
  * <p>Date: 11/10/17
  * <p>Time: 11:31 PM
  *
- * @author Miguel Mu\u00f1oz
+ * @author Miguel Muñoz
  */
 @SuppressWarnings({"StringConcatenation", "HardCodedStringLiteral"})
 public class SQLiteInfo extends AbstractDatabaseInfo {
@@ -62,14 +62,14 @@ public class SQLiteInfo extends AbstractDatabaseInfo {
     return new SQLiteInfo("", ":memory:");
   }
 
-  @NotNull
+
   @Override
-  public String getUrl() {
+  public @NotNull String getUrl() {
     return "jdbc:sqlite:" + getHomeDir() + getHome();
   }
 
   @Override
-  public @UnknownKeyFor @NonNull @Initialized <T, PK, F extends DBField> Dao<T, PK, F> getDao(final @UnknownKeyFor @NonNull @Initialized Class<T> entityClass, final @UnknownKeyFor @NonNull @Initialized ConnectionSource source) {
+  public @UnknownKeyFor @NonNull @Initialized <T, PK, F extends @NonNull DBField> Dao<T, PK, F> getDao(final @UnknownKeyFor @NonNull @Initialized Class<T> entityClass, final @UnknownKeyFor @NonNull @Initialized ConnectionSource source) {
     //noinspection EqualityOperatorComparesObjects
     if (entityClass == RECORD_RECORD_CLASS) {
       //noinspection unchecked
@@ -78,9 +78,9 @@ public class SQLiteInfo extends AbstractDatabaseInfo {
     throw new IllegalArgumentException(String.valueOf(entityClass));
   }
 
-  @NotNull
+
   @Override
-  public Class<?> getRecordClass() {
+  public @NotNull Class<?> getRecordClass() {
     return RECORD_RECORD_CLASS;
   }
 

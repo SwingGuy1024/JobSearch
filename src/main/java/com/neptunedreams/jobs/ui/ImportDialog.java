@@ -12,21 +12,22 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
-import java.util.Objects;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+
 import com.neptunedreams.framework.data.Dao;
 import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
  * <p>Created by IntelliJ IDEA.
  * <p>Date: 11/3/17
  * <p>Time: 9:51 PM
  *
- * @author Miguel Mu\u00f1oz
+ * @author Miguel Muñoz
  */
 @SuppressWarnings({"HardCodedStringLiteral", "MagicCharacter", "HardcodedLineSeparator", "unused"})
 final class ImportDialog extends JDialog {
@@ -85,7 +86,9 @@ final class ImportDialog extends JDialog {
         } else {
           active = true;
           assert record != null;
-          putLine(line, Objects.requireNonNull(record));
+          @SuppressWarnings("assignment")
+          @NonNull LeadRecord nonNullRecord = record;
+          putLine(line, nonNullRecord);
         }
         line = reader.readLine();
       }

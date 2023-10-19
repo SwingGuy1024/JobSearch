@@ -72,9 +72,6 @@ import static com.neptunedreams.framework.ui.TangoUtils.*;
 import static com.neptunedreams.jobs.ui.Resource.*;
 import static com.neptunedreams.util.StringStuff.*;
 
-//import org.checkerframework.checker.initialization.qual.Initialized;
-//import org.checkerframework.checker.nullness.qual.NonNull;
-
 /**
  * <p>Created by IntelliJ IDEA.
  * <p>Date: 10/29/17
@@ -82,10 +79,10 @@ import static com.neptunedreams.util.StringStuff.*;
  * <p>The panel to show the value of each retrieved record. This is mostly display components and subsidiary ui
  * components, but not the main ui controls. It sits inside the RecordUI.
  *
- * @author Miguel Mu\u00f1oz
+ * @author Miguel Muñoz
  */
 @SuppressWarnings({"WeakerAccess", "HardCodedStringLiteral"})
-public final class RecordView<@NonNull R> extends JPanel implements RecordSelectionModel<R> {
+public final class RecordView<R extends @NonNull Object> extends JPanel implements RecordSelectionModel<R> {
   private static final int TEXT_COLUMNS = 20;
   private static final int TEXT_ROWS = 15;
   private static final int HISTORY_COLUMNS = 40;
@@ -99,8 +96,8 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   private R currentRecord;
   private final JToggleButton.ToggleButtonModel editModel = new JToggleButton.ToggleButtonModel();
 
-  private final RecordController<R, Integer, LeadField> controller;
-  private final List<? extends FieldBinding<R, ? extends Serializable, ? extends JComponent>> allBindings;
+  private final RecordController<R, Integer, @NonNull LeadField> controller;
+  private final List<? extends FieldBinding<R, ? extends Serializable, ? extends @NonNull JComponent>> allBindings;
   private final JTextComponent companyField;
   private final JTextArea historyField;
   private final JTextArea descriptionField;
@@ -112,8 +109,8 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   private final List<FieldBinding.EditableFieldBinding<R, ?, ?>> duplicateList; // For copying a record
 
   private RecordView(R record,
-                     LeadField initialSort,
-                     Dao<R, Integer, LeadField> dao,
+                     @NonNull LeadField initialSort,
+                     Dao<R, Integer, @NonNull LeadField> dao,
                      Supplier<R> recordConstructor,
                      Function<R, Integer> getIdFunction, BiConsumer<R, Integer> setIdFunction,
                      Function<R, String> getCompanyFunction, BiConsumer<R, String> setCompanyFunction,
@@ -192,7 +189,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
         historyField,
         descriptionField
     );
-    @SuppressWarnings("assignment.type.incompatible") // This makes no sense
+    @SuppressWarnings("assignment") // This makes no sense
     final JTextComponent[] components = componentList.toArray(EMPTY_TC_ARRAY);
     TangoUtils.installStandardCaret(components);
     duplicateList = Collections.unmodifiableList(Arrays.asList(
@@ -217,7 +214,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     Keystrokes.installKeystrokeAction(root, "previousFoundText", KeyEvent.VK_F3, KeyEvent.SHIFT_DOWN_MASK, this::goToPreviousHilight);
   }
 
-  @SuppressWarnings("method.invocation.invalid")
+  @SuppressWarnings("method.invocation")
   private JButton makeScanButton(@UnderInitialization RecordView<R>this) {
     JButton button = new JButton(getIcon(LEFT_CHEVRON));
     button.addActionListener(e -> scanForDiceInfo());
@@ -228,7 +225,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
   
   private void enableOnEditable(ItemEvent event, JButton button) {
 //    if (event.getStateChange() == ItemEvent.SELECTED) {
-    System.out.printf("Setting scan enabled to %s%n", isEditable()); // NON-NLS
+//    System.out.printf("Setting scan enabled to %s%n", isEditable()); // NON-NLS
       button.setEnabled(isEditable());
 //    }
   }
@@ -287,11 +284,11 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     return fieldAndHistoryPanel;
   }
 
-  @SuppressWarnings({"return.type.incompatible", "argument.type.incompatible"})
-  private @NonNull RecordController<R, Integer, LeadField> makeController(
+  @SuppressWarnings({"return.type.incompatible", "argument"})
+  private @NonNull RecordController<R, Integer, @NonNull LeadField> makeController(
       @UnderInitialization RecordView<R> this,
       final LeadField initialSort, 
-      final Dao<R, Integer, LeadField> dao, 
+      final Dao<R, Integer, @NonNull LeadField> dao, 
       final Supplier<R> recordConstructor,
       final Function<R, Integer> getIdFunction
   ) {
@@ -342,7 +339,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
    * Get the Controller
    * @return The RecordController
    */
-  public RecordController<R, Integer, LeadField> getController() { return controller; }
+  public RecordController<R, Integer, @NonNull LeadField> getController() { return controller; }
 
   /**
    * Adds a label, text field and sorting radio button to the labelPanel, fieldPanel, and checkBoxPanel for the specified database field.
@@ -436,7 +433,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
       orderBy.setSelected(true);
     }
     checkBoxPanel.add(orderBy);
-    @SuppressWarnings("method.invocation.invalid") // We are under initialization when we create this, not when calling
+    @SuppressWarnings("method.invocation") // We are under initialization when we create this, not when calling
         ItemListener checkBoxListener = (itemEvent) -> itemStateChanged(orderField, itemEvent);
     orderBy.addItemListener(checkBoxListener);
     return field;
@@ -470,7 +467,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
    * @return A JPanel containing the button with the arrow and copy buttons.
    */
   JComponent wrapField(@UnderInitialization RecordView<R> this, JComponent component, String label) {
-    if (!(component instanceof JTextField)) {
+    if (!(component instanceof JTextField field)) {
       Icon blankIcon = makeBlankIcon(getIcon(FORWARD_CHEVRON));
       JPanel panel = new JPanel(new BorderLayout());
       panel.add(new JLabel(blankIcon), BorderLayout.LINE_START);
@@ -484,7 +481,6 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     JPanel panel = new JPanel(new BorderLayout());
     panel.add(button, BorderLayout.LINE_START);
     panel.add(component, BorderLayout.CENTER);
-    JTextField field = (JTextField) component;
     button.addActionListener(e -> {
       field.setText(SelectionSpy.spy.getSelectedText());
       button.setEnabled(false);
@@ -556,7 +552,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     return false;
   }
 
-  @Override
+  @Override @NonNull
   public R getCurrentRecord() {
     return currentRecord;
   }
@@ -659,11 +655,11 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     return duplicateList;
   }
 
-  // If I don't suppress this warning, and initialize these values to null, I just get a assignment.type.incompatible
+  // If I don't suppress this warning, and initialize these values to null, I just get a "assignment"
   // warning instead, because I haven't declared these values Nullable. But if I do that, I'll get warnings when I 
   // build, because they're NonNull in the constructor. Not sure what's the best approach, but this works for now.
   @SuppressWarnings("JavaDoc")
-  public static class Builder<@NonNull RR> {
+  public static class Builder<RR extends @NonNull Object> {
     private final RR record;
     private final LeadField initialSort;
     private @Nullable Function<RR, Integer> getId;
@@ -697,7 +693,7 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     private @Nullable Function<RR, String> getHistory=null;
     private @Nullable BiConsumer<RR, String> setHistory=null;
     private @Nullable Function<RR, String> getCreatedOn=null;
-    private @Nullable Dao<RR, Integer, LeadField> dao=null;
+    private @Nullable Dao<RR, Integer, @NonNull LeadField> dao=null;
     private @Nullable Supplier<RR> recordConstructor=null;
 
     public Builder(RR record, LeadField initialSort) {
@@ -816,9 +812,9 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
       return this;
     }
 
-    @EnsuresNonNull("#1")
-    public Builder<RR> withDao(Dao<RR, Integer, LeadField> dao) {
-      this.dao = dao;
+    @EnsuresNonNull("dao")
+    public Builder<RR> withDao(Dao<RR, Integer, @NonNull LeadField> theDao) {
+      dao = theDao;
       return this;
     }
 
@@ -830,16 +826,16 @@ public final class RecordView<@NonNull R> extends JPanel implements RecordSelect
     
     // TODO: Make this work. The @RequiresNotNull annotation is supposed to fix the warning suppressed by the subsequent
     // annotation. I don't know why it doesn't work, but it may be a bug in the checker framework.
-    // I have tried to replace the us of @RequiresNotNull with @EnsuresNonNull, but it doesn't work here. In smaller
+    // I have tried to replace the use of @RequiresNotNull with @EnsuresNonNull, but it doesn't work here. In smaller
     // test cases, I've been able to get to work. It seems like a more robust (if more verbose) approach if it would
     // work.
 
-//      @RequiresNonNull({"dao", "recordConstructor", "getId", "setId", "getCompany", "setCompany", "getContactName", 
-//          "setContactName", "getClient", "setClient", "getDicePosn", "setDicePosn", "getDiceId", "setDiceId",
-//          "getEMail", "setEMail", "getPhone1", "setPhone1", "getPhone2", "setPhone2", "getPhone3", "setPhone3",
-//          "getFax", "setFax", "getWebSite", "setWebSite", "getSkype", "setSkype", "getDescription", "setDescription",
-//          "getHistory", "setHistory", "getCreatedOn"})
-    @SuppressWarnings("argument.type.incompatible")
+      @RequiresNonNull({"dao", "recordConstructor", "getId", "setId", "getCompany", "setCompany", "getContactName", 
+          "setContactName", "getClient", "setClient", "getDicePosn", "setDicePosn", "getDiceId", "setDiceId",
+          "getEMail", "setEMail", "getPhone1", "setPhone1", "getPhone2", "setPhone2", "getPhone3", "setPhone3",
+          "getFax", "setFax", "getWebSite", "setWebSite", "getSkype", "setSkype", "getDescription", "setDescription",
+          "getHistory", "setHistory", "getCreatedOn"})
+//    @SuppressWarnings("argument")
     public RecordView<RR> build() {
       final RecordView<RR> view = new RecordView<>(
           record,
