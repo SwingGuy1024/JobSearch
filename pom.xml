@@ -5,6 +5,9 @@
   <groupId>neptunedreams.com</groupId>
   <artifactId>job.search</artifactId>
   <version>0.2.19-SNAPSHOT</version>
+<!--  Due to a strange bug in the Maven Bundle plug-in, if a project.name element exists, it uses that as the -->
+<!--  name of the bundled application, instead of the value specified by CFBundleDisplayName in the plugin-->
+<!--  Configuration. -->
 <!--  <name>Job Search</name>-->
   <packaging>jar</packaging>
 
@@ -25,7 +28,6 @@
 	-->
 
   <properties>
-    <appName>Job Search</appName>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>17</maven.compiler.release>
 
@@ -34,9 +36,13 @@
     <annotatedJdk>${org.checkerframework:jdk8:jar}</annotatedJdk>
     <!--suppress UnresolvedMavenProperty -->
     <errorProneJavac>${com.google.errorprone:javac:jar}</errorProneJavac>
+    <jooqVersion>3.12.3</jooqVersion>
     <!-- Uncomment to use the Type Annotations compiler. -->
     <!--<typeAnnotationsJavac>${org.checkerframework:compiler:jar}</typeAnnotationsJavac> -->
-    <jooqVersion>3.12.3</jooqVersion>
+    
+    <iconFile>src/main/resources/binoculars.icns</iconFile>
+    <mainClass>com.neptunedreams.jobs.JobSearch</mainClass>
+    <appName>Job Search Prop</appName>
   </properties>
 
   <dependencies>
@@ -107,11 +113,11 @@
           <fork>true</fork>
           <source>17</source>
           <target>17</target>
-          <compilerArguments>
+<!--          <compilerArguments>-->
 <!--            <Xmaxerrs>10000</Xmaxerrs>-->
 <!--            <Xmaxwarns>10000</Xmaxwarns>-->
             <!--<AsuppressWarnings>uninitialized</AsuppressWarnings>-->
-          </compilerArguments>
+<!--          </compilerArguments>-->
           <!-- Reveals bugs in stubs. -->
           <showWarnings>true</showWarnings>
           <annotationProcessorPaths>
@@ -172,7 +178,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>com.neptunedreams.jobs.JobSearch</mainClass>
+              <mainClass>${mainClass}</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>
@@ -219,7 +225,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>com.neptunedreams.jobs.JobSearch</mainClass>
+              <mainClass>${mainClass}</mainClass>
             </manifest>
           </archive>
         </configuration>
@@ -234,14 +240,14 @@
         <version>1.20.0</version>
         <configuration>
           <plist>
+            <JVMMainClassName>${mainClass}</JVMMainClassName>
 
-            <CFBundleIconFile>src/main/resources/binoculars.icns</CFBundleIconFile>
-            <CFBundleDisplayName>Job Search</CFBundleDisplayName>
+            <CFBundleIconFile>${iconFile}</CFBundleIconFile>
+            <CFBundleDisplayName>${appName}</CFBundleDisplayName>
             <CFBundleDevelopmentRegion>English</CFBundleDevelopmentRegion>
-            <CFBundleURLTypes>
-              <string>msa</string>
-            </CFBundleURLTypes>
-            <JVMMainClassName>com.neptunedreams.jobs.JobSearch</JVMMainClassName>
+            <!--            <CFBundleURLTypes>-->
+            <!--              <string>msa</string>-->
+            <!--            </CFBundleURLTypes>-->
             <JVMVersion>17+</JVMVersion>
             <!--            <JVMRuntimePath>(unused)</JVMRuntimePath>-->
             <!--            <JVMOptions>-->
@@ -340,7 +346,7 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>1.4.0</version>
         <configuration>
-          <mainClass>com.neptunedreams.jobs.JobSearch</mainClass>
+          <mainClass>${mainClass}</mainClass>
           <cleanupDaemonThreads>false</cleanupDaemonThreads>
         </configuration>
       </plugin>
