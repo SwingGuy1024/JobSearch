@@ -14,7 +14,6 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
-import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import com.neptunedreams.framework.ErrorReport;
 import com.neptunedreams.framework.data.ConnectionSource;
 import com.neptunedreams.framework.data.Dao;
@@ -22,6 +21,7 @@ import com.neptunedreams.framework.data.DatabaseInfo;
 import com.neptunedreams.framework.data.RecordModel;
 import com.neptunedreams.framework.data.SearchOption;
 import com.neptunedreams.framework.ui.RecordController;
+import com.neptunedreams.framework.ui.TangoUtils;
 import com.neptunedreams.jobs.data.LeadField;
 import com.neptunedreams.jobs.data.sqlite.SQLiteInfo;
 import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
@@ -111,7 +111,7 @@ public final class JobSearch extends JPanel
    */
   public static void main(String[] args) { //throws IOException, ClassNotFoundException {
     Thread.setDefaultUncaughtExceptionHandler((t, e) -> ErrorReport.reportException("Unknown", e));
-    FlatMacDarkLaf.setup();
+    TangoUtils.installDarkLookAndFeel();
 
     //noinspection ErrorNotRethrown
     try {
@@ -234,7 +234,6 @@ public final class JobSearch extends JPanel
       final Dao<@NonNull LeadRecord, Integer, @NonNull LeadField> dao, 
       RecordController<@NonNull LeadRecord, Integer, @NonNull LeadField> controller)
       throws SQLException, IOException, ClassNotFoundException {
-    // noinspection StringConcatenation
     String exportPath = System.getProperty("user.home") + EXPORT_FILE;
     try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(exportPath))) {
       @SuppressWarnings("unchecked")

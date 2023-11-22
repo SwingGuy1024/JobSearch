@@ -12,14 +12,24 @@ package javax.swing;
   }
   
   public class JOptionPane {
-    public static void showMessageDialog(@Nullable Component parent,
-            Object message, String title, int messageType);
-    public static void showConfirmDialog(@Nullable Component parent, Object message, String title, int optType, int msgType);
+  public static void showMessageDialog(@Nullable Component parentComponent,
+          Object message, String title, int messageType)
+          throws HeadlessException;
+  public static void showConfirmDialog(@Nullable Component component, Object message, String title, int optType, int msgType);
   }
   
   public class JComponent extends Container {
     public void setBorder(@UnknownInitialization JComponent this, @Nullable Border border);
   }
+
+public class AbstractAction {
+  public AbstractAction(String name, @Nullable Icon icon);
+  static void setToolTipTextFromAction(JComponent c, @Nullable Action a);
+  static boolean hasSelectedKey(@Nullable Action a);
+  public void putValue(String key, @Nullable Object newValue);
+  public @Nullable Object[] getKeys();
+  protected void firePropertyChange(@Nullable String propertyName, @Nullable Object oldValue, @Nullable Object newValue);
+}
 
 package java.awt;
 

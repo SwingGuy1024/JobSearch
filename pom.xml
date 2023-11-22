@@ -4,7 +4,7 @@
 
   <groupId>neptunedreams.com</groupId>
   <artifactId>job.search</artifactId>
-  <version>0.2.19-SNAPSHOT</version>
+  <version>0.2.20-SNAPSHOT</version>
 <!--  Due to a strange bug in the Maven Bundle plug-in, if a project.name element exists, it uses that as the -->
 <!--  name of the bundled application, instead of the value specified by CFBundleDisplayName in the plugin-->
 <!--  Configuration. -->
@@ -49,7 +49,7 @@
 	  <dependency>
 		  <groupId>com.neptunedreams</groupId>
 		  <artifactId>tango</artifactId>
-      <version>2.0.21-SNAPSHOT</version>
+      <version>2.0.22-SNAPSHOT</version>
 	  </dependency>
 
     <dependency>
