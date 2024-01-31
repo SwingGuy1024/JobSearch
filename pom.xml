@@ -49,7 +49,7 @@
 	  <dependency>
 		  <groupId>com.neptunedreams</groupId>
 		  <artifactId>tango</artifactId>
-      <version>2.0.22-SNAPSHOT</version>
+      <version>2.0.23-SNAPSHOT</version>
 	  </dependency>
 
     <dependency>
@@ -243,6 +243,7 @@
             <JVMMainClassName>${mainClass}</JVMMainClassName>
 
             <CFBundleIconFile>${iconFile}</CFBundleIconFile>
+            <CFBundleName>Job Search</CFBundleName>
             <CFBundleDisplayName>${appName}</CFBundleDisplayName>
             <CFBundleDevelopmentRegion>English</CFBundleDevelopmentRegion>
             <!--            <CFBundleURLTypes>-->
