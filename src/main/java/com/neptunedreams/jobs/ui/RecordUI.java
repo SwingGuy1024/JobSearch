@@ -13,6 +13,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.SQLException;
 import java.time.ZonedDateTime;
@@ -20,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.swing.Box;
@@ -89,7 +91,7 @@ import static com.neptunedreams.framework.ui.TangoUtils.*;
  *
  * @author Miguel Muñoz
  */
-@SuppressWarnings({"HardCodedStringLiteral", "HardcodedLineSeparator", "NullableProblems"})
+@SuppressWarnings({"HardCodedStringLiteral", "HardcodedLineSeparator", "NullableProblems", "HardcodedFileSeparator"})
 public final class RecordUI<R extends @NonNull Object> extends JPanel implements RecordModelListener {
 
   // TODO:  The QueuedTask is terrific, but it doesn't belong in this class. It belongs in the Controller. That way,
@@ -177,7 +179,7 @@ public final class RecordUI<R extends @NonNull Object> extends JPanel implements
   public static <RR extends @NonNull Object> RecordUI<RR> createRecordUI(@NonNull RecordModel<RR> model, RecordView<RR> theView, RecordController<RR, Integer, LeadField> theController,
                                     JToggleButton.ToggleButtonModel editModel) {
     final RecordUI<RR> theRecordUI = new RecordUI<>(model, theView, theController, editModel);
-    theRecordUI.setup(theView);
+    theRecordUI.setup();
     return theRecordUI;
   }
   @SuppressWarnings({"method.invocation.invalid", "argument.type.incompatible"})
@@ -214,7 +216,7 @@ public final class RecordUI<R extends @NonNull Object> extends JPanel implements
     swipeView = SwipeView.wrap(recordView);
   }
 
-  private void setup(RecordView<R> theView) {
+  private void setup() {
     recordModel.addModelListener(this); // argument.type.incompatible checker error suppressed
     final JLayer<RecordView<R>> layer = wrapInLayer(swipeView);
     add(layer, BorderLayout.CENTER);
@@ -416,7 +418,23 @@ public final class RecordUI<R extends @NonNull Object> extends JPanel implements
   }
 
   private @NonNull JPanel makeJavaVersion() {
-    JLabel label = new JLabel("Java Version " + System.getProperty("java.version"));
+    Properties properties = new Properties();
+    final String resSource = "/pom.properties";
+    final InputStream inStream = getClass().getResourceAsStream(resSource);
+    if (inStream == null) {
+      throw new IllegalStateException(resSource);
+    }
+    try {
+      properties.load(inStream);
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+    final String javaVersion = "Java version " + System.getProperty("java.version");
+    final String appVersion = String.format("App: %s", properties.getProperty("revision"));
+    final String tango = properties.getProperty("tango.version");
+    @SuppressWarnings({"dereference.of.nullable", "MagicCharacter"})
+    final String tangoVersion = String.format("Tango: %s", tango.substring(0, tango.indexOf('-')));
+    final JLabel label = new JLabel(String.format("%s   •   %s   •   %s", javaVersion, appVersion, tangoVersion));
 //    label.setAlignmentX(1.0f);
     label.setHorizontalAlignment(SwingConstants.CENTER);
     final Font labelFont = label.getFont();
