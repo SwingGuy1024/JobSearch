@@ -44,6 +44,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 
 import com.google.common.eventbus.Subscribe;
 import com.neptunedreams.framework.ErrorReport;
@@ -502,7 +503,7 @@ public final class RecordUI<R extends @NonNull Object> extends JPanel implements
     //noinspection Convert2MethodRef
     last.addActionListener((e) -> sView.swipeLeft(() -> recordModel.goLast()));
     edit.setSelected(true); // lets me execute the listener immediately
-    edit.addItemListener(e -> sView.getLiveComponent().setEditable(edit.isSelected()));
+    edit.addItemListener(e -> handleEditClick(sView));
     edit.setSelected(false); // executes because the state changes
 //    @SuppressWarnings("method.invocation")
     final ActionListener exportToClipboard = e -> exportToClipboard();
@@ -514,6 +515,12 @@ public final class RecordUI<R extends @NonNull Object> extends JPanel implements
     setupActions(sView);
 
     return buttonPanel;
+  }
+  
+  private void handleEditClick(SwipeView<RecordView<R>> sView) {
+    JTextComponent info = SelectionSpy.getPriorFocusedTextComponent();
+    sView.getLiveComponent().setEditable(edit.isSelected());
+    SelectionSpy.restoreSelection(info);
   }
 
   private void sendRecordsToNewCopy() {
@@ -742,6 +749,7 @@ public final class RecordUI<R extends @NonNull Object> extends JPanel implements
         .append(exportField("Phone 3", record::getPhone3))
         .append(exportField("Fax", record::getFax))
         .append(exportField("Web Site", record::getWebsite))
+        .append(exportField("Linked In", record::getLinkedIn))
         .append(exportField("Skype", record::getSkype))
         .append(exportProse("\nDescription\n", record::getDescription))
         .append(exportProse("\nHistory\n", record::getHistory))

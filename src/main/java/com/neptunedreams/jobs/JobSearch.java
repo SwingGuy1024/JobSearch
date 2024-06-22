@@ -164,7 +164,7 @@ public final class JobSearch extends JPanel
       info.init();
       final ConnectionSource connectionSource = info.getConnectionSource();
       Dao<LeadRecord, Integer, @NonNull LeadField> dao = info.getDao(LeadRecord.class, connectionSource);
-      LeadRecord dummyRecord = new LeadRecord(0, "", "", "", "", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()));
+      LeadRecord dummyRecord = new LeadRecord(0, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()));
       @SuppressWarnings("contracts.precondition")
       final RecordView<@NonNull LeadRecord> view = new RecordView.Builder<>(dummyRecord, LeadField.CreatedOn)
           .id      (LeadRecord::getId,       LeadRecord::setId)
@@ -179,6 +179,7 @@ public final class JobSearch extends JPanel
           .phone3(LeadRecord::getPhone3, LeadRecord::setPhone3)
           .fax(LeadRecord::getFax, LeadRecord::setFax)
           .website(LeadRecord::getWebsite, LeadRecord::setWebsite)
+          .linkedIn(LeadRecord::getLinkedIn, LeadRecord::setLinkedIn)
           .skype(LeadRecord::getSkype, LeadRecord::setSkype)
           .description(LeadRecord::getDescription, LeadRecord::setDescription)
           .history(LeadRecord::getHistory, LeadRecord::setHistory)
@@ -247,7 +248,7 @@ public final class JobSearch extends JPanel
 
   @SuppressWarnings("unused")
   private LeadRecord recordConstructor(@UnderInitialization JobSearch this) {
-    return new LeadRecord(0, "", "", "", "", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()));
+    return new LeadRecord(0, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()));
   }
   
   private JPanel getPanel() { return mainPanel; }

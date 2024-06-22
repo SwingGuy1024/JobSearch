@@ -124,6 +124,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
                      Function<R, String> getPhone3Function, BiConsumer<R, String> setPhone3Function,
                      Function<R, String> getFaxFunction, BiConsumer<R, String> setFaxFunction,
                      Function<R, String> getWebSiteFunction, BiConsumer<R, String> setWebSiteFunction,
+                     Function<R, String> getLinkedInFunction, BiConsumer<R, String> setLinkedInFunction,
                      Function<R, String> getSkypeFunction, BiConsumer<R, String> setSkypeFunction,
                      Function<R, String> getDescriptionFunction, BiConsumer<R, String> setDescriptionFunction,
                      Function<R, String> getHistoryFunction, BiConsumer<R, String> setHistoryFunction,
@@ -144,6 +145,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
     final JTextComponent phone3Field = (JTextComponent) addFieldWithCopy("Phone 3", LeadField.Phone3, initialSort);
     final JTextComponent faxField = (JTextComponent) addFieldWithCopy("Fax", LeadField.Fax, initialSort);
     final JTextComponent webSiteField = (JTextComponent) addFieldWithCopy("Web Site", LeadField.WebSite, initialSort);
+    final JTextComponent linkedInField = (JTextComponent) addFieldWithCopy("Linked In", LeadField.LinkedIn, initialSort);
     final JTextComponent skypeField = (JTextComponent) addFieldWithCopy("Skype", LeadField.Skype, initialSort);
     final JLabel createdOnField = (JLabel) addFieldOnly("", false, LeadField.CreatedOn, initialSort);
     descriptionField = new JTextArea(TEXT_ROWS, TEXT_COLUMNS);
@@ -163,12 +165,13 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
     final FieldBinding.StringEditableBinding<R> phone3Binding = FieldBinding.bindEditableString(getPhone3Function, setPhone3Function, phone3Field);
     final FieldBinding.StringEditableBinding<R> faxBinding = FieldBinding.bindEditableString(getFaxFunction, setFaxFunction, faxField);
     final FieldBinding.StringEditableBinding<R> webSiteBinding = FieldBinding.bindEditableString(getWebSiteFunction, setWebSiteFunction, webSiteField);
+    final FieldBinding.StringEditableBinding<R> linkedInBinding = FieldBinding.bindEditableString(getLinkedInFunction, setLinkedInFunction, linkedInField);
     final FieldBinding.StringEditableBinding<R> skypeBinding = FieldBinding.bindEditableString(getSkypeFunction, setSkypeFunction, skypeField);
     final FieldBinding.StringEditableBinding<R> descriptionBinding = FieldBinding.bindEditableString(getDescriptionFunction, setDescriptionFunction, descriptionField);
     final FieldBinding.StringEditableBinding<R> historyBinding = FieldBinding.bindEditableString(getHistoryFunction, setHistoryFunction, historyField);
     final FieldBinding.StringBinding<R> createdOnBinding = FieldBinding.bindConstantString(getCreatedOnFunction, createdOnField);
     allBindings = Arrays.asList(idBinding, sourceBinding, contactNameBinding, clientBinding, dicePosnBinding, diceIdBinding, eMailBinding,
-        phone1Binding, phone2Binding, phone3Binding, faxBinding, webSiteBinding, skypeBinding, descriptionBinding, historyBinding, createdOnBinding);
+        phone1Binding, phone2Binding, phone3Binding, faxBinding, webSiteBinding, linkedInBinding, skypeBinding, descriptionBinding, historyBinding, createdOnBinding);
 
     @NonNull JPanel historyPanel = makeFieldAndHistoryPanel(makeFieldDisplayPanel(), historyField);
     add(historyPanel, BorderLayout.PAGE_START);
@@ -185,6 +188,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
         phone3Field,
         faxField,
         webSiteField,
+        linkedInField,
         skypeField,
         historyField,
         descriptionField
@@ -201,6 +205,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
         phone3Binding,
         faxBinding,
         webSiteBinding,
+        linkedInBinding,
         skypeBinding
     ));
     // start with empty list. 
@@ -686,6 +691,8 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
     private @Nullable BiConsumer<RR, String> setFax=null;
     private @Nullable Function<RR, String> getWebSite=null;
     private @Nullable BiConsumer<RR, String> setWebSite=null;
+    private @Nullable Function<RR, String> getLinkedIn=null;
+    private @Nullable BiConsumer<RR, String> setLinkedIn=null;
     private @Nullable Function<RR, String> getSkype=null;
     private @Nullable BiConsumer<RR, String> setSkype=null;
     private @Nullable Function<RR, String> getDescription=null;
@@ -785,6 +792,13 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
       return this;
     }
 
+    @EnsuresNonNull({"getLinkedIn", "setLinkedIn"})
+    public Builder<RR> linkedIn(Function<RR, String> getter, BiConsumer<RR, String> setter) {
+      getLinkedIn = getter;
+      setLinkedIn = setter;
+      return this;
+    }
+
     @EnsuresNonNull({"getSkype", "setSkype"})
     public Builder<RR> skype(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getSkype = getter;
@@ -833,7 +847,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
       @RequiresNonNull({"dao", "recordConstructor", "getId", "setId", "getCompany", "setCompany", "getContactName", 
           "setContactName", "getClient", "setClient", "getDicePosn", "setDicePosn", "getDiceId", "setDiceId",
           "getEMail", "setEMail", "getPhone1", "setPhone1", "getPhone2", "setPhone2", "getPhone3", "setPhone3",
-          "getFax", "setFax", "getWebSite", "setWebSite", "getSkype", "setSkype", "getDescription", "setDescription",
+          "getFax", "setFax", "getWebSite", "setWebSite", "getLinkedIn", "setLinkedIn", "getSkype", "setSkype", "getDescription", "setDescription",
           "getHistory", "setHistory", "getCreatedOn"})
 //    @SuppressWarnings("argument")
     public RecordView<RR> build() {
@@ -854,6 +868,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
           getPhone3, setPhone3,
           getFax, setFax,
           getWebSite, setWebSite,
+          getLinkedIn, setLinkedIn,
           getSkype, setSkype,
           getDescription, setDescription,
           getHistory, setHistory,

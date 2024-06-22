@@ -34,6 +34,7 @@ import static org.jooq.impl.DSL.*;
 
 /**
  * Create statement: 
+ * <pre>
  * CREATE TABLE IF NOT EXISTS lead (
  *   id             INTEGER      NOT NULL PRIMARY KEY AUTOINCREMENT,
  *   company        VARCHAR(512) NOT NULL collate noCase,
@@ -47,12 +48,21 @@ import static org.jooq.impl.DSL.*;
  *   phone3         VARCHAR(512) NOT NULL collate noCase,
  *   fax            VARCHAR(512) NOT NULL collate noCase,
  *   website        VARCHAR(512) NOT NULL collate noCase,
+ *   linked_in      VARCHAR(512) NOT NULL collate noCase,
  *   skype          VARCHAR(512) NOT NULL collate noCase,
  *   description    VARCHAR      NOT NULL collate noCase,
  *   history        VARCHAR      NOT NULL collate noCase,
  *   created_on     DATETIME     NOT NULL DEFAULT (DATETIME('now'))
  * );
- * 
+ * </pre>
+ * If you change the CREATE_TABLE statement, you need to change it two other places. First, you should change the
+ * comment at the beginning of this file. But more important, you should change it in src/main/sql/JobSearch.sql. Then
+ * you should delete the master source database at src/main/resources/sql/generateFromJobs.db and re-create it using
+ * the revised CREATE statement. (This database has no records. It is only used by the code generator.)
+ * Also, this statement specifies the primary key as a property, instead of as a constraint at the end of the 
+ * statement. This is necessary so a null id will cause the database to generate a new valid id. If it's specified
+ * in a CONSTRAINT clause, a null id will throw an exception instead. In fact, even if I specify the collate noCase
+ * constraints as named constraints, a null ID will still throw an exception.
  * <p>Created by IntelliJ IDEA.
  * <p>Date: 10/29/17
  * <p>Time: 1:03 AM
@@ -80,6 +90,7 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, @NonNull 
     fldMap.put(LeadField.Phone3, Lead.LEAD.PHONE3);
     fldMap.put(LeadField.Fax, Lead.LEAD.FAX);
     fldMap.put(LeadField.WebSite, Lead.LEAD.WEBSITE);
+    fldMap.put(LeadField.LinkedIn, Lead.LEAD.LINKED_IN);
     fldMap.put(LeadField.Skype, Lead.LEAD.SKYPE);
     fldMap.put(LeadField.Description, Lead.LEAD.DESCRIPTION);
     fldMap.put(LeadField.History, Lead.LEAD.HISTORY);
@@ -92,7 +103,7 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, @NonNull 
     return Collections.unmodifiableMap(fldMap);
   }
 
-  // If you change the CREATE statement, you need to change it two other places. First, you should change the comment
+  // If you change the CREATE_TABLE statement, you need to change it two other places. First, you should change the comment
   // at the beginning of this file. But more important, you should change it in src/main/sql/JobSearch.sql. Then you
   // should delete the master source database at src/main/resources/sql/generateFromJobs.db and re-create it using the
   // revised CREATE statement. (This database has no records. It is only used by the code generator.)
@@ -116,6 +127,7 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, @NonNull 
         phone3         VARCHAR(512) NOT NULL collate noCase,
         fax            VARCHAR(512) NOT NULL collate noCase,
         website        VARCHAR(512) NOT NULL collate noCase,
+        linked_in      VARCHAR(512) NOT NULL collate noCase,
         skype          VARCHAR(512) NOT NULL collate noCase,
         description    VARCHAR      NOT NULL collate noCase,
         history        VARCHAR      NOT NULL collate noCase,
@@ -228,6 +240,7 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, @NonNull 
           LEAD.PHONE3.like(wildCardText)).or(
           LEAD.FAX.like(wildCardText)).or(
           LEAD.WEBSITE.like(wildCardText)).or(
+          LEAD.LINKED_IN.like(wildCardText)).or(
           LEAD.SKYPE.like(wildCardText)).or(
           LEAD.DESCRIPTION.like(wildCardText)).or(
           LEAD.HISTORY.like(wildCardText));
@@ -276,6 +289,7 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, @NonNull 
             LEAD.PHONE3.like(wildCardText)).or(
             LEAD.FAX.like(wildCardText)).or(
             LEAD.WEBSITE.like(wildCardText)).or(
+            LEAD.LINKED_IN.like(wildCardText)).or(
             LEAD.SKYPE.like(wildCardText)).or(
             LEAD.DESCRIPTION.like(wildCardText)).or(
             LEAD.HISTORY.like(wildCardText));
@@ -304,6 +318,7 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, @NonNull 
                 LEAD.PHONE3.like(wildCardText)).or(
                 LEAD.FAX.like(wildCardText)).or(
                 LEAD.WEBSITE.like(wildCardText)).or(
+                LEAD.LINKED_IN.like(wildCardText)).or(
                 LEAD.SKYPE.like(wildCardText)).or(
                 LEAD.DESCRIPTION.like(wildCardText)).or(
                 LEAD.HISTORY.like(wildCardText)));

@@ -26,6 +26,7 @@ public enum LeadField implements DisplayEnum, DBField {
   Phone3,
   Fax,
   WebSite,
+  LinkedIn,
   Skype,
   Description,
   History,

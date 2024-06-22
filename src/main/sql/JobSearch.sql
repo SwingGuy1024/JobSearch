@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS lead
     phone3       VARCHAR(512) NOT NULL collate noCase,
     fax          VARCHAR(512) NOT NULL collate noCase,
     website      VARCHAR(512) NOT NULL collate noCase,
+    linked_in    VARCHAR(512) NOT NULL collate noCase,
     skype        VARCHAR(512) NOT NULL collate noCase,
     description  VARCHAR      NOT NULL collate noCase,
     history      VARCHAR      NOT NULL collate noCase,

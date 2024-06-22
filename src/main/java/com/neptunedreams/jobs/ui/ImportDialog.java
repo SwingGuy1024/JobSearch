@@ -134,7 +134,10 @@ final class ImportDialog extends JDialog {
       case "WebSite":
         record.setWebsite(fieldValue);
         break;
-      case "skype":
+      case "LinkedIn":
+        record.setLinkedIn(fieldValue);
+        break;
+      case "Skype":
         record.setSkype(fieldValue);
         break;
       case "Description":

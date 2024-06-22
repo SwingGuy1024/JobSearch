@@ -32,7 +32,7 @@
     <maven.compiler.release>17</maven.compiler.release>
 
     <!--  See https://maven.apache.org/maven-ci-friendly.html#Multi_Module_Setup  -->
-    <revision>1.0.1</revision>
+    <revision>1.0.2</revision>
     <changelist>-SNAPSHOT</changelist>
     <sha1/>
 
@@ -48,7 +48,7 @@
     <iconFile>src/main/resources/binoculars.icns</iconFile>
     <mainClass>com.neptunedreams.jobs.JobSearch</mainClass>
     <appName>Job Search Prop</appName>
-    <tango.version>2.0.25-SNAPSHOT</tango.version>
+    <tango.version>2.0.26-SNAPSHOT</tango.version>
   </properties>
 
   <dependencies>
