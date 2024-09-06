@@ -432,10 +432,10 @@ public final class RecordUI<R extends @NonNull Object> extends JPanel implements
     }
     final String javaVersion = "Java version " + System.getProperty("java.version");
     final String appVersion = String.format("App: %s", properties.getProperty("revision"));
-    final String tango = properties.getProperty("tango.version");
-    @SuppressWarnings({"dereference.of.nullable", "MagicCharacter"})
+    final String tango = properties.getProperty("tango.version", "(unknown)");
+    @SuppressWarnings("MagicCharacter")
     final String tangoVersion = String.format("Tango: %s", tango.substring(0, tango.indexOf('-')));
-    final JLabel label = new JLabel(String.format("%s   •   %s   •   %s", javaVersion, appVersion, tangoVersion));
+    final JLabel label = new JLabel(String.format("%s   ◆   %s   ◆   %s", javaVersion, appVersion, tangoVersion));
 //    label.setAlignmentX(1.0f);
     label.setHorizontalAlignment(SwingConstants.CENTER);
     final Font labelFont = label.getFont();
@@ -565,7 +565,7 @@ public final class RecordUI<R extends @NonNull Object> extends JPanel implements
 
   private void newHistoryEvent(String time) {
     recordView.getEditModel().setSelected(true); // make the card editable
-    String timeText = String.format("• %s%n", time);
+    String timeText = String.format("◆ %s%n", time);
     recordView.addHistoryEvent(timeText);
   }
 

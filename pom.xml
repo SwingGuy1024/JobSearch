@@ -32,7 +32,7 @@
     <maven.compiler.release>17</maven.compiler.release>
 
     <!--  See https://maven.apache.org/maven-ci-friendly.html#Multi_Module_Setup  -->
-    <revision>1.0.2</revision>
+    <revision>1.0.3</revision>
     <changelist>-SNAPSHOT</changelist>
     <sha1/>
 
@@ -55,8 +55,8 @@
 	  <dependency>
 		  <groupId>com.neptunedreams</groupId>
 		  <artifactId>tango</artifactId>
-      <version>${tango.version}</version>
-	  </dependency>
+        <version>${tango.version}</version>
+      </dependency>
 
     <dependency>
       <groupId>junit</groupId>
@@ -302,13 +302,13 @@
       <plugin>
 
         <!-- Specify the maven code generator plugin -->
-        <!-- Use org.jooq            for the Open Source Edition
-								 org.jooq.pro        for commercial editions, 
-								 org.jooq.pro-java-6 for commercial editions with Java 6 support,
-								 org.jooq.trial      for the free trial edition 
-							 
-						 Note: Only the Open Source Edition is hosted on Maven Central. 
-									 Import the others manually from your distribution -->
+        <!-- Use org.jooq        for the Open Source Edition
+             org.jooq.pro        for commercial editions, 
+             org.jooq.pro-java-6 for commercial editions with Java 6 support,
+             org.jooq.trial      for the free trial edition 
+
+             Note: Only the Open Source Edition is hosted on Maven Central. 
+             Import the others manually from your distribution -->
         <groupId>org.jooq</groupId>
         <artifactId>jooq-codegen-maven</artifactId>
         <version>${jooqVersion}</version>
