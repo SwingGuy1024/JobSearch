@@ -27,9 +27,7 @@ import com.neptunedreams.jobs.data.sqlite.SQLiteInfo;
 import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
 import com.neptunedreams.jobs.ui.RecordUI;
 import com.neptunedreams.jobs.ui.RecordView;
-import org.checkerframework.checker.initialization.qual.UnderInitialization;
-import org.checkerframework.checker.initialization.qual.UnknownInitialization;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * JobHunt Key Application
@@ -99,11 +97,11 @@ public final class JobSearch extends JPanel
 //  private static final String DERBY_SYSTEM_HOME = "derby.system.home";
 //  private Connection connection;
   
-  private final RecordUI<@NonNull LeadRecord> mainPanel;
+  private final RecordUI<@NotNull LeadRecord> mainPanel;
   //    org.jooq.util.JavaGenerator generator;
   private static final JFrame frame = new JFrame("Job Hunt");
-  private final @NonNull DatabaseInfo info;
-  private final @NonNull RecordController<LeadRecord, Integer, @NonNull LeadField> controller;
+  private final @NotNull DatabaseInfo info;
+  private final @NotNull RecordController<LeadRecord, Integer, @NotNull LeadField> controller;
 
   /**
    * Launch the App!
@@ -163,10 +161,9 @@ public final class JobSearch extends JPanel
     try {
       info.init();
       final ConnectionSource connectionSource = info.getConnectionSource();
-      Dao<LeadRecord, Integer, @NonNull LeadField> dao = info.getDao(LeadRecord.class, connectionSource);
+      Dao<LeadRecord, Integer, @NotNull LeadField> dao = info.getDao(LeadRecord.class, connectionSource);
       LeadRecord dummyRecord = new LeadRecord(0, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()));
-      @SuppressWarnings("contracts.precondition")
-      final RecordView<@NonNull LeadRecord> view = new RecordView.Builder<>(dummyRecord, LeadField.CreatedOn)
+      final RecordView<@NotNull LeadRecord> view = new RecordView.Builder<>(dummyRecord, LeadField.CreatedOn)
           .id      (LeadRecord::getId,       LeadRecord::setId)
           .company  (LeadRecord::getCompany,   LeadRecord::setCompany)
           .contactName(LeadRecord::getContactName, LeadRecord::setContactName)
@@ -232,13 +229,13 @@ public final class JobSearch extends JPanel
 
   @SuppressWarnings("OverlyBroadThrowsClause")
   private static void importFromFile(
-      final Dao<@NonNull LeadRecord, Integer, @NonNull LeadField> dao, 
-      RecordController<@NonNull LeadRecord, Integer, @NonNull LeadField> controller)
+      final Dao<@NotNull LeadRecord, Integer, @NotNull LeadField> dao, 
+      RecordController<@NotNull LeadRecord, Integer, @NotNull LeadField> controller)
       throws SQLException, IOException, ClassNotFoundException {
     String exportPath = System.getProperty("user.home") + EXPORT_FILE;
     try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(exportPath))) {
       @SuppressWarnings("unchecked")
-      RecordModel<@NonNull LeadRecord> model = (RecordModel<@NonNull LeadRecord>) objectInputStream.readObject();
+      RecordModel<@NotNull LeadRecord> model = (RecordModel<@NotNull LeadRecord>) objectInputStream.readObject();
       for (int ii=0; ii<model.getSize(); ++ii) {
         dao.insert(model.getRecordAt(ii));
       }
@@ -247,7 +244,7 @@ public final class JobSearch extends JPanel
   }
 
   @SuppressWarnings("unused")
-  private LeadRecord recordConstructor(@UnderInitialization JobSearch this) {
+  private LeadRecord recordConstructor() {
     return new LeadRecord(0, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()));
   }
   
@@ -286,7 +283,7 @@ public final class JobSearch extends JPanel
     };
   }
 
-  private void shutDownDatabase(@UnknownInitialization JobSearch this, DatabaseInfo dInfo) {
+  private void shutDownDatabase(DatabaseInfo dInfo) {
     dInfo.shutdown();
   }
 }

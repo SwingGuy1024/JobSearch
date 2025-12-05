@@ -31,12 +31,10 @@ import static org.junit.Assert.*;
  *
  * @author Miguel Muñoz
  */
-@SuppressWarnings({"HardCodedStringLiteral", "HardcodedLineSeparator", "MagicNumber"})
+@SuppressWarnings({"HardCodedStringLiteral", "HardcodedLineSeparator", "MagicNumber", "deprecation", "MissingJavadoc"})
 public class SqLiteRecordDaoTest {
 
-  @SuppressWarnings("initialization.static.field.uninitialized")
   private static ConnectionSource connectionSource;
-  @SuppressWarnings("initialization.static.field.uninitialized")
   private static SQLiteRecordDao dao;
 
   @Before
@@ -70,7 +68,7 @@ public class SqLiteRecordDaoTest {
 //    }
     LeadRecord record1 = new LeadRecord(0,"TestLeadAlpha", "testName", "testPw", "testDiceID\nNote line 2\nNoteLine 3", "", "", "", "", "", "", "", "", "", "", "", Timestamp.from(Instant.now()));
 //    LeadRecord record1 = createRecord("TestLeadAlpha", "testName", "testPw", "testDiceID\nNote line 2\nNoteLine 3");
-    //noinspection recompany,resource
+    //noinspection recompany
     assertFalse(connectionSource.getConnection().isClosed());
 
     Collection<LeadRecord> allRecords = showAllRecords(dao, 0);
@@ -172,7 +170,7 @@ public class SqLiteRecordDaoTest {
     System.err.println("testFindAny()");
     assert connectionSource != null;
     assert dao != null;
-    //noinspection recompany,resource
+    //noinspection recompany
     assertFalse(connectionSource.getConnection().isClosed());
     Collection<LeadRecord> allRecords = showAllRecords(dao, 0);
     assertEquals(0, allRecords.size());
@@ -420,7 +418,7 @@ public class SqLiteRecordDaoTest {
 
 
   @Test
-  @SuppressWarnings({"HardCodedStringLiteral", "unused"})
+  @SuppressWarnings("unused")
   public void testDao() throws SQLException {
     System.err.println("testDao");
     assert dao != null;

@@ -5,10 +5,7 @@
   <groupId>neptunedreams.com</groupId>
   <artifactId>job.search</artifactId>
   <version>${revision}${sha1}${changelist}</version>
-<!--  Due to a strange bug in the Maven Bundle plug-in, if a project.name element exists, it uses that as the -->
-<!--  name of the bundled application, instead of the value specified by CFBundleDisplayName in the plugin-->
-<!--  Configuration. -->
-<!--  <name>Job Search</name>-->
+  <name>Job Search</name>
   <packaging>jar</packaging>
 
   <url>https://maven.apache.org</url>
@@ -20,35 +17,21 @@
     </developer>
   </developers>
 	
-	<!--
-	Note: The checker framework documentation says to include some references to a Google library called "errorProne."
-	It should be a dependency, have a property set to refer to it, and should have a compiler argument set.
-	However, if I do this, I break the build. The solution is to remove the compiler argument. That argument is this:
-	<arg>-J-Xbootclasspath/p:${errorProneJavac}</arg>
-	-->
-
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>17</maven.compiler.release>
 
     <!--  See https://maven.apache.org/maven-ci-friendly.html#Multi_Module_Setup  -->
-    <revision>1.0.3</revision>
+    <revision>1.0.4</revision>
     <changelist>-SNAPSHOT</changelist>
     <sha1/>
+    <jooqVersion>3.12.3</jooqVersion>
 
     <!-- These properties will be set by the Maven Dependency plugin -->
-    <!--suppress UnresolvedMavenProperty -->
-    <annotatedJdk>${org.checkerframework:jdk8:jar}</annotatedJdk>
-    <!--suppress UnresolvedMavenProperty -->
-    <errorProneJavac>${com.google.errorprone:javac:jar}</errorProneJavac>
-    <jooqVersion>3.12.3</jooqVersion>
-    <!-- Uncomment to use the Type Annotations compiler. -->
-    <!--<typeAnnotationsJavac>${org.checkerframework:compiler:jar}</typeAnnotationsJavac> -->
-    
     <iconFile>src/main/resources/binoculars.icns</iconFile>
     <mainClass>com.neptunedreams.jobs.JobSearch</mainClass>
     <appName>Job Search Prop</appName>
-    <tango.version>2.0.26-SNAPSHOT</tango.version>
+    <tango.version>3.0.0-SNAPSHOT</tango.version>
   </properties>
 
   <dependencies>
@@ -94,13 +77,6 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- Annotations from the Checker Framework: nullness, interning, locking, ... -->
-    <dependency>
-      <groupId>org.checkerframework</groupId>
-      <artifactId>checker-qual</artifactId>
-      <version>3.39.0</version>
-    </dependency>
-
     <dependency>
       <groupId>com.formdev</groupId>
       <artifactId>flatlaf</artifactId>
@@ -119,49 +95,8 @@
           <fork>true</fork>
           <source>17</source>
           <target>17</target>
-<!--          <compilerArguments>-->
-<!--            <Xmaxerrs>10000</Xmaxerrs>-->
-<!--            <Xmaxwarns>10000</Xmaxwarns>-->
-            <!--<AsuppressWarnings>uninitialized</AsuppressWarnings>-->
-<!--          </compilerArguments>-->
-          <!-- Reveals bugs in stubs. -->
           <showWarnings>true</showWarnings>
-          <annotationProcessorPaths>
-            <path>
-              <groupId>org.checkerframework</groupId>
-              <artifactId>checker</artifactId>
-              <version>3.39.0</version>
-            </path>
-          </annotationProcessorPaths>
-          <annotationProcessors>
-            <!-- Add all the checkers you want to enable here -->
-
-            <!-- Invoke the NullnessChecker at org.checkerframework.checker.nullness.NullnessChecker -->
-            <!-- There are probably other checkers we should invoke. -->
-            <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
-          </annotationProcessors>
-          <compilerArgs>
-            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
-            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
-            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
-            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
-            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
-            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
-            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
-            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
-            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
-
-            <!-- Optionally, -Awarns turns type-checking errors into warnings. -->
-<!--            <arg>-Awarns</arg>-->
-
-<!--            <arg>-Astubs=checkerframework/stubs</arg> &lt;!&ndash; Suggested by https://github.com/typetools/checker-framework/issues/445 &ndash;&gt;-->
-            <!--<arg>-AstubWarnIfNotFound</arg>-->
-            <arg>-Astubs=nullness-stub/</arg>
-            <arg>-AstubWarnIfNotFound</arg>
-          </compilerArgs>
         </configuration>
-        <!-- I don't know if I need this. -->
-<!--        <version>3.8.1</version>-->
       </plugin>
 
       <!--   See https://www.baeldung.com/java-accessing-maven-properties   -->
@@ -267,6 +202,8 @@
             <JVMMainClassName>${mainClass}</JVMMainClassName>
 
             <CFBundleIconFile>${iconFile}</CFBundleIconFile>
+            <!-- I think the app is supposed to be named for the value of CFBundleDisplayName, but this plugin-->
+            <!--uses CFBundleName.-->
             <CFBundleName>Job Search</CFBundleName>
             <CFBundleDisplayName>${appName}</CFBundleDisplayName>
             <CFBundleDevelopmentRegion>English</CFBundleDevelopmentRegion>

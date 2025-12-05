@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
 import java.net.URL;
+import java.util.Objects;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -14,6 +15,7 @@ import javax.swing.JRadioButton;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 import com.neptunedreams.framework.ui.TangoUtils;
+import org.jetbrains.annotations.NonNls;
 
 /**
  * <p>Created by IntelliJ IDEA.
@@ -43,7 +45,7 @@ enum Resource {
   ;
 
   private static final int SHIFT = 93; // green to blue shift, for arrows.
-  private final String name;
+  private final @NonNls String name;
   private final int delta;
 
   Resource(String fileName) {
@@ -67,7 +69,9 @@ enum Resource {
    */
   public static Icon getIcon(Resource resource) {
     URL url = Resource.class.getResource(resource.name);
-    @SuppressWarnings("argument")
+    if (url == null) {
+      throw new IllegalArgumentException("Resource " + resource.name + " not found");
+    }
     ImageIcon imageIcon = new ImageIcon(url);
     if (resource.delta != 0) {
       imageIcon = TangoUtils.shiftHue(imageIcon, resource.delta);
@@ -104,8 +108,9 @@ enum Resource {
     frame.add(display, BorderLayout.CENTER);
     String name = ARROW_LAST_PNG.name;
     for (int shift=80; shift< 112; shift++) {
-      @SuppressWarnings("argument")
-      ImageIcon icon = new ImageIcon(Resource.class.getResource(name));
+      final URL resource = Resource.class.getResource(name);
+      Objects.requireNonNull(resource);
+      ImageIcon icon = new ImageIcon(resource);
       icon = TangoUtils.shiftHue(icon, shift);
       final JLabel comp = new JLabel(String.valueOf(shift), icon, SwingConstants.LEFT);
       JPanel panel = new JPanel(new BorderLayout());

@@ -93,9 +93,9 @@ public class DerbyRecordDaoTest {
 //    //noinspection HardcodedLineSeparator
 //    Record record1b = new Record("TestSite a", "testName a", "testPw a", "testNotes\nNote line 2\nNoteLine 3");
 //    dao.insert(record1b);
-//    Collection<@NonNull ?> tInfo = dao.getTableInfo();
+//    Collection<@NotNull ?> tInfo = dao.getTableInfo();
 //    System.out.printf("Total of %d objects%n", tInfo.size());
-//    for (@NonNull Object o : tInfo) {
+//    for (@NotNull Object o : tInfo) {
 //      System.out.println(o);
 //    }
 //  }

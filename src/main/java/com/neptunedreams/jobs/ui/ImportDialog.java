@@ -20,7 +20,7 @@ import javax.swing.JTextArea;
 
 import com.neptunedreams.framework.data.Dao;
 import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * <p>Created by IntelliJ IDEA.
@@ -39,7 +39,7 @@ final class ImportDialog extends JDialog {
   }
 
   /**
-   * Used to import records from an another machine. Usually disabled.
+   * Used to import records from another machine. Usually disabled.
    * @param parent The parent window
    * @param dao The dao
    * @return an ImportDialog
@@ -81,13 +81,12 @@ final class ImportDialog extends JDialog {
             count++;
             recordDao.insert(record);
           }
-          record = new LeadRecord(); // Always creates a record the first time through. So record is never null afterwards.
+          record = new LeadRecord(); // Always creates a record the first time through. So record is never null afterward.
           active = false;
         } else {
           active = true;
           assert record != null;
-          @SuppressWarnings("assignment")
-          @NonNull LeadRecord nonNullRecord = record;
+          @NotNull LeadRecord nonNullRecord = record;
           putLine(line, nonNullRecord);
         }
         line = reader.readLine();

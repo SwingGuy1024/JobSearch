@@ -10,9 +10,6 @@ import com.neptunedreams.framework.data.DBField;
 import com.neptunedreams.framework.data.Dao;
 import com.neptunedreams.jobs.gen.DefaultSchema;
 import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
-import org.checkerframework.checker.initialization.qual.Initialized;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.DSLContext;
 import org.jooq.Query;
@@ -69,7 +66,10 @@ public class SQLiteInfo extends AbstractDatabaseInfo {
   }
 
   @Override
-  public @UnknownKeyFor @NonNull @Initialized <T, PK, F extends @NonNull DBField> Dao<T, PK, F> getDao(final @UnknownKeyFor @NonNull @Initialized Class<T> entityClass, final @UnknownKeyFor @NonNull @Initialized ConnectionSource source) {
+  public @NotNull <T, PK, F extends @NotNull DBField> Dao<T, PK, F> getDao(
+      final @NotNull Class<T> entityClass,
+      final @NotNull ConnectionSource source
+  ) {
     //noinspection EqualityOperatorComparesObjects
     if (entityClass == RECORD_RECORD_CLASS) {
       //noinspection unchecked
@@ -91,7 +91,7 @@ public class SQLiteInfo extends AbstractDatabaseInfo {
   @Override
   public void init() throws IOException, SQLException {
     // For an inMemory database, home will be empty.
-    @UnknownKeyFor @Initialized String home = getHomeDir();
+    String home = getHomeDir();
     if (!home.isEmpty()) {
       File homeDir = new File(home);
       File databaseFile = new File(homeDir, getHome());
@@ -118,7 +118,6 @@ public class SQLiteInfo extends AbstractDatabaseInfo {
   @SuppressWarnings("UseOfSystemOutOrSystemErr")
   @Override
   public void createSchema() {
-    //noinspection resource
     DSLContext dslContext = DSL.using(getConnectionSource().getConnection(), SQLITE);
     System.out.printf("DSLContext of %s%n", dslContext.getClass());
     DefaultSchema schema = DefaultSchema.DEFAULT_SCHEMA;

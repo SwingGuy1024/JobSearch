@@ -13,9 +13,8 @@ import com.neptunedreams.jobs.data.LeadField;
 import com.neptunedreams.jobs.gen.Tables;
 import com.neptunedreams.jobs.gen.tables.Lead;
 import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
@@ -70,14 +69,14 @@ import static org.jooq.impl.DSL.*;
  * @author Miguel Muñoz
  */
 @SuppressWarnings("StringConcatenation")
-public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, @NonNull LeadField> {
+public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, @NotNull LeadField> {
 
-  private static final Map<LeadField, @NonNull TableField<LeadRecord, ?>> fieldMap = makeFieldMap();
+  private static final Map<LeadField, @NotNull TableField<LeadRecord, ?>> fieldMap = makeFieldMap();
   private final ConnectionSource connectionSource;
-  private @NonNull Connection connection;
+  private @NotNull Connection connection;
 
-  private static Map<LeadField, @NonNull TableField<LeadRecord, ?>> makeFieldMap() {
-    final EnumMap<LeadField, @NonNull TableField<LeadRecord, ?>> fldMap = new EnumMap<>(LeadField.class);
+  private static Map<LeadField, @NotNull TableField<LeadRecord, ?>> makeFieldMap() {
+    final EnumMap<LeadField, @NotNull TableField<LeadRecord, ?>> fldMap = new EnumMap<>(LeadField.class);
     fldMap.put(LeadField.ID,       Lead.LEAD.ID);
     fldMap.put(LeadField.Company,   Lead.LEAD.COMPANY);
     fldMap.put(LeadField.ContactName, Lead.LEAD.CONTACT_NAME);
@@ -111,7 +110,6 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, @NonNull 
   // statement. This is necessary so a null id will cause the database to generate a new valid id. If it's specified
   // in a CONSTRAINT clause, a null id will throw an exception instead. In fact, even if I specify the collate noCase
   // constraints as named constraints, a null ID will still throw an exception.
-  @SuppressWarnings("HardcodedLineSeparator")
   private static final String CREATE_TABLE =
           """
       CREATE TABLE IF NOT EXISTS lead (
@@ -157,6 +155,11 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, @NonNull 
     return this;
   }
 
+  /**
+   * Create a new SQLiteRecordDao from a ConnectionSource.
+   * @param source The ConnectionSource
+   * @return the SQLiteRecordDao
+   */
   static SQLiteRecordDao create(ConnectionSource source) {
     return new SQLiteRecordDao(source).launch();
   }
@@ -186,7 +189,7 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, @NonNull 
 //    }
     
     // Here's what fails when I try to use jOOQ to create my table:
-    // 1. The created table does not have collate noCase for each text field. This means my sorting will be
+    // 1. The created table does not have "collate noCase" for each text field. This means my sorting will be
     //    case-sensitive, which I hate.
     // 2. The create statement looks has the primary key specified as a constraint, rather than a property, like this:
     //       create table if not exists site (id integer NOT NULL, ... CONSTRAINT pk_site primary key(id));
@@ -214,7 +217,7 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, @NonNull 
     }
   }
 
-  private Collection<LeadRecord> getOrderedLeadRecords(final @NonNull LeadField orderBy, final SelectWhereStep<LeadRecord> LeadRecords) {
+  private Collection<LeadRecord> getOrderedLeadRecords(final @NotNull LeadField orderBy, final SelectWhereStep<LeadRecord> LeadRecords) {
     try (final SelectSeekStep1<LeadRecord, ?> foundRecords = LeadRecords.orderBy(getField(orderBy))) {
       return foundRecords.fetch();
     }
@@ -256,14 +259,13 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, @NonNull 
    * This used to cast to upper() before returning the field, to implement case-insensitive sorting. Now
    * this is done in the table definitions, this just extracts the right TableField from the fieldMap.
    * @param orderBy The orderBy field
-   * @return A Field{@literal <String>} to pass to the orderBy() method to support case insensitive ordering.
+   * @return A Field{@literal <String>} to pass to the orderBy() method to support case-insensitive ordering.
    */
-  @SuppressWarnings({"argument", "return"})
-  private @NonNull TableField<LeadRecord, ?> getField(final @NonNull LeadField orderBy) {
+  private @NotNull TableField<LeadRecord, ?> getField(final @NotNull LeadField orderBy) {
     return fieldMap.get(orderBy);
   }
 
-  private @NonNull String wrapWithWildCards(final String text) {
+  private @NotNull String wrapWithWildCards(final String text) {
     return WC + text + WC;
   }
 
@@ -330,15 +332,14 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, @NonNull 
   @Override
   public @NotNull Collection<LeadRecord> findInField(
       final @NotNull String text,
-      final @NonNull LeadField findBy,
+      final @NotNull LeadField findBy,
       final @Nullable LeadField orderBy
   ) throws SQLException {
     String wildCardText = wrapWithWildCards(text);
 
     DSLContext dslContext = getDslContext();
 
-    @SuppressWarnings({"argument", "assignment"})
-    final @NonNull TableField<LeadRecord, ?> findByField = fieldMap.get(findBy);
+    final @NotNull TableField<LeadRecord, ?> findByField = fieldMap.get(findBy);
     try (
         final SelectWhereStep<LeadRecord> leadRecords = dslContext.selectFrom(LEAD);
         final SelectConditionStep<LeadRecord> where = leadRecords.where((findByField.like(wildCardText)))
@@ -352,11 +353,10 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, @NonNull 
   }
 
   @Override
-  public @NotNull Collection<LeadRecord> findAnyInField(final @NonNull LeadField findBy, final @Nullable LeadField orderBy, final String... text) throws SQLException {
+  public @NotNull Collection<LeadRecord> findAnyInField(final @NotNull LeadField findBy, final @Nullable LeadField orderBy, final String... text) throws SQLException {
     DSLContext dslContext = getDslContext();
 
-    @SuppressWarnings({"argument", "assignment"})
-    final @NonNull TableField<LeadRecord, ?> findByField = fieldMap.get(findBy);
+    final @NotNull TableField<LeadRecord, ?> findByField = fieldMap.get(findBy);
     Condition condition = LEAD.COMPANY.lt(""); // Should always be false
     try (SelectWhereStep<LeadRecord> leadRecords = dslContext.selectFrom(LEAD)) {
       for (String txt : text) {
@@ -368,12 +368,11 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, @NonNull 
   }
 
   @Override
-  public @NotNull Collection<LeadRecord> findAllInField(final @NonNull LeadField findBy, final @Nullable LeadField orderBy, final String... text) throws SQLException {
+  public @NotNull Collection<LeadRecord> findAllInField(final @NotNull LeadField findBy, final @Nullable LeadField orderBy, final String... text) throws SQLException {
 
     DSLContext dslContext = getDslContext();
 
-    @SuppressWarnings({"argument", "assignment"})
-    final @NonNull TableField<LeadRecord, ?> findByField = fieldMap.get(findBy);
+    final @NotNull TableField<LeadRecord, ?> findByField = fieldMap.get(findBy);
     Condition condition = LEAD.COMPANY.ge(""); // Should always be true
     try (SelectWhereStep<LeadRecord> leadRecords = dslContext.selectFrom(LEAD)) {
       for (String txt : text) {
@@ -414,7 +413,6 @@ public final class SQLiteRecordDao implements Dao<LeadRecord, Integer, @NonNull 
   }
 
   @Override
-  @SuppressWarnings("argument")
   public void insert(final LeadRecord entity) throws SQLException {
 
     DSLContext dslContext = getDslContext();

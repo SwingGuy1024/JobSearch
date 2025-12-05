@@ -59,13 +59,9 @@ import com.neptunedreams.framework.ui.SwipeView;
 import com.neptunedreams.jobs.data.LeadField;
 import com.neptunedreams.jobs.gen.tables.records.LeadRecord;
 import com.neptunedreams.util.StringStuff;
-import org.checkerframework.checker.initialization.qual.Initialized;
-import org.checkerframework.checker.initialization.qual.UnderInitialization;
-import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.RequiresNonNull;
-import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static com.neptunedreams.framework.ui.FieldIterator.Direction.*;
 import static com.neptunedreams.framework.ui.TangoUtils.*;
@@ -81,8 +77,8 @@ import static com.neptunedreams.util.StringStuff.*;
  *
  * @author Miguel Muñoz
  */
-@SuppressWarnings({"WeakerAccess", "HardCodedStringLiteral"})
-public final class RecordView<R extends @NonNull Object> extends JPanel implements RecordSelectionModel<R> {
+@SuppressWarnings({"WeakerAccess", "HardCodedStringLiteral", "MissingJavadoc"})
+public final class RecordView<R extends @NotNull Object> extends JPanel implements RecordSelectionModel<R> {
   private static final int TEXT_COLUMNS = 20;
   private static final int TEXT_ROWS = 15;
   private static final int HISTORY_COLUMNS = 40;
@@ -96,8 +92,8 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
   private R currentRecord;
   private final JToggleButton.ToggleButtonModel editModel = new JToggleButton.ToggleButtonModel();
 
-  private final RecordController<R, Integer, @NonNull LeadField> controller;
-  private final List<? extends FieldBinding<R, ? extends Serializable, ? extends @NonNull JComponent>> allBindings;
+  private final RecordController<R, Integer, @NotNull LeadField> controller;
+  private final List<? extends FieldBinding<R, ? extends Serializable, ? extends @NotNull JComponent>> allBindings;
   private final JTextComponent companyField;
   private final JTextArea historyField;
   private final JTextArea descriptionField;
@@ -109,8 +105,8 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
   private final List<FieldBinding.EditableFieldBinding<R, ?, ?>> duplicateList; // For copying a record
 
   private RecordView(R record,
-                     @NonNull LeadField initialSort,
-                     Dao<R, Integer, @NonNull LeadField> dao,
+                     @NotNull LeadField initialSort,
+                     Dao<R, Integer, @NotNull LeadField> dao,
                      Supplier<R> recordConstructor,
                      Function<R, Integer> getIdFunction, BiConsumer<R, Integer> setIdFunction,
                      Function<R, String> getCompanyFunction, BiConsumer<R, String> setCompanyFunction,
@@ -173,7 +169,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
     allBindings = Arrays.asList(idBinding, sourceBinding, contactNameBinding, clientBinding, dicePosnBinding, diceIdBinding, eMailBinding,
         phone1Binding, phone2Binding, phone3Binding, faxBinding, webSiteBinding, linkedInBinding, skypeBinding, descriptionBinding, historyBinding, createdOnBinding);
 
-    @NonNull JPanel historyPanel = makeFieldAndHistoryPanel(makeFieldDisplayPanel(), historyField);
+    @NotNull JPanel historyPanel = makeFieldAndHistoryPanel(makeFieldDisplayPanel(), historyField);
     add(historyPanel, BorderLayout.PAGE_START);
 
     componentList = Arrays.asList(
@@ -193,7 +189,6 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
         historyField,
         descriptionField
     );
-    @SuppressWarnings("assignment") // This makes no sense
     final JTextComponent[] components = componentList.toArray(EMPTY_TC_ARRAY);
     TangoUtils.installStandardCaret(components);
     duplicateList = Collections.unmodifiableList(Arrays.asList(
@@ -214,28 +209,27 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
   }
 
   private void installIteratorActions() {
-    @UnknownKeyFor @Initialized JComponent root = Keystrokes.getLastAncestorOf(this);
+    JComponent root = Keystrokes.getLastAncestorOf(this);
     Keystrokes.installKeystrokeAction(root, "nextFoundText", KeyEvent.VK_F3, 0, this::goToNextHilight);
     Keystrokes.installKeystrokeAction(root, "previousFoundText", KeyEvent.VK_F3, KeyEvent.SHIFT_DOWN_MASK, this::goToPreviousHilight);
   }
 
-  @SuppressWarnings("method.invocation")
-  private JButton makeScanButton(@UnderInitialization RecordView<R>this) {
+  private JButton makeScanButton() {
     JButton button = new JButton(getIcon(LEFT_CHEVRON));
     button.addActionListener(e -> scanForDiceInfo());
     button.setFocusable(false);
-    editModel.addItemListener(i-> enableOnEditable(i, button));
+    editModel.addItemListener(i-> enableOnEditable(button));
     return button;
   }
   
-  private void enableOnEditable(ItemEvent event, JButton button) {
+  private void enableOnEditable(JButton button) {
 //    if (event.getStateChange() == ItemEvent.SELECTED) {
 //    System.out.printf("Setting scan enabled to %s%n", isEditable()); // NON-NLS
       button.setEnabled(isEditable());
 //    }
   }
 
-  private void scanForDiceInfo(@Initialized RecordView<R>this) {
+  private void scanForDiceInfo() {
     String description = emptyIfNull(descriptionField.getText());
     if (scanForDiceInfo(description)) { return; }
     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -245,7 +239,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
     } catch (UnsupportedFlavorException | IOException ignored) {}
   }
 
-  private boolean scanForDiceInfo(@Initialized RecordView<R> this, final String description) {
+  private boolean scanForDiceInfo(final String description) {
     String posnHead = "Position Id:";
     String idHead = "Dice Id:";
     String position = getNextWord(description, posnHead);
@@ -289,11 +283,10 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
     return fieldAndHistoryPanel;
   }
 
-  @SuppressWarnings({"return.type.incompatible", "argument"})
-  private @NonNull RecordController<R, Integer, @NonNull LeadField> makeController(
-      @UnderInitialization RecordView<R> this,
+  private @NotNull RecordController<R, Integer, @NotNull LeadField> makeController(
+      RecordView<R> this,
       final LeadField initialSort, 
-      final Dao<R, Integer, @NonNull LeadField> dao, 
+      final Dao<R, Integer, @NotNull LeadField> dao, 
       final Supplier<R> recordConstructor,
       final Function<R, Integer> getIdFunction
   ) {
@@ -328,8 +321,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
    *
    * @return The field display panel
    */
-  @RequiresNonNull({"labelPanel", "fieldPanel", "checkBoxPanel"})
-  private JPanel makeFieldDisplayPanel(@UnderInitialization RecordView<R> this) {
+  private JPanel makeFieldDisplayPanel() {
     JPanel topPanel = new JPanel(new BorderLayout());
     topPanel.add(labelPanel, BorderLayout.LINE_START);
     topPanel.add(fieldPanel, BorderLayout.CENTER);
@@ -344,7 +336,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
    * Get the Controller
    * @return The RecordController
    */
-  public RecordController<R, Integer, @NonNull LeadField> getController() { return controller; }
+  public RecordController<R, Integer, @NotNull LeadField> getController() { return controller; }
 
   /**
    * Adds a label, text field and sorting radio button to the labelPanel, fieldPanel, and checkBoxPanel for the specified database field.
@@ -359,7 +351,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
    */
 //  @RequiresNonNull({"labelPanel", "fieldPanel", "buttonGroup", "checkBoxPanel", "controller"})
   private JComponent addFieldOnly(
-      @UnderInitialization RecordView<R> this,
+      RecordView<R> this,
       final String labelText,
       final boolean editable,
       final LeadField orderField,
@@ -380,7 +372,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
    * editable.
    */
 //  @RequiresNonNull({"labelPanel", "fieldPanel", "buttonGroup", "checkBoxPanel", "controller"})
-  private JComponent addFieldWithCopy(@UnderInitialization RecordView<R>this, final String labelText, final LeadField orderField, LeadField initialSort) {
+  private JComponent addFieldWithCopy(final String labelText, final LeadField orderField, LeadField initialSort) {
     JButton copyButton = new JButton(getIcon(COPY));
 
     setNoBorder(copyButton);
@@ -415,7 +407,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
    * editable.
    */
 //  @RequiresNonNull({"labelPanel", "fieldPanel", "buttonGroup", "checkBoxPanel", "controller"})
-  private JComponent addField(@UnderInitialization RecordView<R>this, final String labelText, final boolean editable, final LeadField orderField, LeadField initialSort, @Nullable JComponent extraComponent) {
+  private JComponent addField(final String labelText, final boolean editable, final LeadField orderField, LeadField initialSort, @Nullable JComponent extraComponent) {
     JLabel label = new JLabel(String.format("%s:", labelText));
     labelPanel.add(label);
     JComponent field;
@@ -438,8 +430,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
       orderBy.setSelected(true);
     }
     checkBoxPanel.add(orderBy);
-    @SuppressWarnings("method.invocation") // We are under initialization when we create this, not when calling
-        ItemListener checkBoxListener = (itemEvent) -> itemStateChanged(orderField, itemEvent);
+    ItemListener checkBoxListener = (itemEvent) -> itemStateChanged(orderField, itemEvent);
     orderBy.addItemListener(checkBoxListener);
     return field;
   }
@@ -458,7 +449,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
    *
    * @param field The field
    */
-  private void copyFrom(@UnderInitialization RecordView<R> this, JTextField field) {
+  private void copyFrom(JTextField field) {
     String txt = field.getText();
     StringSelection stringSelection = new StringSelection(txt);
     Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, stringSelection);
@@ -471,7 +462,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
    * @param label a name for the button's field. Used to create a tool tip.
    * @return A JPanel containing the button with the arrow and copy buttons.
    */
-  JComponent wrapField(@UnderInitialization RecordView<R> this, JComponent component, String label) {
+  JComponent wrapField(JComponent component, String label) {
     if (!(component instanceof JTextField field)) {
       Icon blankIcon = makeBlankIcon(getIcon(FORWARD_CHEVRON));
       JPanel panel = new JPanel(new BorderLayout());
@@ -557,7 +548,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
     return false;
   }
 
-  @Override @NonNull
+  @Override @NotNull
   public R getCurrentRecord() {
     return currentRecord;
   }
@@ -580,6 +571,10 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
     }
   }
 
+  /**
+   * Responds to UserRequestedNewRecordEvent
+   * @param event the UserRequestedNewRecordEvent
+   */
   @Subscribe
   void userRequestedNewRecord(MasterEventBus.UserRequestedNewRecordEvent event) {
     companyField.requestFocus();
@@ -612,7 +607,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
   
   void hilightNextTerm(Direction direction, boolean termsChanged) {
     
-    @UnknownKeyFor @Initialized RecordModel<R> recordModel = getController().getModel();
+    RecordModel<R> recordModel = getController().getModel();
     LeadRecord foundRecord = (LeadRecord) recordModel.getFoundRecord();
     int id = foundRecord.getId();
     if (termsChanged) {
@@ -664,7 +659,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
   // warning instead, because I haven't declared these values Nullable. But if I do that, I'll get warnings when I 
   // build, because they're NonNull in the constructor. Not sure what's the best approach, but this works for now.
   @SuppressWarnings("JavaDoc")
-  public static class Builder<RR extends @NonNull Object> {
+  public static class Builder<RR extends @NotNull Object> {
     private final RR record;
     private final LeadField initialSort;
     private @Nullable Function<RR, Integer> getId;
@@ -700,7 +695,7 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
     private @Nullable Function<RR, String> getHistory=null;
     private @Nullable BiConsumer<RR, String> setHistory=null;
     private @Nullable Function<RR, String> getCreatedOn=null;
-    private @Nullable Dao<RR, Integer, @NonNull LeadField> dao=null;
+    private @Nullable Dao<RR, Integer, @NotNull LeadField> dao=null;
     private @Nullable Supplier<RR> recordConstructor=null;
 
     public Builder(RR record, LeadField initialSort) {
@@ -708,131 +703,112 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
       this.initialSort = initialSort;
     }
 
-    @EnsuresNonNull({"getId", "setId"})
-    public Builder<RR> id(@NonNull Function<RR, Integer> getter, @NonNull BiConsumer<RR, Integer> setter) {
+    public Builder<RR> id(@NotNull Function<RR, Integer> getter, @NotNull BiConsumer<RR, Integer> setter) {
       getId = getter;
       setId = setter;
       return this;
     }
 
-    @EnsuresNonNull({"getCompany", "setCompany"})
-    public Builder<RR> company(@NonNull Function<RR, String> getter, @NonNull BiConsumer<RR, String> setter) {
+    public Builder<RR> company(@NotNull Function<RR, String> getter, @NotNull BiConsumer<RR, String> setter) {
       getCompany = getter;
       setCompany = setter;
       return this;
     }
 
-    @EnsuresNonNull({"getContactName", "setContactName"})
     public Builder<RR> contactName(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getContactName = getter;
       setContactName = setter;
       return this;
     }
 
-    @EnsuresNonNull({"getClient", "setClient"})
     public Builder<RR> client(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getClient = getter;
       setClient = setter;
       return this;
     }
 
-    @EnsuresNonNull({"getDicePosn", "setDicePosn"})
     public Builder<RR> dicePosn(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getDicePosn = getter;
       setDicePosn = setter;
       return this;
     }
 
-    @EnsuresNonNull({"getDiceId", "setDiceId"})
     public Builder<RR> diceId(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getDiceId = getter;
       setDiceId = setter;
       return this;
     }
 
-    @EnsuresNonNull({"getEMail", "setEMail"})
     public Builder<RR> email(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getEMail = getter;
       setEMail = setter;
       return this;
     }
 
-    @EnsuresNonNull({"getPhone1", "setPhone1"})
     public Builder<RR> phone1(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getPhone1 = getter;
       setPhone1 = setter;
       return this;
     }
 
-    @EnsuresNonNull({"getPhone2", "setPhone2"})
     public Builder<RR> phone2(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getPhone2 = getter;
       setPhone2 = setter;
       return this;
     }
 
-    @EnsuresNonNull({"getPhone3", "setPhone3"})
     public Builder<RR> phone3(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getPhone3 = getter;
       setPhone3 = setter;
       return this;
     }
 
-    @EnsuresNonNull({"getFax", "setFax"})
     public Builder<RR> fax(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getFax = getter;
       setFax = setter;
       return this;
     }
 
-    @EnsuresNonNull({"getWebSite", "setWebSite"})
     public Builder<RR> website(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getWebSite = getter;
       setWebSite = setter;
       return this;
     }
 
-    @EnsuresNonNull({"getLinkedIn", "setLinkedIn"})
     public Builder<RR> linkedIn(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getLinkedIn = getter;
       setLinkedIn = setter;
       return this;
     }
 
-    @EnsuresNonNull({"getSkype", "setSkype"})
     public Builder<RR> skype(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getSkype = getter;
       setSkype = setter;
       return this;
     }
 
-    @EnsuresNonNull({"getDescription", "setDescription"})
     public Builder<RR> description(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getDescription = getter;
       setDescription = setter;
       return this;
     }
 
-    @EnsuresNonNull({"getHistory", "setHistory"})
     public Builder<RR> history(Function<RR, String> getter, BiConsumer<RR, String> setter) {
       getHistory = getter;
       setHistory = setter;
       return this;
     }
 
-    @EnsuresNonNull("getCreatedOn")
     public Builder<RR> createdOn(Function<RR, Timestamp> getter) {
       getCreatedOn = (d) -> getter.apply(d).toString();
       return this;
     }
 
-    @EnsuresNonNull("dao")
-    public Builder<RR> withDao(Dao<RR, Integer, @NonNull LeadField> theDao) {
+    public Builder<RR> withDao(Dao<RR, Integer, @NotNull LeadField> theDao) {
       dao = theDao;
       return this;
     }
 
-    @EnsuresNonNull("recordConstructor")
     public Builder<RR> withConstructor(Supplier<RR> constructor) {
       recordConstructor = constructor;
       return this;
@@ -844,38 +820,39 @@ public final class RecordView<R extends @NonNull Object> extends JPanel implemen
     // test cases, I've been able to get to work. It seems like a more robust (if more verbose) approach if it would
     // work.
 
-      @RequiresNonNull({"dao", "recordConstructor", "getId", "setId", "getCompany", "setCompany", "getContactName", 
-          "setContactName", "getClient", "setClient", "getDicePosn", "setDicePosn", "getDiceId", "setDiceId",
-          "getEMail", "setEMail", "getPhone1", "setPhone1", "getPhone2", "setPhone2", "getPhone3", "setPhone3",
-          "getFax", "setFax", "getWebSite", "setWebSite", "getLinkedIn", "setLinkedIn", "getSkype", "setSkype", "getDescription", "setDescription",
-          "getHistory", "setHistory", "getCreatedOn"})
-//    @SuppressWarnings("argument")
     public RecordView<RR> build() {
+
       final RecordView<RR> view = new RecordView<>(
           record,
           initialSort,
-          dao,
-          recordConstructor,
-          getId, setId,
-          getCompany, setCompany,
-          getContactName, setContactName,
-          getClient, setClient,
-          getDicePosn, setDicePosn,
-          getDiceId, setDiceId,
-          getEMail, setEMail,
-          getPhone1, setPhone1,
-          getPhone2, setPhone2,
-          getPhone3, setPhone3,
-          getFax, setFax,
-          getWebSite, setWebSite,
-          getLinkedIn, setLinkedIn,
-          getSkype, setSkype,
-          getDescription, setDescription,
-          getHistory, setHistory,
-          getCreatedOn
+          nullCheck(dao),
+          nullCheck(recordConstructor),
+          nullCheck(getId), nullCheck(setId),
+          nullCheck(getCompany), nullCheck(setCompany),
+          nullCheck(getContactName), nullCheck(setContactName),
+          nullCheck(getClient), nullCheck(setClient),
+          nullCheck(getDicePosn), nullCheck(setDicePosn),
+          nullCheck(getDiceId), nullCheck(setDiceId),
+          nullCheck(getEMail), nullCheck(setEMail),
+          nullCheck(getPhone1), nullCheck(setPhone1),
+          nullCheck(getPhone2), nullCheck(setPhone2),
+          nullCheck(getPhone3), nullCheck(setPhone3),
+          nullCheck(getFax), nullCheck(setFax),
+          nullCheck(getWebSite), nullCheck(setWebSite),
+          nullCheck(getLinkedIn), nullCheck(setLinkedIn),
+          nullCheck(getSkype), nullCheck(setSkype),
+          nullCheck(getDescription), nullCheck(setDescription),
+          nullCheck(getHistory), nullCheck(setHistory),
+          nullCheck(getCreatedOn)
       );
       view.register();
       return view;
     }
+  }
+  
+  @Contract("null -> fail")
+  private static <T> T nullCheck(T thing) {
+    if (thing == null) { throw new IllegalArgumentException("Null check fail"); }
+    return thing;
   }
 }
